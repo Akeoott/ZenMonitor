@@ -10,7 +10,7 @@ namespace ZenMonitor.Cli;
 
 internal class Program
 {
-    internal static void Main(string[] args)
+    internal static async Task Main(string[] args)
     {
         var services = new ServiceCollection();
 
@@ -19,14 +19,8 @@ internal class Program
 
         var serviceProvider = services.BuildServiceProvider();
 
-        var monitor = serviceProvider.GetRequiredService<IHardwareService>();
         var engine = serviceProvider.GetRequiredService<MonitorEngine>();
 
-        // TODO: Use CancellationToken
-        while (true)
-        {
-            Thread.Sleep(1000);
-            engine.UpdateDashboard();
-        }
+        await engine.InitLoop();
     }
 }

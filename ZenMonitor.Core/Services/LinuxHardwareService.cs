@@ -88,7 +88,7 @@ public class LinuxHardwareService : IHardwareService
                 usage = (double)(diffTotal - diffIdle) / diffTotal * 100.0;
             }
 
-            usages[i] = new CpuUsage(i, Math.Round(usage, 2));
+            usages[i] = new CpuUsage(i, Math.Round(usage));
         }
 
         SwapBuffers();

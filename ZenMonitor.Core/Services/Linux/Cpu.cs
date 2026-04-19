@@ -1,12 +1,15 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.Runtime.Versioning;
+
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
-namespace ZenMonitor.Core.Services;
+namespace ZenMonitor.Core.Services.Linux;
 
-public class LinuxHardwareService : IHardwareService
+[SupportedOSPlatform("linux")]
+public class Cpu : IHardwareService
 {
     public string GetCpuName()
     {
@@ -16,8 +19,7 @@ public class LinuxHardwareService : IHardwareService
         return line?.Split(':')[1].Trim() ?? "Unknown CPU";
     }
 
-    // TODO: Use array instead of list
-    public List<double> GetCoreSpeeds()
+    public double[] GetCoreSpeeds()
     {
         // Reads the current MHz for every logical core
         return [.. File.ReadLines("/proc/cpuinfo")
@@ -25,8 +27,8 @@ public class LinuxHardwareService : IHardwareService
     }
 
     #region Cpu Core Usages
-    private long[][] _snapshots = [];
-    private long[][] _previousSnapshots = [];
+    private long[][] _snapshots = [];           // current ticks
+    private long[][] _previousSnapshots = [];   // previous ticks
 
     /// <summary>
     /// Calculates CPU usage percentages for all CPUs (aggregate + per-core)
@@ -35,10 +37,7 @@ public class LinuxHardwareService : IHardwareService
     /// The first element (CpuIndex = 0) represents total CPU usage.
     /// Subsequent elements represent individual CPU cores.
     ///
-    /// This method uses double-buffering (snapshot swapping) to avoid allocations.
-    /// The first call initializes the baseline and returns 0 usage.
-    ///
-    /// Idle time includes both "idle" and "iowait" for accuracy.
+    /// Idle time includes both "idle" and "iowait".
     /// </summary>
     public CpuUsage[] GetCoreUsages()
     {
@@ -96,8 +95,38 @@ public class LinuxHardwareService : IHardwareService
         return usages;
     }
 
-    private void SwapBuffers() =>
-        (_snapshots, _previousSnapshots) = (_previousSnapshots, _snapshots);
+    private void UpdateAllTicks()
+    {
+        var lines = File.ReadLines("/proc/stat").TakeWhile(l => l.StartsWith("cpu"));
+
+        int i = 0;
+        foreach (var line in lines)
+        {
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            int fieldCount = parts.Length - 1;
+
+            if (_snapshots.Length <= i)
+            {
+                Array.Resize(ref _snapshots, Math.Max(i + 1, _snapshots.Length * 2));
+            }
+
+            _snapshots[i] ??= new long[fieldCount];
+            if (_snapshots[i].Length != fieldCount)
+            {
+                _snapshots[i] = new long[fieldCount];
+            }
+
+            for (int j = 0; j < fieldCount; j++)
+            {
+                _snapshots[i][j] = long.Parse(parts[j + 1]);
+            }
+
+            i++;
+        }
+
+        if (_snapshots.Length > i)
+            Array.Resize(ref _snapshots, i);
+    }
 
     private void EnsurePreviousMatchesCurrent()
     {
@@ -119,43 +148,6 @@ public class LinuxHardwareService : IHardwareService
         }
     }
 
-    private void UpdateAllTicks()
-    {
-        using var reader = new StreamReader("/proc/stat");
-
-        int i = 0;
-
-        while (true)
-        {
-            var line = reader.ReadLine();
-            if (string.IsNullOrEmpty(line) || !line.StartsWith("cpu"))
-                break;
-
-            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            int fieldCount = parts.Length - 1;
-
-            if (_snapshots.Length <= i)
-            {
-                Array.Resize(ref _snapshots, i + 1);
-            }
-
-            if (_snapshots[i] == null || _snapshots[i].Length != fieldCount)
-            {
-                _snapshots[i] = new long[fieldCount];
-            }
-
-            for (int j = 0; j < fieldCount; j++)
-            {
-                _snapshots[i][j] = long.Parse(parts[j + 1]);
-            }
-
-            i++;
-        }
-
-        if (_snapshots.Length > i)
-        {
-            Array.Resize(ref _snapshots, i);
-        }
-    }
+    private void SwapBuffers() => (_snapshots, _previousSnapshots) = (_previousSnapshots, _snapshots);
     #endregion
 }

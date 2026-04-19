@@ -8,6 +8,6 @@ namespace ZenMonitor.Core.Interfaces;
 public interface IHardwareService
 {
     string GetCpuName();
-    List<double> GetCoreSpeeds();
+    double[] GetCoreSpeeds();
     CpuUsage[] GetCoreUsages();
 }

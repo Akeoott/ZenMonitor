@@ -17,17 +17,20 @@ internal class MonitorEngine(IHardwareService hardware)
         await RunLiveDashboard(1000);
     }
 
+    //! NOTE: This is just a debug thingy for now.
+    //        I intend to completely overhaul all of this later.
     private async Task RunLiveDashboard(int delay)
     {
         var table = new Table().Border(TableBorder.Rounded).Expand();
         table.AddColumn("Core");
+        table.AddColumn("Clock Speed");
         table.AddColumn("Usage Graph");
         table.AddColumn("Percentage");
 
         var initialUsages = _hardware.GetCoreUsages();
         for (int i = 0; i < initialUsages.Length; i++)
         {
-            table.AddRow("", "", "");
+            table.AddRow("", "", "", "");
         }
 
         await AnsiConsole.Live(table)

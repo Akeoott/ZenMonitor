@@ -4,7 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using ZenMonitor.Core.Interfaces;
-using ZenMonitor.Core.Services;
+using ZenMonitor.Core.Services.Linux;
 
 namespace ZenMonitor.Cli;
 
@@ -14,7 +14,7 @@ internal class Program
     {
         var services = new ServiceCollection();
 
-        services.AddSingleton<IHardwareService, LinuxHardwareService>();
+        services.AddSingleton<IHardwareService, Cpu>();
         services.AddTransient<MonitorEngine>();
 
         var serviceProvider = services.BuildServiceProvider();

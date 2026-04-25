@@ -3,19 +3,25 @@
 
 using System.Runtime.Versioning;
 
+using Microsoft.Extensions.Logging;
+
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Services.Linux;
 
+// TODO: Add more logging soon...
 [SupportedOSPlatform("linux")]
-public class Cpu : IHardwareService
+public class Cpu(ILogger<Cpu> logger) : IHardwareService
 {
+    private readonly ILogger<Cpu> _logger = logger;
+
     public string GetCpuName()
     {
-        // get cpu name :P
         var line = File.ReadLines("/proc/cpuinfo")
                        .FirstOrDefault(l => l.StartsWith("model name"));
+
+        _logger.LogDebug("(CPU Name) Raw line from /proc/cpuinfo: {LineContent}", line ?? "null");
         return line?.Split(':')[1].Trim() ?? "Unknown CPU";
     }
 

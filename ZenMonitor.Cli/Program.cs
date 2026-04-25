@@ -21,6 +21,7 @@ internal class Program
         return await app.RunAsync(args);
     }
 }
+
 public class MonitorSettings : CommandSettings
 {
     [CommandOption("-l|--log <LEVEL>")]
@@ -49,7 +50,8 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            services.AddSingleton<IHardwareService, Core.Services.Linux.Cpu>();
+            services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
+            services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
         }
         else
         {

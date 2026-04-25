@@ -10,9 +10,9 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Services.Linux;
 
-// TODO: Add more logging soon...
+// TODO: Add more logging soon, other methods are lacking logging...
 [SupportedOSPlatform("linux")]
-public class Cpu(ILogger<Cpu> logger) : IHardwareService
+public class Cpu(ILogger<Cpu> logger) : ICpuService
 {
     private readonly ILogger<Cpu> _logger = logger;
 

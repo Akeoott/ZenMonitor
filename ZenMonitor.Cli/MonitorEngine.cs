@@ -8,11 +8,14 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Cli;
 
-// TODO: Dont forget to add logging later!
-internal class MonitorEngine(ILogger<MonitorEngine> logger, IHardwareService hardware)
+internal class MonitorEngine(
+    ILogger<MonitorEngine> logger,
+    ICpuService cpuInfo,
+    IGpuService gpuInfo)
 {
     private readonly ILogger<MonitorEngine> _logger = logger;
-    private readonly IHardwareService _hardware = hardware;
+    private readonly ICpuService _cpuInfo = cpuInfo;
+    private readonly IGpuService _gpuInfo = gpuInfo;
 
     public async Task Run()
     {
@@ -24,7 +27,7 @@ internal class MonitorEngine(ILogger<MonitorEngine> logger, IHardwareService har
     {
         while (true)
         {
-            Console.WriteLine(_hardware.GetCpuName());
+            Console.WriteLine(_cpuInfo.GetCpuName());
             Thread.Sleep(1000);
         }
     }

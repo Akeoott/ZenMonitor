@@ -5,9 +5,7 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-public interface IHardwareService
+public interface IGpuService
 {
-    string GetCpuName();
-    double[] GetCoreSpeeds();
-    CpuUsage[] GetCoreUsages();
+    string GetGpuName();
 }

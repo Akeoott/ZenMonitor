@@ -11,11 +11,17 @@ namespace ZenMonitor.Cli;
 internal class MonitorEngine(
     ILogger<MonitorEngine> logger,
     ICpuService cpuInfo,
-    IGpuService gpuInfo)
+    IGeneralService generalInfo,
+    IGpuService gpuInfo,
+    INetworkService networkInfo,
+    IRamService ramInfo)
 {
     private readonly ILogger<MonitorEngine> _logger = logger;
     private readonly ICpuService _cpuInfo = cpuInfo;
+    private readonly IGeneralService _generalInfo = generalInfo;
     private readonly IGpuService _gpuInfo = gpuInfo;
+    private readonly INetworkService _networkInfo = networkInfo;
+    private readonly IRamService _ramInfo = ramInfo;
 
     public async Task Run()
     {

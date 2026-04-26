@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Network(ILogger<Network> logger) : INetworkService
+public class General(ILogger<General> logger) : IGeneralService
 {
-    private readonly ILogger<Network> _logger = logger;
+    private readonly ILogger<General> _logger = logger;
 }

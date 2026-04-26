@@ -24,7 +24,7 @@ internal class Program
 
 public class MonitorSettings : CommandSettings
 {
-    [CommandOption("-l|--log <LEVEL>")]
+    [CommandOption("-l|--log <level>")]
     [Description("Set minimum log level (critical/error/warning/info/debug/trace)")]
     [DefaultValue("warning")]
     public required string LogLevel { get; set; }
@@ -51,11 +51,23 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
+            services.AddSingleton<IGeneralService, Core.Services.Linux.General>();
             services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
+            services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
+            services.AddSingleton<IRamService, Core.Services.Linux.Ram>();
         }
+        // TODO: Uncomment and adjust once the Linux implementation is finished.
+        // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // {
+        //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
+        //     services.AddSingleton<IGeneralService, Core.Services.Windows.General>();
+        //     services.AddSingleton<IGpuService, Core.Services.Windows.Gpu>();
+        //     services.AddSingleton<INetworkService, Core.Services.Windows.Network>();
+        //     services.AddSingleton<IRamService, Core.Services.Windows.Ram>();
+        // }
         else
         {
-            throw new PlatformNotSupportedException("ZenMonitor only supports Linux at the moment.\nWindows support will come in the future.");
+            throw new PlatformNotSupportedException("ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
         }
 
         services.AddTransient<MonitorEngine>();

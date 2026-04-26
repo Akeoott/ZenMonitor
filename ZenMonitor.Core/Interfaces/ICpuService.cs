@@ -5,6 +5,7 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
+// TODO: expand implementation
 public interface ICpuService
 {
     string GetCpuName();

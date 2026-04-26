@@ -10,24 +10,32 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Services.Linux;
 
-// TODO: Add more logging soon, other methods are lacking logging...
 [SupportedOSPlatform("linux")]
 public class Cpu(ILogger<Cpu> logger) : ICpuService
 {
     private readonly ILogger<Cpu> _logger = logger;
 
+    /// <summary>
+    /// Gets Cpu name from /proc/cpuinfo.
+    /// </summary>
+    /// <returns>Name of cpu as string.</returns>
     public string GetCpuName()
     {
         var line = File.ReadLines("/proc/cpuinfo")
                        .FirstOrDefault(l => l.StartsWith("model name"));
 
-        _logger.LogDebug("(CPU Name) Raw line from /proc/cpuinfo: {LineContent}", line ?? "null");
+        _logger.LogTrace("(CPU Name) Raw line from /proc/cpuinfo: {LineContent}", line ?? "null");
         return line?.Split(':')[1].Trim() ?? "Unknown CPU";
     }
 
+    /// <summary>
+    /// Gets Cpu core speeds from /proc/cpuinfo.
+    /// </summary>
+    /// <returns>Array containing cpu speeds in MHz.</returns>
     public double[] GetCoreSpeeds()
     {
         // Reads the current MHz for every logical core
+        _logger.LogTrace("(CPU Core Speeds) Getting Speeds from /proc/cpuinfo");
         return [.. File.ReadLines("/proc/cpuinfo")
             .Where(l => l.StartsWith("cpu MHz")).Select(l => double.Parse(l.Split(':')[1].Trim()))];
     }
@@ -45,8 +53,10 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
     ///
     /// Idle time includes both "idle" and "iowait".
     /// </summary>
+    /// <returns>2D array containing usage of all cores including total.</returns>
     public CpuUsage[] GetCoreUsages()
     {
+        _logger.LogTrace("(CPU Usage) Getting Cpu Usages...");
         UpdateAllTicks(); // fills _snapshots (current buffer)
 
         if (_previousSnapshots.Length == 0)
@@ -103,6 +113,7 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
     private void UpdateAllTicks()
     {
+        _logger.LogTrace("(CPU Usage) Getting Ticks from /proc/stat");
         var lines = File.ReadLines("/proc/stat").TakeWhile(l => l.StartsWith("cpu"));
 
         int i = 0;
@@ -136,6 +147,7 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
     private void EnsurePreviousMatchesCurrent()
     {
+        _logger.LogTrace("(CPU Usage) Making sure Ticks match");
         if (_previousSnapshots.Length != _snapshots.Length)
         {
             _previousSnapshots = new long[_snapshots.Length][];
@@ -154,6 +166,10 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
         }
     }
 
-    private void SwapBuffers() => (_snapshots, _previousSnapshots) = (_previousSnapshots, _snapshots);
+    private void SwapBuffers()
+    {
+        _logger.LogTrace("(CPU Usage) Swapping buffers");
+        (_snapshots, _previousSnapshots) = (_previousSnapshots, _snapshots);
+    }
     #endregion
 }

@@ -3,6 +3,9 @@
 
 using Microsoft.Extensions.Logging;
 
+using Spectre.Console;
+using Spectre.Console.Cli;
+
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
@@ -25,16 +28,45 @@ internal class MonitorEngine(
 
     public async Task Run()
     {
-        await RunLiveDashboard(1000);
+        await RunLiveDashboard();
     }
 
     //! Debug stuff right now...
-    private async Task RunLiveDashboard(int delay)
+    private async Task RunLiveDashboard()
     {
-        while (true)
-        {
-            Console.WriteLine(_cpuInfo.GetCpuName());
-            Thread.Sleep(1000);
-        }
+        var coreUsages = _cpuInfo.GetCoreUsages();
+        AnsiConsole.Progress()
+            .Columns(
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn()
+                {
+                    CompletedStyle = new Style(Color.Green),
+                    FinishedStyle = new Style(Color.Green),
+                    RemainingStyle = new Style(Color.Grey)
+                },
+                new PercentageColumn())
+            .Start(ctx =>
+            {
+                var coreUsages = _cpuInfo.GetCoreUsages();
+                var tasks = new Dictionary<int, ProgressTask>();
+
+                foreach (var core in coreUsages)
+                {
+                    tasks[core.Index] = ctx.AddTask($"C{core.Index}");
+                }
+
+                while (true)
+                {
+                    coreUsages = _cpuInfo.GetCoreUsages();
+                    foreach (var core in coreUsages)
+                    {
+                        if (tasks.TryGetValue(core.Index, out var task))
+                        {
+                            task.Value = core.Usage;
+                        }
+                    }
+                    Thread.Sleep(1000);
+                }
+            });
     }
 }

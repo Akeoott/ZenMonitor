@@ -40,6 +40,7 @@ dotnet_diagnostic.IDE0073.severity = error
 
 # using
 dotnet_separate_import_directive_groups = true
+dotnet_sort_system_directives_first = true
 csharp_style_using_directive_placement = outside_namespace:suggestion
 csharp_style_namespace_declaration = file_scoped:suggestion
 

@@ -1,11 +1,14 @@
-﻿// Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
+// Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
+
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+using Serilog;
+using Serilog.Events;
 
 using Spectre.Console.Cli;
 
@@ -24,74 +27,114 @@ internal class Program
 
 public class MonitorSettings : CommandSettings
 {
-    [CommandOption("-l|--log <level>")]
-    [Description("Set minimum log level (critical/error/warning/info/debug/trace)")]
-    [DefaultValue("warning")]
+    #region Cli Options
+    [CommandOption("-v|--verbosity <LEVEL>")]
+    [Description("Set logging verbosity level (critical/error/warning/info/debug/trace)")]
+    [DefaultValue("info")]
     public required string LogLevel { get; set; }
+
+    [CommandOption("-c|--console <BOOL>")]
+    [Description("Enable console logging. Use `--console true` to enable. (might not work work properly when running cli interface)")]
+    [DefaultValue("false")]
+    public bool ConsoleOutput { get; set; } = false;
+    #endregion
 }
 
-public class MonitorCommand : AsyncCommand<MonitorSettings>
+public class MonitorCommand() : AsyncCommand<MonitorSettings>
 {
+
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
         MonitorSettings settings,
         CancellationToken cancellationToken)
     {
-        var logLevel = ParseLogLevel(settings.LogLevel);
+        #region Logging Configuration
+        var logLevel = ParseSerilogLevel(settings.LogLevel);
+        var logFilePath = "logs/ZenMonitor.log";
 
-        var services = new ServiceCollection();
+        Directory.CreateDirectory("logs");
+        File.WriteAllText(logFilePath, string.Empty);
 
-        services.AddLogging(builder =>
-        {
-            builder.AddConsole();
-            builder.AddDebug();
-            builder.SetMinimumLevel(logLevel);
-        });
+        var loggerConfig = new LoggerConfiguration()
+            .MinimumLevel.Is(logLevel)
+            .Enrich.WithProperty("RunId", Guid.NewGuid());
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (settings.ConsoleOutput)
         {
-            services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
-            services.AddSingleton<IGeneralService, Core.Services.Linux.General>();
-            services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
-            services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
-            services.AddSingleton<IRamService, Core.Services.Linux.Ram>();
-        }
-        // TODO: Uncomment and adjust once the Linux implementation is finished.
-        // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        // {
-        //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
-        //     services.AddSingleton<IGeneralService, Core.Services.Windows.General>();
-        //     services.AddSingleton<IGpuService, Core.Services.Windows.Gpu>();
-        //     services.AddSingleton<INetworkService, Core.Services.Windows.Network>();
-        //     services.AddSingleton<IRamService, Core.Services.Windows.Ram>();
-        // }
-        else
-        {
-            throw new PlatformNotSupportedException("ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
+            loggerConfig.WriteTo.Console(
+                outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
         }
 
-        services.AddTransient<MonitorEngine>();
+        loggerConfig.WriteTo.File(
+            logFilePath,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+        #endregion
 
-        var serviceProvider = services.BuildServiceProvider();
 
-        var engine = serviceProvider.GetRequiredService<MonitorEngine>();
+        #region Dependency Injection
+        Log.Logger = loggerConfig.CreateLogger();
 
-        await engine.Run();
+        try
+        {
+            var services = new ServiceCollection();
 
-        return 0;
+            services.AddLogging(builder =>
+            {
+                builder.ClearProviders();
+                builder.AddSerilog(dispose: true);
+            });
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
+                services.AddSingleton<IGeneralService, Core.Services.Linux.General>();
+                services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
+                services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
+                services.AddSingleton<IRamService, Core.Services.Linux.Ram>();
+            }
+            // TODO: Uncomment and adjust once the Linux implementation is finished.
+            // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
+            //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
+            //     services.AddSingleton<IGeneralService, Core.Services.Windows.General>();
+            //     services.AddSingleton<IGpuService, Core.Services.Windows.Gpu>();
+            //     services.AddSingleton<INetworkService, Core.Services.Windows.Network>();
+            //     services.AddSingleton<IRamService, Core.Services.Windows.Ram>();
+            // }
+            else
+            {
+                throw new PlatformNotSupportedException("ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
+            }
+
+            services.AddTransient<MonitorEngine>();
+
+            var serviceProvider = services.BuildServiceProvider();
+            var engine = serviceProvider.GetRequiredService<MonitorEngine>();
+            var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
+
+            _logger.LogWarning("ZenMonitor started.");
+
+            await engine.Run();
+            return 0;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+        #endregion
     }
 
-    private static LogLevel ParseLogLevel(string level)
+    private static LogEventLevel ParseSerilogLevel(string level)
     {
         return level?.ToLowerInvariant() switch
         {
-            "trace" => LogLevel.Trace,
-            "debug" => LogLevel.Debug,
-            "info" => LogLevel.Information,
-            "warning" => LogLevel.Warning,
-            "error" => LogLevel.Error,
-            "critical" => LogLevel.Critical,
-            _ => LogLevel.Warning
+            "trace" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "info" => LogEventLevel.Information,
+            "warning" => LogEventLevel.Warning,
+            "error" => LogEventLevel.Error,
+            "critical" => LogEventLevel.Fatal,
+            _ => LogEventLevel.Information
         };
     }
 }

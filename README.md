@@ -12,6 +12,10 @@
 <br>
 
 > [!WARNING]
-> Heavily WIP, does not work at the moment.
+> Heavily WIP, does not have a proper CLI and no GUI interface at the moment.
 
-Aims to be a fast and modern Task manager and system monitor providing you with every single detail there is.
+Aims to be a fast and modern system monitor with task managing abilities, providing you with detailed information about your system.
+
+> [!INFORMATION]
+> The backend is functional and can already be used, tho with some limitations.
+> Will become a package on nuget eventually.

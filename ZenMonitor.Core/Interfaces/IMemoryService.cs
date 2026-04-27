@@ -5,5 +5,14 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-// TODO: add implementation
-public interface IRamService { }
+public interface IMemoryService
+{
+    double GetMemTotal();
+    double GetMemFree();
+    double GetMemAvailable();
+    double GetMemUsed();
+
+    double GetCached();
+    double GetSwapTotal();
+    double GetSwapFree();
+}

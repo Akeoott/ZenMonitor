@@ -16,15 +16,15 @@ internal class MonitorEngine(
     ICpuService cpuInfo,
     IGeneralService generalInfo,
     IGpuService gpuInfo,
-    INetworkService networkInfo,
-    IRamService ramInfo)
+    IMemoryService memoryInfo,
+    INetworkService networkInfo)
 {
     private readonly ILogger<MonitorEngine> _logger = logger;
     private readonly ICpuService _cpuInfo = cpuInfo;
     private readonly IGeneralService _generalInfo = generalInfo;
     private readonly IGpuService _gpuInfo = gpuInfo;
+    private readonly IMemoryService _memoryInfo = memoryInfo;
     private readonly INetworkService _networkInfo = networkInfo;
-    private readonly IRamService _ramInfo = ramInfo;
 
     public async Task Run()
     {
@@ -34,39 +34,54 @@ internal class MonitorEngine(
     //! Debug stuff right now...
     private async Task RunLiveDashboard()
     {
-        var coreUsages = _cpuInfo.GetCoreUsages();
-        AnsiConsole.Progress()
-            .Columns(
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn()
-                {
-                    CompletedStyle = new Style(Color.Green),
-                    FinishedStyle = new Style(Color.Green),
-                    RemainingStyle = new Style(Color.Grey)
-                },
-                new PercentageColumn())
-            .Start(ctx =>
-            {
-                var coreUsages = _cpuInfo.GetCoreUsages();
-                var tasks = new Dictionary<int, ProgressTask>();
+        while (true)
+        {
+            Console.WriteLine(_memoryInfo.GetMemTotal());
+            Console.WriteLine(_memoryInfo.GetMemFree());
+            Console.WriteLine(_memoryInfo.GetMemAvailable());
+            Console.WriteLine(_memoryInfo.GetMemUsed());
+            Console.WriteLine(_memoryInfo.GetCached());
+            Console.WriteLine(_memoryInfo.GetSwapTotal());
+            Console.WriteLine(_memoryInfo.GetSwapFree());
+            System.Console.WriteLine(
 
-                foreach (var core in coreUsages)
-                {
-                    tasks[core.Index] = ctx.AddTask($"C{core.Index}");
-                }
+            );
 
-                while (true)
-                {
-                    coreUsages = _cpuInfo.GetCoreUsages();
-                    foreach (var core in coreUsages)
-                    {
-                        if (tasks.TryGetValue(core.Index, out var task))
-                        {
-                            task.Value = core.Usage;
-                        }
-                    }
-                    Thread.Sleep(1000);
-                }
-            });
+            await Task.Delay(1000);
+        }
+        // var coreUsages = _cpuInfo.GetCoreUsages();
+        // AnsiConsole.Progress()
+        //     .Columns(
+        //         new TaskDescriptionColumn(),
+        //         new ProgressBarColumn()
+        //         {
+        //             CompletedStyle = new Style(Color.Green),
+        //             FinishedStyle = new Style(Color.Green),
+        //             RemainingStyle = new Style(Color.Grey)
+        //         },
+        //         new PercentageColumn())
+        //     .Start(ctx =>
+        //     {
+        //         var coreUsages = _cpuInfo.GetCoreUsages();
+        //         var tasks = new Dictionary<int, ProgressTask>();
+
+        //         foreach (var core in coreUsages)
+        //         {
+        //             tasks[core.Index] = ctx.AddTask($"C{core.Index}");
+        //         }
+
+        //         while (true)
+        //         {
+        //             coreUsages = _cpuInfo.GetCoreUsages();
+        //             foreach (var core in coreUsages)
+        //             {
+        //                 if (tasks.TryGetValue(core.Index, out var task))
+        //                 {
+        //                     task.Value = core.Usage;
+        //                 }
+        //             }
+        //             Thread.Sleep(1000);
+        //         }
+        //     });
     }
 }

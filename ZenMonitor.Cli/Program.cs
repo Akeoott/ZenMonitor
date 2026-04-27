@@ -89,8 +89,8 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
                 services.AddSingleton<IGeneralService, Core.Services.Linux.General>();
                 services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
+                services.AddSingleton<IMemoryService, Core.Services.Linux.Memory>();
                 services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
-                services.AddSingleton<IRamService, Core.Services.Linux.Ram>();
             }
             // TODO: Uncomment and adjust once the Linux implementation is finished.
             // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -98,8 +98,8 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
             //     services.AddSingleton<IGeneralService, Core.Services.Windows.General>();
             //     services.AddSingleton<IGpuService, Core.Services.Windows.Gpu>();
+            //     services.AddSingleton<IMemoryService, Core.Services.Windows.Memory>();
             //     services.AddSingleton<INetworkService, Core.Services.Windows.Network>();
-            //     services.AddSingleton<IRamService, Core.Services.Windows.Ram>();
             // }
             else
             {

@@ -14,42 +14,74 @@ namespace ZenMonitor.Core.Services.Linux;
 public class Memory(ILogger<Memory> logger) : IMemoryService
 {
     private readonly ILogger<Memory> _logger = logger;
+    private MemoryInfoSnapshot _snapshot = new(0, 0, 0, 0, 0, 0, 0);
 
-    public double GetMemTotal() => ParseMemInfoValue("MemTotal");
-    public double GetMemFree() => ParseMemInfoValue("MemFree");
-    public double GetMemAvailable() => ParseMemInfoValue("MemAvailable");
-    public double GetMemUsed() => Math.Round(GetMemTotal() - GetMemAvailable(), 2);
+    public void Update()
+    {
+        _snapshot = FetchMemoryInfo();
+    }
 
-    public double GetCached() => ParseMemInfoValue("Cached");
-    public double GetSwapTotal() => ParseMemInfoValue("SwapTotal");
-    public double GetSwapFree() => ParseMemInfoValue("SwapFree");
+    public double GetMemTotal() => _snapshot.MemTotal;
+    public double GetMemFree() => _snapshot.MemFree;
+    public double GetMemAvailable() => _snapshot.MemAvailable;
+    public double GetMemUsed() => _snapshot.MemUsed;
+    public double GetCached() => _snapshot.Cached;
+    public double GetSwapTotal() => _snapshot.SwapTotal;
+    public double GetSwapFree() => _snapshot.SwapFree;
 
-    private double ParseMemInfoValue(string key)
+    private MemoryInfoSnapshot FetchMemoryInfo()
     {
         try
         {
-            _logger.LogTrace("({key}) Getting memory value.", key);
+            _logger.LogTrace("Reading /proc/meminfo");
 
-            string line = File.ReadLines("/proc/meminfo")
-            .FirstOrDefault(l => l.StartsWith(key)) ??
-                throw new KeyNotFoundException($"Could not find '{key}' in /proc/meminfo");
+            // Read all lines and collect only the keys we need
+            var values = new Dictionary<string, double>(StringComparer.Ordinal);
+            const double KB_TO_GIB = 1.0 / 1_048_576;
 
-            string valueStr = line.Split(':')[1].Trim().Split(' ')[0];
-
-            if (double.TryParse(valueStr, out double value))
+            foreach (var line in File.ReadLines("/proc/meminfo"))
             {
-                // Convert from KB to GiB
-                value = Math.Round(value /= 1_048_576, 2);
-                return value;
+                int colon = line.IndexOf(':');
+                if (colon < 0) continue;
+
+                string key = line[..colon].Trim();
+                if (key != "MemTotal" && key != "MemFree" && key != "MemAvailable" &&
+                    key != "Cached" && key != "SwapTotal" && key != "SwapFree")
+                {
+                    continue;
+                }
+
+                string valuePart = line[(colon + 1)..].Trim();
+                int space = valuePart.IndexOf(' ');
+                string numberStr = space >= 0 ? valuePart[..space] : valuePart;
+
+                if (double.TryParse(numberStr, out double kb))
+                {
+                    values[key] = Math.Round(kb * KB_TO_GIB, 2);
+                }
+                else
+                {
+                    throw new FormatException($"Could not parse '{key}' value '{numberStr}'");
+                }
             }
 
-            throw new FormatException($"Could not parse '{key}' (Parameter '{valueStr}')");
+            // Ensure we got all keys
+            string[] required = ["MemTotal", "MemFree", "MemAvailable", "Cached", "SwapTotal", "SwapFree"];
+
+            foreach (var key in required)
+            {
+                if (!values.ContainsKey(key))
+                    throw new KeyNotFoundException($"Could not find '{key}' in /proc/meminfo");
+            }
+
+            return new MemoryInfoSnapshot(
+                values["MemTotal"], values["MemFree"], values["MemAvailable"], Math.Round(values["MemTotal"] - values["MemAvailable"], 2),
+                values["Cached"], values["SwapTotal"], values["SwapFree"]);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogError(e, "({key}) Something unexpected happened.", key);
-            _logger.LogWarning("({key}) Returning 0 due to error.", key);
-            return 0;
+            _logger.LogError(ex, "Failed to fetch memory info");
+            return new MemoryInfoSnapshot(0, 0, 0, 0, 0, 0, 0);
         }
     }
 }

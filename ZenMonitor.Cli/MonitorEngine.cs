@@ -14,17 +14,17 @@ namespace ZenMonitor.Cli;
 internal class MonitorEngine(
     ILogger<MonitorEngine> logger,
     ICpuService cpuInfo,
-    IGeneralService generalInfo,
     IGpuService gpuInfo,
     IMemoryService memoryInfo,
-    INetworkService networkInfo)
+    INetworkService networkInfo,
+    ISystemService systemInfo)
 {
     private readonly ILogger<MonitorEngine> _logger = logger;
     private readonly ICpuService _cpuInfo = cpuInfo;
-    private readonly IGeneralService _generalInfo = generalInfo;
     private readonly IGpuService _gpuInfo = gpuInfo;
     private readonly IMemoryService _memoryInfo = memoryInfo;
     private readonly INetworkService _networkInfo = networkInfo;
+    private readonly ISystemService _systemInfo = systemInfo;
 
     public async Task Run()
     {
@@ -36,17 +36,38 @@ internal class MonitorEngine(
     {
         while (true)
         {
-            Console.WriteLine(_memoryInfo.GetMemTotal());
-            Console.WriteLine(_memoryInfo.GetMemFree());
-            Console.WriteLine(_memoryInfo.GetMemAvailable());
-            Console.WriteLine(_memoryInfo.GetMemUsed());
-            Console.WriteLine(_memoryInfo.GetCached());
-            Console.WriteLine(_memoryInfo.GetSwapTotal());
-            Console.WriteLine(_memoryInfo.GetSwapFree());
-            System.Console.WriteLine(
+            Console.Clear();
+            Console.WriteLine(_cpuInfo.GetCpuName());
+            foreach (var speeds in _cpuInfo.GetCoreSpeeds())
+            {
+                Console.Write($"{speeds}Mhz, ");
+            }
+            Console.WriteLine("");
+            foreach (var speeds in _cpuInfo.GetCoreUsages())
+            {
+                Console.Write($"C{speeds.Index} {speeds.Usage}%, ");
+            }
 
+            Console.WriteLine("");
+
+            Console.WriteLine(
+                $"{_memoryInfo.GetMemTotal()}, {_memoryInfo.GetMemFree()}, " +
+                $"{_memoryInfo.GetMemAvailable()}, {_memoryInfo.GetMemUsed()}, " +
+                $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
+                $"{_memoryInfo.GetSwapFree()}"
             );
+            Console.WriteLine(
+                $"{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
+                $"{_systemInfo.GetUptimeSeconds()}, {_systemInfo.GetLoadAvg1Min()}, " +
+                $"{_systemInfo.GetLoadAvg5Min()}, {_systemInfo.GetLoadAvg15Min()}, " +
+                $"{_systemInfo.GetRunningTasks()}, {_systemInfo.GetTotalTasks()}, " +
+                $"{_systemInfo.GetBootTimeUnixSeconds()}"
+            );
+            Console.WriteLine("");
 
+            _cpuInfo.Update();
+            _memoryInfo.Update();
+            _systemInfo.Update();
             await Task.Delay(1000);
         }
         // var coreUsages = _cpuInfo.GetCoreUsages();

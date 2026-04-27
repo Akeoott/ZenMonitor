@@ -29,7 +29,7 @@ public class MonitorSettings : CommandSettings
 {
     #region Cli Options
     [CommandOption("-v|--verbosity <LEVEL>")]
-    [Description("Set logging verbosity level (critical/error/warning/info/debug/trace)")]
+    [Description("Set logging verbosity level: c[ritical], e[rror], w[arning], i[nfo], d[ebug], t[race])")]
     [DefaultValue("info")]
     public required string LogLevel { get; set; }
 
@@ -87,19 +87,17 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
-                services.AddSingleton<IGeneralService, Core.Services.Linux.General>();
                 services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
                 services.AddSingleton<IMemoryService, Core.Services.Linux.Memory>();
                 services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
+                services.AddSingleton<IStorageService, Core.Services.Linux.Storage>();
+                services.AddSingleton<ISystemService, Core.Services.Linux.System>();
             }
             // TODO: Uncomment and adjust once the Linux implementation is finished.
             // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             // {
             //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
-            //     services.AddSingleton<IGeneralService, Core.Services.Windows.General>();
-            //     services.AddSingleton<IGpuService, Core.Services.Windows.Gpu>();
-            //     services.AddSingleton<IMemoryService, Core.Services.Windows.Memory>();
-            //     services.AddSingleton<INetworkService, Core.Services.Windows.Network>();
+            //     Other services ...
             // }
             else
             {
@@ -128,12 +126,12 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
     {
         return level?.ToLowerInvariant() switch
         {
-            "trace" => LogEventLevel.Verbose,
-            "debug" => LogEventLevel.Debug,
-            "info" => LogEventLevel.Information,
-            "warning" => LogEventLevel.Warning,
-            "error" => LogEventLevel.Error,
-            "critical" => LogEventLevel.Fatal,
+            "t" or "trace" => LogEventLevel.Verbose,
+            "d" or "debug" => LogEventLevel.Debug,
+            "i" or "info" => LogEventLevel.Information,
+            "w" or "warning" => LogEventLevel.Warning,
+            "e" or "error" => LogEventLevel.Error,
+            "c" or "critical" => LogEventLevel.Fatal,
             _ => LogEventLevel.Information
         };
     }

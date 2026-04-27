@@ -3,10 +3,12 @@
 
 namespace ZenMonitor.Core.Models;
 
-public record CpuUsage(int Index, double Usage);
-
-public record CpuInfoSnapshot(
-    string CpuName,
-    double[] CoreSpeedsMHz,
-    CpuUsage[] CoreUsages
+public record MemoryInfoSnapshot(
+    double MemTotal,
+    double MemFree,
+    double MemAvailable,
+    double MemUsed,
+    double Cached,
+    double SwapTotal,
+    double SwapFree
 );

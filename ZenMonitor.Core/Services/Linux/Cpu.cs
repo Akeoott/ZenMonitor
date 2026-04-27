@@ -14,162 +14,132 @@ namespace ZenMonitor.Core.Services.Linux;
 public class Cpu(ILogger<Cpu> logger) : ICpuService
 {
     private readonly ILogger<Cpu> _logger = logger;
+    private CpuInfoSnapshot _snapshot = new("Unknown CPU", [], []);
 
-    /// <summary>
-    /// Gets Cpu name from /proc/cpuinfo.
-    /// </summary>
-    /// <returns>Name of cpu as string.</returns>
-    public string GetCpuName()
+    // Tick buffers for /proc/stat diffs
+    private long[][] _currentTicks = [];
+    private long[][] _previousTicks = [];
+
+    public void Update()
     {
-        var line = File.ReadLines("/proc/cpuinfo")
-                       .FirstOrDefault(l => l.StartsWith("model name"));
-
-        _logger.LogTrace("(CPU Name) Raw line from /proc/cpuinfo: {LineContent}", line ?? "null");
-        return line?.Split(':')[1].Trim() ?? "Unknown CPU";
+        _snapshot = FetchCpuInfo();
     }
 
-    /// <summary>
-    /// Gets Cpu core speeds from /proc/cpuinfo.
-    /// </summary>
-    /// <returns>Array containing cpu speeds in MHz.</returns>
-    public double[] GetCoreSpeeds()
+    public string GetCpuName() => _snapshot.CpuName;
+    public double[] GetCoreSpeeds() => _snapshot.CoreSpeedsMHz;
+    public CpuUsage[] GetCoreUsages() => _snapshot.CoreUsages;
+
+    private CpuInfoSnapshot FetchCpuInfo()
     {
-        // Reads the current MHz for every logical core
-        _logger.LogTrace("(CPU Core Speeds) Getting Speeds from /proc/cpuinfo");
-        return [.. File.ReadLines("/proc/cpuinfo")
-            .Where(l => l.StartsWith("cpu MHz")).Select(l => double.Parse(l.Split(':')[1].Trim()))];
-    }
-
-    #region Cpu Core Usages
-    private long[][] _snapshots = [];           // current ticks
-    private long[][] _previousSnapshots = [];   // previous ticks
-
-    /// <summary>
-    /// Calculates CPU usage percentages for all CPUs (aggregate + per-core)
-    /// using tick differences from /proc/stat.
-    ///
-    /// The first element (CpuIndex = 0) represents total CPU usage.
-    /// Subsequent elements represent individual CPU cores.
-    ///
-    /// Idle time includes both "idle" and "iowait".
-    /// </summary>
-    /// <returns>2D array containing usage of all cores including total.</returns>
-    public CpuUsage[] GetCoreUsages()
-    {
-        _logger.LogTrace("(CPU Usage) Getting Cpu Usages...");
-        UpdateAllTicks(); // fills _snapshots (current buffer)
-
-        if (_previousSnapshots.Length == 0)
+        try
         {
-            EnsurePreviousMatchesCurrent();
-            SwapBuffers();
+            _logger.LogTrace("Fetching all CPU info...");
 
-            return [.. _snapshots.Select((_, i) => new CpuUsage(i, 0))];
-        }
-
-        var usages = new CpuUsage[_snapshots.Length];
-
-        for (int i = 0; i < _snapshots.Length; i++)
-        {
-            var prev = _previousSnapshots[i];
-            var curr = _snapshots[i];
-
-            int len = Math.Min(prev.Length, curr.Length);
-
-            long totalA = 0, totalB = 0;
-
-            for (int j = 0; j < len; j++)
+            // Read /proc/cpuinfo once for name and speeds
+            string cpuName = "Unknown CPU";
+            var speeds = new List<double>();
+            foreach (var line in File.ReadLines("/proc/cpuinfo"))
             {
-                totalA += prev[j];
-                totalB += curr[j];
+                if (line.StartsWith("model name") && cpuName == "Unknown CPU")
+                {
+                    var parts = line.Split(':', 2);
+                    if (parts.Length == 2)
+                        cpuName = parts[1].Trim();
+                }
+                else if (line.StartsWith("cpu MHz"))
+                {
+                    var parts = line.Split(':', 2);
+                    if (parts.Length == 2 && double.TryParse(parts[1].Trim(), out double mhz))
+                        speeds.Add(mhz);
+                }
             }
 
-            long diffTotal = totalB - totalA;
+            // Read /proc/stat and compute core usages
+            ReadCurrentTicks(); // fills _currentTicks
 
-            long idleA = prev.Length > 4 ? prev[3] + prev[4]
-                       : prev.Length > 3 ? prev[3]
-                       : 0;
-
-            long idleB = curr.Length > 4 ? curr[3] + curr[4]
-                       : curr.Length > 3 ? curr[3]
-                       : 0;
-
-            long diffIdle = idleB - idleA;
-
-            double usage = 0;
-
-            if (diffTotal > 0)
+            CpuUsage[] usages;
+            if (_previousTicks.Length == 0)
             {
-                usage = (double)(diffTotal - diffIdle) / diffTotal * 100.0;
+                // First call baseline only, usage is 0%
+                usages = new CpuUsage[_currentTicks.Length];
+                for (int i = 0; i < _currentTicks.Length; i++)
+                    usages[i] = new CpuUsage(i, 0);
+
+                // Make previous equal to current
+                _previousTicks = new long[_currentTicks.Length][];
+                for (int i = 0; i < _currentTicks.Length; i++)
+                {
+                    _previousTicks[i] = new long[_currentTicks[i].Length];
+                    Array.Copy(_currentTicks[i], _previousTicks[i], _currentTicks[i].Length);
+                }
+            }
+            else
+            {
+                usages = ComputeUsages();
             }
 
-            usages[i] = new CpuUsage(i, Math.Round(usage));
+            return new CpuInfoSnapshot(cpuName, speeds.ToArray(), usages);
         }
-
-        SwapBuffers();
-
-        return usages;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch CPU info");
+            return new CpuInfoSnapshot("Error", [], []);
+        }
     }
 
-    private void UpdateAllTicks()
+    private void ReadCurrentTicks()
     {
-        _logger.LogTrace("(CPU Usage) Getting Ticks from /proc/stat");
-        var lines = File.ReadLines("/proc/stat").TakeWhile(l => l.StartsWith("cpu"));
+        var lines = File.ReadLines("/proc/stat").Where(l => l.StartsWith("cpu"));
+        var tickLists = new List<long[]>();
 
-        int i = 0;
         foreach (var line in lines)
         {
             var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             int fieldCount = parts.Length - 1;
-
-            if (_snapshots.Length <= i)
-            {
-                Array.Resize(ref _snapshots, Math.Max(i + 1, _snapshots.Length * 2));
-            }
-
-            _snapshots[i] ??= new long[fieldCount];
-            if (_snapshots[i].Length != fieldCount)
-            {
-                _snapshots[i] = new long[fieldCount];
-            }
-
+            var ticks = new long[fieldCount];
             for (int j = 0; j < fieldCount; j++)
-            {
-                _snapshots[i][j] = long.Parse(parts[j + 1]);
-            }
-
-            i++;
+                ticks[j] = long.Parse(parts[j + 1]);
+            tickLists.Add(ticks);
         }
-
-        if (_snapshots.Length > i)
-            Array.Resize(ref _snapshots, i);
+        _currentTicks = [.. tickLists];
     }
 
-    private void EnsurePreviousMatchesCurrent()
+    private CpuUsage[] ComputeUsages()
     {
-        _logger.LogTrace("(CPU Usage) Making sure Ticks match");
-        if (_previousSnapshots.Length != _snapshots.Length)
-        {
-            _previousSnapshots = new long[_snapshots.Length][];
-        }
+        int len = Math.Min(_currentTicks.Length, _previousTicks.Length);
+        var usages = new CpuUsage[len];
 
-        for (int i = 0; i < _snapshots.Length; i++)
+        for (int i = 0; i < len; i++)
         {
-            var curr = _snapshots[i];
+            var curr = _currentTicks[i];
+            var prev = _previousTicks[i];
+            int fields = Math.Min(curr.Length, prev.Length);
 
-            if (_previousSnapshots[i] == null || _previousSnapshots[i].Length != curr.Length)
+            long totalDiff = 0, idleDiff = 0;
+            long totalCurr = 0, totalPrev = 0;
+
+            for (int j = 0; j < fields; j++)
             {
-                _previousSnapshots[i] = new long[curr.Length];
+                totalCurr += curr[j];
+                totalPrev += prev[j];
             }
+            totalDiff = totalCurr - totalPrev;
 
-            Array.Copy(curr, _previousSnapshots[i], curr.Length);
+            // Idle fields: index 3 (idle) + index 4 (iowait)
+            long idleCurr = curr.Length > 4 ? curr[3] + curr[4] : curr.Length > 3 ? curr[3] : 0;
+            long idlePrev = prev.Length > 4 ? prev[3] + prev[4] : prev.Length > 3 ? prev[3] : 0;
+            idleDiff = idleCurr - idlePrev;
+
+            double usage = 0;
+            if (totalDiff > 0)
+                usage = (double)(totalDiff - idleDiff) / totalDiff * 100.0;
+
+            usages[i] = new CpuUsage(i, Math.Round(usage));
         }
-    }
 
-    private void SwapBuffers()
-    {
-        _logger.LogTrace("(CPU Usage) Swapping buffers");
-        (_snapshots, _previousSnapshots) = (_previousSnapshots, _snapshots);
+        _previousTicks = _currentTicks;
+        _currentTicks = [];
+
+        return usages;
     }
-    #endregion
 }

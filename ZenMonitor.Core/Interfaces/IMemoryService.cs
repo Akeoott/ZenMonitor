@@ -7,6 +7,8 @@ namespace ZenMonitor.Core.Interfaces;
 
 public interface IMemoryService
 {
+    void Update();
+
     double GetMemTotal();
     double GetMemFree();
     double GetMemAvailable();

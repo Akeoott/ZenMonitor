@@ -8,6 +8,8 @@ namespace ZenMonitor.Core.Interfaces;
 // TODO: expand implementation
 public interface ICpuService
 {
+    void Update();
+
     string GetCpuName();
     double[] GetCoreSpeeds();
     CpuUsage[] GetCoreUsages();

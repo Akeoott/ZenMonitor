@@ -62,12 +62,14 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
         if (settings.ConsoleOutput)
         {
             loggerConfig.WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+                outputTemplate:
+                    "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
         }
 
         loggerConfig.WriteTo.File(
             logFilePath,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+            outputTemplate:
+                "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
         #endregion
 
 
@@ -101,7 +103,9 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             // }
             else
             {
-                throw new PlatformNotSupportedException("ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
+                throw new PlatformNotSupportedException(
+                    "ZenMonitor only supports Linux at the moment. Windows support will come in the future."
+                );
             }
 
             services.AddTransient<MonitorEngine>();

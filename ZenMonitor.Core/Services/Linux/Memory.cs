@@ -75,7 +75,8 @@ public class Memory(ILogger<Memory> logger) : IMemoryService
             }
 
             return new MemoryInfoSnapshot(
-                values["MemTotal"], values["MemFree"], values["MemAvailable"], Math.Round(values["MemTotal"] - values["MemAvailable"], 2),
+                values["MemTotal"], values["MemFree"], values["MemAvailable"],
+                Math.Round(values["MemTotal"] - values["MemAvailable"], 2),
                 values["Cached"], values["SwapTotal"], values["SwapFree"]);
         }
         catch (Exception ex)

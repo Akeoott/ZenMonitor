@@ -1,6 +1,6 @@
 # ZenMonitor
 
-### A New Personal Project Of Mine
+### A light and fast system monitor
 
 <div>
     <a>
@@ -11,11 +11,11 @@
 </div>
 <br>
 
+#### ZenMonitor aims to be a fast and modern Task manager providing you with every single detail there is.
+
 > [!WARNING]
-> Heavily WIP, does not have a proper CLI and no GUI interface at the moment.
+> Heavily WIP, limited functionality.
 
-Aims to be a fast and modern system monitor with task managing abilities, providing you with detailed information about your system.
-
-> [!INFORMATION]
-> The backend is functional and can already be used, tho with some limitations.
-> Will become a package on nuget eventually.
+> [!NOTE]
+> Documentation: [DeepWiki/Akeoott/ZenMonitor](https://deepwiki.com/Akeoott/ZenMonitor)<br>
+> I wanna mention that the only reason I use DeepWiki is cause writing docs manually takes SO MUCH TIME...

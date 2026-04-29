@@ -15,7 +15,7 @@ using Spectre.Console.Cli;
 
 using ZenMonitor.Core.Interfaces;
 
-namespace ZenMonitor.Cli;
+namespace ZenMonitor;
 
 internal class Program
 {

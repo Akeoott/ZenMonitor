@@ -11,7 +11,7 @@ using Spectre.Console.Cli;
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
-namespace ZenMonitor.Cli;
+namespace ZenMonitor;
 
 internal class MonitorEngine(
     ILogger<MonitorEngine> logger,

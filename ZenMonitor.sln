@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor.Core", "ZenMonitor.Core\ZenMonitor.Core.csproj", "{956D7004-26F5-4C5D-BC49-0571B881E415}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor.Cli", "ZenMonitor.Cli\ZenMonitor.Cli.csproj", "{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor", "ZenMonitor\ZenMonitor.csproj", "{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

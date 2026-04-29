@@ -140,8 +140,18 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                     "ZenMonitor only supports Linux at the moment. Windows support will come in the future."
                 );
             }
-
-            services.AddTransient<Debug.Monitor>();
+            switch (settings.Mode)
+            {
+                case "cli":
+                    //services.AddTransient<Cli.Monitor>();
+                    break;
+                case "gui":
+                    //services.AddTransient<Gui.Monitor>();
+                    break;
+                case "debug":
+                    services.AddTransient<Debug.Monitor>();
+                    break;
+            }
 
             var serviceProvider = services.BuildServiceProvider();
             var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
@@ -170,22 +180,23 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             };
 
             _logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
-            if (settings.Mode == "cli")
+            switch (settings.Mode)
             {
-                Console.WriteLine("cli is not implemented, come back later! (try debug)");
-            }
-            else if (settings.Mode == "gui")
-            {
-                Console.WriteLine("gui is not implemented, come back later! (try debug)");
-            }
-            else if (settings.Mode == "debug")
-            {
-                var engine = serviceProvider.GetRequiredService<Debug.Monitor>();
-                await engine.InitMonitor(settings.LoopDelay, cts.Token);
-            }
-            else
-            {
-                _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.Mode);
+                case "cli":
+                    Console.WriteLine("cli is not implemented, come back later! (try debug)");
+                    break;
+                case "gui":
+                    Console.WriteLine("gui is not implemented, come back later! (try debug)");
+                    break;
+                case "debug":
+                    {
+                        var engine = serviceProvider.GetRequiredService<Debug.Monitor>();
+                        await engine.InitMonitor(settings.LoopDelay, cts.Token);
+                        break;
+                    }
+                default:
+                    _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.Mode);
+                    break;
             }
 
             _logger.LogInformation("Application Finished");

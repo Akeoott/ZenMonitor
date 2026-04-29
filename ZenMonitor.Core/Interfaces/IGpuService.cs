@@ -5,5 +5,16 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-// TODO: add implementation
-public interface IGpuService { }
+public interface IGpuService
+{
+    void Update();
+
+    string GetGpuName();
+    string GetUsageGpu();
+    string GetUsageMemory();
+    string GetMemoryUsed();
+    string GetMemoryTotal();
+    string GetTemperatureGpu();
+    string GetPowerState();
+    string GetPowerDraw();
+}

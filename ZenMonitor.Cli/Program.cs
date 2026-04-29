@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 using ZenMonitor.Core.Interfaces;
@@ -28,27 +29,57 @@ internal class Program
 public class MonitorSettings : CommandSettings
 {
     #region Cli Options
-    [CommandOption("-v|--verbosity <LEVEL>")]
-    [Description("Set logging verbosity level: c[ritical], e[rror], w[arning], i[nfo], d[ebug], t[race])")]
-    [DefaultValue("info")]
-    public required string LogLevel { get; set; }
+    [CommandArgument(0, "<MODE>")]
+    [Description("Output mode: cli, gui, or debug.")]
+    public required string OutputMode { get; set; }
 
-    [CommandOption("-c|--console <BOOL>")]
-    [Description("Enable console logging. Use `--console true` to enable. (might not work work properly when running cli interface)")]
+    [CommandOption("-d|--delay <VALUE>")]
+    [Description("Change the delay before updating, max is 10. (value is in seconds)")]
+    [DefaultValue(1)]
+    public int LoopDelay { get; set; } = 1;
+
+    [CommandOption("-l|--log-level <LEVEL>")]
+    [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace)")]
+    [DefaultValue("info")]
+    public required string LogLevel { get; set; } = "info";
+
+    [CommandOption("-L|--log-cli <BOOL>")]
+    [Description("Enable console logging. Use `--log-cli true` to enable. (Output has to be set to debug)")]
     [DefaultValue("false")]
-    public bool ConsoleOutput { get; set; } = false;
+    public bool CliLogging { get; set; } = false;
+    #endregion
+
+    #region Cli Validation
+    public override ValidationResult Validate()
+    {
+        string mode = OutputMode?.ToLowerInvariant() ?? "";
+
+        if (mode != "cli" && mode != "gui" && mode != "debug")
+        {
+            return ValidationResult.Error(
+                "Invalid output mode. Please use 'cli', 'gui', or 'debug'. " +
+                "Use '--help' for more information.");
+        }
+
+        if (CliLogging && mode != "debug")
+        {
+            return ValidationResult.Error(
+                "When --log-cli is enabled, output mode must be 'debug'.");
+        }
+
+        return ValidationResult.Success();
+    }
     #endregion
 }
 
 public class MonitorCommand() : AsyncCommand<MonitorSettings>
 {
-
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
         MonitorSettings settings,
         CancellationToken cancellationToken)
     {
-        #region Logging Configuration
+        #region Logging Config
         var logLevel = ParseSerilogLevel(settings.LogLevel);
         var logFilePath = "logs/ZenMonitor.log";
 
@@ -59,7 +90,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             .MinimumLevel.Is(logLevel)
             .Enrich.WithProperty("RunId", Guid.NewGuid());
 
-        if (settings.ConsoleOutput)
+        if (settings.CliLogging)
         {
             loggerConfig.WriteTo.Console(
                 outputTemplate:
@@ -70,12 +101,10 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             logFilePath,
             outputTemplate:
                 "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+        Log.Logger = loggerConfig.CreateLogger();
         #endregion
 
-
         #region Dependency Injection
-        Log.Logger = loggerConfig.CreateLogger();
-
         try
         {
             var services = new ServiceCollection();
@@ -86,21 +115,26 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 builder.AddSerilog(dispose: true);
             });
 
+            bool gpuNotSupported = false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
-                services.AddSingleton<IGpuService, Core.Services.Linux.Gpu>();
+
+                if (Directory.Exists("/proc/driver/nvidia"))
+                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuNvidia>();
+                else if (Directory.Exists("/sys/class/drm/card0/device/hwmon"))
+                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuAmd>();
+                else
+                {
+                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuNull>();
+                    gpuNotSupported = true;
+                }
+
                 services.AddSingleton<IMemoryService, Core.Services.Linux.Memory>();
                 services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
                 services.AddSingleton<IStorageService, Core.Services.Linux.Storage>();
                 services.AddSingleton<ISystemService, Core.Services.Linux.System>();
             }
-            // TODO: Uncomment and adjust once the Linux implementation is finished.
-            // else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            // {
-            //     services.AddSingleton<ICpuService, Core.Services.Windows.Cpu>();
-            //     Other services ...
-            // }
             else
             {
                 throw new PlatformNotSupportedException(
@@ -111,19 +145,59 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             services.AddTransient<MonitorEngine>();
 
             var serviceProvider = services.BuildServiceProvider();
-            var engine = serviceProvider.GetRequiredService<MonitorEngine>();
             var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
+            #endregion
 
-            _logger.LogWarning("ZenMonitor started.");
+            #region Init Application
+            _logger.LogWarning("ZenMonitor initialized.");
 
-            await engine.Run();
+            if (gpuNotSupported)
+            {
+                _logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
+            }
+
+            if (settings.LoopDelay > 10)
+            {
+                settings.LoopDelay = 10;
+                _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10");
+            }
+            settings.LoopDelay *= 1000; // Used for Thread.Sleep()
+
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                e.Cancel = true;
+                cts.Cancel();
+            };
+
+            // TODO: Re-Add services on next commit...
+            _logger.LogInformation("OutputMode: {OutputMode}", settings.OutputMode);
+            if (settings.OutputMode == "cli")
+            {
+                //var engine = serviceProvider.GetRequiredService<>();
+            }
+            else if (settings.OutputMode == "gui")
+            {
+
+            }
+            else if (settings.OutputMode == "debug")
+            {
+
+            }
+            else
+            {
+                _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.OutputMode);
+            }
+
+            _logger.LogInformation("Application Finished");
+
             return 0;
+            #endregion
         }
         finally
         {
             Log.CloseAndFlush();
         }
-        #endregion
     }
 
     private static LogEventLevel ParseSerilogLevel(string level)

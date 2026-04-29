@@ -1,6 +1,8 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.Threading;
+
 using Microsoft.Extensions.Logging;
 
 using Spectre.Console;
@@ -26,83 +28,76 @@ internal class MonitorEngine(
     private readonly INetworkService _networkInfo = networkInfo;
     private readonly ISystemService _systemInfo = systemInfo;
 
-    public async Task Run()
+    private readonly SemaphoreSlim _dataReadyEvent = new(0, int.MaxValue);
+
+    public async Task InitMonitor(int loopDelay, CancellationToken cts)
     {
-        await RunLiveDashboard();
+        await RunBackend(loopDelay, cts);
+        await RunDashboard(cts);
     }
 
     //! Debug stuff right now...
-    private async Task RunLiveDashboard()
+    private async Task RunDashboard(CancellationToken cts)
     {
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine(_cpuInfo.GetCpuName());
-            foreach (var speeds in _cpuInfo.GetCoreSpeeds())
+            try
             {
-                Console.Write($"{speeds}Mhz, ");
+                await _dataReadyEvent.WaitAsync(cts);
+
+                Console.Clear();
+                Console.WriteLine(_cpuInfo.GetCpuName());
+                foreach (var speeds in _cpuInfo.GetCoreSpeeds())
+                {
+                    Console.Write($"{speeds}Mhz, ");
+                }
+                Console.WriteLine("");
+                foreach (var speeds in _cpuInfo.GetCoreUsages())
+                {
+                    Console.Write($"C{speeds.Index} {speeds.Usage}%, ");
+                }
+
+                Console.WriteLine($"\n\n{_gpuInfo.GetGpuName()}\n");
+
+                Console.WriteLine(
+                    $"{_memoryInfo.GetMemTotal()}, {_memoryInfo.GetMemFree()}, " +
+                    $"{_memoryInfo.GetMemAvailable()}, {_memoryInfo.GetMemUsed()}, " +
+                    $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
+                    $"{_memoryInfo.GetSwapFree()}"
+                );
+                Console.WriteLine(
+                    $"{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
+                    $"{_systemInfo.GetUptimeSeconds()}, {_systemInfo.GetLoadAvg1Min()}, " +
+                    $"{_systemInfo.GetLoadAvg5Min()}, {_systemInfo.GetLoadAvg15Min()}, " +
+                    $"{_systemInfo.GetRunningTasks()}, {_systemInfo.GetTotalTasks()}, " +
+                    $"{_systemInfo.GetBootTimeUnixSeconds()}\n"
+                );
             }
-            Console.WriteLine("");
-            foreach (var speeds in _cpuInfo.GetCoreUsages())
+            catch (TaskCanceledException)
             {
-                Console.Write($"C{speeds.Index} {speeds.Usage}%, ");
+                break;
             }
-
-            Console.WriteLine("");
-
-            Console.WriteLine(
-                $"{_memoryInfo.GetMemTotal()}, {_memoryInfo.GetMemFree()}, " +
-                $"{_memoryInfo.GetMemAvailable()}, {_memoryInfo.GetMemUsed()}, " +
-                $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
-                $"{_memoryInfo.GetSwapFree()}"
-            );
-            Console.WriteLine(
-                $"{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
-                $"{_systemInfo.GetUptimeSeconds()}, {_systemInfo.GetLoadAvg1Min()}, " +
-                $"{_systemInfo.GetLoadAvg5Min()}, {_systemInfo.GetLoadAvg15Min()}, " +
-                $"{_systemInfo.GetRunningTasks()}, {_systemInfo.GetTotalTasks()}, " +
-                $"{_systemInfo.GetBootTimeUnixSeconds()}"
-            );
-            Console.WriteLine("");
-
-            _cpuInfo.Update();
-            _memoryInfo.Update();
-            _systemInfo.Update();
-            await Task.Delay(1000);
         }
-        // var coreUsages = _cpuInfo.GetCoreUsages();
-        // AnsiConsole.Progress()
-        //     .Columns(
-        //         new TaskDescriptionColumn(),
-        //         new ProgressBarColumn()
-        //         {
-        //             CompletedStyle = new Style(Color.Green),
-        //             FinishedStyle = new Style(Color.Green),
-        //             RemainingStyle = new Style(Color.Grey)
-        //         },
-        //         new PercentageColumn())
-        //     .Start(ctx =>
-        //     {
-        //         var coreUsages = _cpuInfo.GetCoreUsages();
-        //         var tasks = new Dictionary<int, ProgressTask>();
+    }
 
-        //         foreach (var core in coreUsages)
-        //         {
-        //             tasks[core.Index] = ctx.AddTask($"C{core.Index}");
-        //         }
+    private Task RunBackend(int loopDelay, CancellationToken cts)
+    {
 
-        //         while (true)
-        //         {
-        //             coreUsages = _cpuInfo.GetCoreUsages();
-        //             foreach (var core in coreUsages)
-        //             {
-        //                 if (tasks.TryGetValue(core.Index, out var task))
-        //                 {
-        //                     task.Value = core.Usage;
-        //                 }
-        //             }
-        //             Thread.Sleep(1000);
-        //         }
-        //     });
+        var backendThread = new Thread(() =>
+        {
+            while (!cts.IsCancellationRequested)
+            {
+                _cpuInfo.Update();
+                _gpuInfo.Update();
+                _memoryInfo.Update();
+                _systemInfo.Update();
+                _dataReadyEvent.Release();
+                Thread.Sleep(loopDelay);
+            }
+        })
+        { IsBackground = true };
+        backendThread.Start();
+
+        return Task.CompletedTask;
     }
 }

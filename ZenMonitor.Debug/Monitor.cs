@@ -1,27 +1,24 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
-using System.Threading;
-
 using Microsoft.Extensions.Logging;
 
 using Spectre.Console;
-using Spectre.Console.Cli;
 
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
-namespace ZenMonitor;
+namespace ZenMonitor.Debug;
 
-internal class MonitorEngine(
-    ILogger<MonitorEngine> logger,
+public class Monitor(
+    ILogger<Monitor> logger,
     ICpuService cpuInfo,
     IGpuService gpuInfo,
     IMemoryService memoryInfo,
     INetworkService networkInfo,
     ISystemService systemInfo)
 {
-    private readonly ILogger<MonitorEngine> _logger = logger;
+    private readonly ILogger<Monitor> _logger = logger;
     private readonly ICpuService _cpuInfo = cpuInfo;
     private readonly IGpuService _gpuInfo = gpuInfo;
     private readonly IMemoryService _memoryInfo = memoryInfo;
@@ -36,7 +33,6 @@ internal class MonitorEngine(
         await RunDashboard(cts);
     }
 
-    //! Debug stuff right now...
     private async Task RunDashboard(CancellationToken cts)
     {
         while (true)

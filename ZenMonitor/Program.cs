@@ -29,9 +29,9 @@ internal class Program
 public class MonitorSettings : CommandSettings
 {
     #region Cli Options
-    [CommandArgument(0, "<MODE>")]
-    [Description("Output mode: cli, gui, or debug.")]
-    public required string OutputMode { get; set; }
+    [CommandOption("-m|--mode <value>")]
+    [Description("Available values: cli, gui, or debug.")]
+    public required string Mode { get; set; }
 
     [CommandOption("-d|--delay <VALUE>")]
     [Description("Change the delay before updating, max is 10. (value is in seconds)")]
@@ -41,10 +41,10 @@ public class MonitorSettings : CommandSettings
     [CommandOption("-l|--log-level <LEVEL>")]
     [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace)")]
     [DefaultValue("info")]
-    public required string LogLevel { get; set; } = "info";
+    public string LogLevel { get; set; } = "info";
 
     [CommandOption("-L|--log-cli <BOOL>")]
-    [Description("Enable console logging. Use `--log-cli true` to enable. (Output has to be set to debug)")]
+    [Description("Enable console logging. Use `--log-cli true` to enable. (Mode has to be set to debug)")]
     [DefaultValue("false")]
     public bool CliLogging { get; set; } = false;
     #endregion
@@ -52,19 +52,18 @@ public class MonitorSettings : CommandSettings
     #region Cli Validation
     public override ValidationResult Validate()
     {
-        string mode = OutputMode?.ToLowerInvariant() ?? "";
+        string mode = Mode?.ToLowerInvariant() ?? "";
 
         if (mode != "cli" && mode != "gui" && mode != "debug")
         {
             return ValidationResult.Error(
-                "Invalid output mode. Please use 'cli', 'gui', or 'debug'. " +
-                "Use '--help' for more information.");
+                "Invalid arguments. Use '--help' for more information.");
         }
 
         if (CliLogging && mode != "debug")
         {
             return ValidationResult.Error(
-                "When --log-cli is enabled, output mode must be 'debug'.");
+                "When --log-cli is enabled, mode must be 'debug'.");
         }
 
         return ValidationResult.Success();
@@ -142,7 +141,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 );
             }
 
-            services.AddTransient<MonitorEngine>();
+            services.AddTransient<Debug.Monitor>();
 
             var serviceProvider = services.BuildServiceProvider();
             var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
@@ -170,23 +169,23 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 cts.Cancel();
             };
 
-            // TODO: Re-Add services on next commit...
-            _logger.LogInformation("OutputMode: {OutputMode}", settings.OutputMode);
-            if (settings.OutputMode == "cli")
+            _logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
+            if (settings.Mode == "cli")
             {
-                //var engine = serviceProvider.GetRequiredService<>();
+                Console.WriteLine("cli is not implemented, come back later! (try debug)");
             }
-            else if (settings.OutputMode == "gui")
+            else if (settings.Mode == "gui")
             {
-
+                Console.WriteLine("gui is not implemented, come back later! (try debug)");
             }
-            else if (settings.OutputMode == "debug")
+            else if (settings.Mode == "debug")
             {
-
+                var engine = serviceProvider.GetRequiredService<Debug.Monitor>();
+                await engine.InitMonitor(settings.LoopDelay, cts.Token);
             }
             else
             {
-                _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.OutputMode);
+                _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.Mode);
             }
 
             _logger.LogInformation("Application Finished");

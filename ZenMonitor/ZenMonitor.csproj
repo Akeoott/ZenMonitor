@@ -21,6 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
+    <ProjectReference Include="..\ZenMonitor.Debug\ZenMonitor.Debug.csproj" />
     <ProjectReference Include="..\ZenMonitor.Core\ZenMonitor.Core.csproj" />
   </ItemGroup>
 

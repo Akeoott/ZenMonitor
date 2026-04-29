@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor.Core", "ZenMonit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor", "ZenMonitor\ZenMonitor.csproj", "{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor.Cli", "ZenMonitor.Cli\ZenMonitor.Cli.csproj", "{00DB7218-C9D3-4165-AED9-20498401B020}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenMonitor.Debug", "ZenMonitor.Debug\ZenMonitor.Debug.csproj", "{46F1A7A6-C8F7-4EC3-9058-F127C6BC9079}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CED707FB-4BF5-49C6-B9E2-282DF7F988F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00DB7218-C9D3-4165-AED9-20498401B020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00DB7218-C9D3-4165-AED9-20498401B020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00DB7218-C9D3-4165-AED9-20498401B020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00DB7218-C9D3-4165-AED9-20498401B020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46F1A7A6-C8F7-4EC3-9058-F127C6BC9079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46F1A7A6-C8F7-4EC3-9058-F127C6BC9079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46F1A7A6-C8F7-4EC3-9058-F127C6BC9079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46F1A7A6-C8F7-4EC3-9058-F127C6BC9079}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

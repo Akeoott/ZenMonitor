@@ -14,20 +14,27 @@ namespace ZenMonitor.Core.Services.Linux;
 public class Cpu(ILogger<Cpu> logger) : ICpuService
 {
     private readonly ILogger<Cpu> _logger = logger;
-    private CpuInfoSnapshot _snapshot = new("Unknown CPU", [], []);
+    private CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
 
-    // Tick buffers for /proc/stat diffs
-    private long[][] _currentTicks = [];
-    private long[][] _previousTicks = [];
+    // /proc/stat tick buffers
+    private long[] _currentTotalTicks = [];
+    private long[] _previousTotalTicks = [];
+    private long[][] _currentCoreTicks = [];
+    private long[][] _previousCoreTicks = [];
 
-    public void Update()
-    {
-        _snapshot = FetchCpuInfo();
-    }
+    private double _prevEnergyUj;
+    private DateTime _prevEnergyTime;
+
+    public void Update() => _snapshot = FetchCpuInfo();
 
     public string GetCpuName() => _snapshot.CpuName;
-    public double[] GetCoreSpeeds() => _snapshot.CoreSpeedsMHz;
-    public CpuUsage[] GetCoreUsages() => _snapshot.CoreUsages;
+    public double GetCpuSpeed() => _snapshot.CpuSpeed;
+    public int GetCpuUsage() => _snapshot.CpuUsage;
+    public int GetCpuTemp() => _snapshot.CpuTemp;
+    public double GetPowerDraw() => _snapshot.PowerDraw;
+    public CpuCoreSpeed[] GetCoreSpeeds() => _snapshot.CoreSpeeds;
+    public CpuCoreUsage[] GetCoreUsages() => _snapshot.CoreUsages;
+    public CpuCoreTemp[] GetCoreTemps() => _snapshot.CoreTemps;
 
     private CpuInfoSnapshot FetchCpuInfo()
     {
@@ -35,62 +42,118 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
         {
             _logger.LogTrace("Fetching all CPU info...");
 
-            // Read /proc/cpuinfo once for name and speeds
-            string cpuName = "Unknown CPU";
-            var speeds = new List<double>();
-            foreach (var line in File.ReadLines("/proc/cpuinfo"))
-            {
-                if (line.StartsWith("model name") && cpuName == "Unknown CPU")
-                {
-                    var parts = line.Split(':', 2);
-                    if (parts.Length == 2)
-                        cpuName = parts[1].Trim();
-                }
-                else if (line.StartsWith("cpu MHz"))
-                {
-                    var parts = line.Split(':', 2);
-                    if (parts.Length == 2 && double.TryParse(parts[1].Trim(), out double mhz))
-                        speeds.Add(mhz);
-                }
-            }
+            var (cpuName, coreSpeeds) = ReadCpuInfo();
+            var (totalUsage, coreUsages) = ReadCpuUsages();
+            int coreCount = coreSpeeds.Length;
+            var (overallTemp, coreTemps) = ReadCpuTemps(coreCount);
+            double powerDraw = ReadPowerDraw();
 
-            // Read /proc/stat and compute core usages
-            ReadCurrentTicks(); // fills _currentTicks
+            double overallSpeed = coreSpeeds.Length > 0
+                ? Math.Round(coreSpeeds.Average(s => s.Speed) / 1000.0, 2)
+                : 0.0;
 
-            CpuUsage[] usages;
-            if (_previousTicks.Length == 0)
-            {
-                // First call baseline only, usage is 0%
-                usages = new CpuUsage[_currentTicks.Length];
-                for (int i = 0; i < _currentTicks.Length; i++)
-                    usages[i] = new CpuUsage(i, 0);
-
-                // Make previous equal to current
-                _previousTicks = new long[_currentTicks.Length][];
-                for (int i = 0; i < _currentTicks.Length; i++)
-                {
-                    _previousTicks[i] = new long[_currentTicks[i].Length];
-                    Array.Copy(_currentTicks[i], _previousTicks[i], _currentTicks[i].Length);
-                }
-            }
-            else
-            {
-                usages = ComputeUsages();
-            }
-
-            return new CpuInfoSnapshot(cpuName, speeds.ToArray(), usages);
+            return new CpuInfoSnapshot(
+                cpuName,
+                overallSpeed,
+                totalUsage,
+                overallTemp,
+                powerDraw,
+                coreSpeeds,
+                coreUsages,
+                coreTemps
+            );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to fetch CPU info");
-            return new CpuInfoSnapshot("Error", [], []);
+            return new CpuInfoSnapshot("Error", 0, 0, 0, 0, [], [], []);
         }
+    }
+
+    #region CpuInfo
+    private static (string cpuName, CpuCoreSpeed[] coreSpeeds) ReadCpuInfo()
+    {
+        string cpuName = "Unknown CPU";
+        var speeds = new List<CpuCoreSpeed>();
+        int coreIndex = 0;
+
+        foreach (var line in File.ReadLines("/proc/cpuinfo"))
+        {
+            if (line.StartsWith("model name") && cpuName == "Unknown CPU")
+            {
+                var parts = line.Split(':', 2);
+                if (parts.Length == 2)
+                    cpuName = parts[1].Trim();
+            }
+            else if (line.StartsWith("cpu MHz"))
+            {
+                var parts = line.Split(':', 2);
+                if (parts.Length == 2 && double.TryParse(parts[1].Trim(), out double mhz))
+                {
+                    speeds.Add(new CpuCoreSpeed(coreIndex, mhz));
+                    coreIndex++;
+                }
+            }
+        }
+        return (cpuName, speeds.ToArray());
+    }
+    #endregion
+
+    #region CpuUsages
+    private (int totalUsage, CpuCoreUsage[] coreUsages) ReadCpuUsages()
+    {
+        ReadCurrentTicks();
+
+        int totalUsage = 0;
+        CpuCoreUsage[] coreUsages = [];
+
+        if (_previousTotalTicks.Length == 0)
+        {
+            // first call: zero usage, just save baselines
+            _previousTotalTicks = new long[_currentTotalTicks.Length];
+            Array.Copy(_currentTotalTicks, _previousTotalTicks, _currentTotalTicks.Length);
+
+            _previousCoreTicks = new long[_currentCoreTicks.Length][];
+            for (int i = 0; i < _currentCoreTicks.Length; i++)
+            {
+                _previousCoreTicks[i] = new long[_currentCoreTicks[i].Length];
+                Array.Copy(_currentCoreTicks[i], _previousCoreTicks[i], _currentCoreTicks[i].Length);
+            }
+
+            coreUsages = [.. _currentCoreTicks.Select((_, i) => new CpuCoreUsage(i, 0))];
+        }
+        else
+        {
+            totalUsage = (int)Math.Round(ComputeUsage(_currentTotalTicks, _previousTotalTicks));
+
+            coreUsages = new CpuCoreUsage[_currentCoreTicks.Length];
+            for (int i = 0; i < coreUsages.Length; i++)
+            {
+                if (i < _previousCoreTicks.Length)
+                {
+                    double u = ComputeUsage(_currentCoreTicks[i], _previousCoreTicks[i]);
+                    coreUsages[i] = new CpuCoreUsage(i, (int)Math.Round(u));
+                }
+                else
+                    coreUsages[i] = new CpuCoreUsage(i, 0);
+            }
+
+            // save current as previous for next call
+            _previousTotalTicks = _currentTotalTicks;
+            _previousCoreTicks = _currentCoreTicks;
+            _currentTotalTicks = [];
+            _currentCoreTicks = [];
+        }
+
+        return (totalUsage, coreUsages);
     }
 
     private void ReadCurrentTicks()
     {
         var lines = File.ReadLines("/proc/stat").Where(l => l.StartsWith("cpu"));
-        var tickLists = new List<long[]>();
+        bool first = true;
+
+        var coreTickList = new List<long[]>();
 
         foreach (var line in lines)
         {
@@ -99,47 +162,212 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
             var ticks = new long[fieldCount];
             for (int j = 0; j < fieldCount; j++)
                 ticks[j] = long.Parse(parts[j + 1]);
-            tickLists.Add(ticks);
-        }
-        _currentTicks = [.. tickLists];
-    }
 
-    private CpuUsage[] ComputeUsages()
-    {
-        int len = Math.Min(_currentTicks.Length, _previousTicks.Length);
-        var usages = new CpuUsage[len];
-
-        for (int i = 0; i < len; i++)
-        {
-            var curr = _currentTicks[i];
-            var prev = _previousTicks[i];
-            int fields = Math.Min(curr.Length, prev.Length);
-
-            long totalDiff = 0, idleDiff = 0;
-            long totalCurr = 0, totalPrev = 0;
-
-            for (int j = 0; j < fields; j++)
+            if (first)
             {
-                totalCurr += curr[j];
-                totalPrev += prev[j];
+                _currentTotalTicks = ticks;
+                first = false;
             }
-            totalDiff = totalCurr - totalPrev;
+            else
+            {
+                coreTickList.Add(ticks);
+            }
+        }
+        _currentCoreTicks = [.. coreTickList];
+    }
 
-            // Idle fields: index 3 (idle) + index 4 (iowait)
-            long idleCurr = curr.Length > 4 ? curr[3] + curr[4] : curr.Length > 3 ? curr[3] : 0;
-            long idlePrev = prev.Length > 4 ? prev[3] + prev[4] : prev.Length > 3 ? prev[3] : 0;
-            idleDiff = idleCurr - idlePrev;
+    private static double ComputeUsage(long[] curr, long[] prev)
+    {
+        int len = Math.Min(curr.Length, prev.Length);
+        long totalCurr = 0, totalPrev = 0;
+        for (int j = 0; j < len; j++)
+        {
+            totalCurr += curr[j];
+            totalPrev += prev[j];
+        }
+        long diffTotal = totalCurr - totalPrev;
+        if (diffTotal <= 0) return 0;
 
-            double usage = 0;
-            if (totalDiff > 0)
-                usage = (double)(totalDiff - idleDiff) / totalDiff * 100.0;
+        long idleCurr = curr.Length > 4 ? curr[3] + curr[4] : curr.Length > 3 ? curr[3] : 0;
+        long idlePrev = prev.Length > 4 ? prev[3] + prev[4] : prev.Length > 3 ? prev[3] : 0;
+        long diffIdle = idleCurr - idlePrev;
 
-            usages[i] = new CpuUsage(i, Math.Round(usage));
+        return (double)(diffTotal - diffIdle) / diffTotal * 100.0;
+    }
+    #endregion
+
+    #region CpuTemps
+    // this took unnecessarily long to make... tons of trace logging for future me XP
+    private (int overallTemp, CpuCoreTemp[] coreTemps) ReadCpuTemps(int coreCount)
+    {
+        int overall = 0;
+        var rawSensorTemps = new List<CpuCoreTemp>(); // raw per-core (Intel) or per‑CCD (AMD)
+
+        try
+        {
+            foreach (var hwmonDir in Directory.GetDirectories("/sys/class/hwmon"))
+            {
+                string nameFile = Path.Combine(hwmonDir, "name");
+                if (!File.Exists(nameFile)) continue;
+
+                string name = File.ReadAllText(nameFile).Trim();
+                if (name == "coretemp")
+                {
+                    var (devOverall, devTemps) = ReadIntelTemps(hwmonDir);
+                    overall = devOverall != 0 ? devOverall : overall;
+                    rawSensorTemps.AddRange(devTemps);
+                }
+                else if (name == "k10temp")
+                {
+                    var (devOverall, devTemps) = ReadAmdTemps(hwmonDir);
+                    overall = devOverall != 0 ? devOverall : overall;
+                    rawSensorTemps.AddRange(devTemps);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read CPU temperatures from hwmon");
         }
 
-        _previousTicks = _currentTicks;
-        _currentTicks = [];
+        CpuCoreTemp[] uniformTemps;
+        bool isIntel = rawSensorTemps.Any(t => t.Index >= 0);
 
-        return usages;
+        if (rawSensorTemps.Count == coreCount && rawSensorTemps.All(t => t.Index >= 0))
+        {
+            uniformTemps = [.. rawSensorTemps.OrderBy(t => t.Index)];
+        }
+        else
+        {
+            double avgTemp = rawSensorTemps.Count > 0 ? rawSensorTemps.Average(t => t.Temp) : overall;
+            uniformTemps = [.. Enumerable.Range(0, coreCount).Select(i =>
+                new CpuCoreTemp(i, (int)Math.Round(avgTemp))
+            )];
+        }
+
+        _logger.LogTrace("Temperature scan done: overall={Overall}°C, uniform cores={Count}, values=[{Temps}]",
+            overall, uniformTemps.Length, string.Join(", ", uniformTemps.Select(t => $"{t.Temp}°C")));
+
+        return (overall, uniformTemps);
     }
+
+    private (int overall, CpuCoreTemp[] temps) ReadIntelTemps(string hwmonDir)
+    {
+        int overall = 0;
+        var temps = new List<CpuCoreTemp>();
+
+        try
+        {
+            foreach (var inputFile in Directory.GetFiles(hwmonDir, "temp*_input"))
+            {
+                string prefix = Path.GetFileName(inputFile).Replace("_input", "");
+                string labelFile = Path.Combine(hwmonDir, $"{prefix}_label");
+
+                if (!int.TryParse(File.ReadAllText(inputFile).Trim(), out int millideg))
+                    continue;
+                int temp = millideg / 1000;
+
+                string? label = File.Exists(labelFile) ? File.ReadAllText(labelFile).Trim() : null;
+                _logger.LogTrace("Intel sensor {Prefix}: label='{Label}', temp={Temp}°C", prefix, label ?? "(none)", temp);
+
+                if (label != null && (label.Contains("Package") || label == "CPU"))
+                {
+                    overall = temp;
+                }
+                else if (label != null && label.StartsWith("Core "))
+                {
+                    ReadOnlySpan<char> afterSpace = label.AsSpan(label.LastIndexOf(' ') + 1);
+                    if (int.TryParse(afterSpace, out int coreIdx))
+                        temps.Add(new CpuCoreTemp(coreIdx, temp));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error reading Intel CPU temperatures from {Dir}", hwmonDir);
+        }
+
+        return (overall, temps.ToArray());
+    }
+
+    private (int overall, CpuCoreTemp[] temps) ReadAmdTemps(string hwmonDir)
+    {
+        int overall = 0;
+        var temps = new List<CpuCoreTemp>();
+
+        try
+        {
+            foreach (var inputFile in Directory.GetFiles(hwmonDir, "temp*_input"))
+            {
+                string prefix = Path.GetFileName(inputFile).Replace("_input", "");
+                string labelFile = Path.Combine(hwmonDir, $"{prefix}_label");
+
+                if (!int.TryParse(File.ReadAllText(inputFile).Trim(), out int millideg))
+                    continue;
+                int temp = millideg / 1000;
+
+                string? label = File.Exists(labelFile) ? File.ReadAllText(labelFile).Trim() : null;
+                _logger.LogTrace("AMD sensor {Prefix}: label='{Label}', temp={Temp}°C", prefix, label ?? "(none)", temp);
+
+                if (label != null && (label.Contains("Tctl") || label.Contains("Tdie")))
+                {
+                    overall = temp;
+                }
+                else if (label != null && label.StartsWith("Tccd"))
+                {
+                    ReadOnlySpan<char> numberPart = label.AsSpan(4);
+                    if (int.TryParse(numberPart, out int ccdIdx))
+                        temps.Add(new CpuCoreTemp(ccdIdx, temp));
+                }
+                else if (label == null && overall == 0)
+                {
+                    overall = temp;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error reading AMD CPU temperatures from {Dir}", hwmonDir);
+        }
+
+        return (overall, temps.ToArray());
+    }
+    #endregion
+
+    #region PowerDraw
+    private double ReadPowerDraw()
+    {
+        const string raplPath = "/sys/class/powercap/intel-rapl:0/energy_uj";
+
+        if (!File.Exists(raplPath))
+            return 0.0;
+
+        try
+        {
+            double energyUj = double.Parse(File.ReadAllText(raplPath).Trim());
+            DateTime now = DateTime.UtcNow;
+
+            double power = 0.0;
+            if (_prevEnergyUj > 0)
+            {
+                double deltaUj = energyUj - _prevEnergyUj;
+                // handle counter wrap around
+                if (deltaUj < 0) deltaUj = 0;
+                double deltaSec = (now - _prevEnergyTime).TotalSeconds;
+                if (deltaSec > 0)
+                    power = deltaUj / 1_000_000.0 / deltaSec; // watts
+            }
+
+            _prevEnergyUj = energyUj;
+            _prevEnergyTime = now;
+
+            return Math.Round(power, 2);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to read CPU power draw");
+            return 0.0;
+        }
+    }
+    #endregion
 }

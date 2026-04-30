@@ -18,10 +18,7 @@ public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpuService
     private GpuInfoSnapshot _snapshot = new(
         "", "", "", "", "", "", "", "");
 
-    public void Update()
-    {
-        _snapshot = FetchGpuInfo();
-    }
+    public void Update() => _snapshot = FetchGpuInfo();
 
     public string GetGpuName() => _snapshot.GpuName;
     public string GetUsageGpu() => _snapshot.UsageGpu;

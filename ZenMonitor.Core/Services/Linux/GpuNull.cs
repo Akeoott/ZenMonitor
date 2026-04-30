@@ -17,10 +17,7 @@ public class GpuNull(ILogger<GpuNull> logger) : IGpuService
     private readonly GpuInfoSnapshot _snapshot = new(
         "", "", "", "", "", "", "", "");
 
-    public void Update()
-    {
-        _logger.LogTrace("Gpu not supported, using GpuNull...");
-    }
+    public void Update() => _logger.LogTrace("Gpu not supported, using GpuNull...");
 
     public string GetGpuName() => _snapshot.GpuName;
     public string GetUsageGpu() => _snapshot.UsageGpu;

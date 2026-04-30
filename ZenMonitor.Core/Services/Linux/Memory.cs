@@ -16,10 +16,7 @@ public class Memory(ILogger<Memory> logger) : IMemoryService
     private readonly ILogger<Memory> _logger = logger;
     private MemoryInfoSnapshot _snapshot = new(0, 0, 0, 0, 0, 0, 0);
 
-    public void Update()
-    {
-        _snapshot = FetchMemoryInfo();
-    }
+    public void Update() => _snapshot = FetchMemoryInfo();
 
     public double GetMemTotal() => _snapshot.MemTotal;
     public double GetMemFree() => _snapshot.MemFree;

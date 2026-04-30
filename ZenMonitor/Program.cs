@@ -2,7 +2,9 @@
 // See the LICENSE file in the repository root for full license text.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,11 +21,43 @@ namespace ZenMonitor;
 
 internal class Program
 {
+    [DllImport("libc")]
+    private static extern uint geteuid();
+
+    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
+    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
     internal static async Task<int> Main(string[] args)
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
+        {
+            Console.Error.WriteLine("ZenMonitor requires root privileges. Please run with sudo.");
+            return 1;
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
+        {
+            Console.Error.WriteLine("Elevating to administrator...");
+            var psi = new ProcessStartInfo
+            {
+                FileName = Environment.ProcessPath,
+                Arguments = string.Join(" ", args),
+                UseShellExecute = true,
+                Verb = "runas"
+            };
+            try
+            {
+                Process.Start(psi);
+                return 0;
+            }
+            catch (Win32Exception) { /* canceled */ }
+            return 1;
+        }
+
         var app = new CommandApp<MonitorCommand>();
         return await app.RunAsync(args);
     }
+
 }
 
 public class MonitorSettings : CommandSettings

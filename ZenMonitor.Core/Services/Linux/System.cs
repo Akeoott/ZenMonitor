@@ -17,10 +17,7 @@ public class System(ILogger<System> logger) : ISystemService
     private SystemInfoSnapshot _snapshot = new(
         "Unknown", "Unknown", 0, 0, 0, 0, 0, 0, 0);
 
-    public void Update()
-    {
-        _snapshot = FetchSystemInfo();
-    }
+    public void Update() => _snapshot = FetchSystemInfo();
 
     public string GetKernelVersion() => _snapshot.KernelVersion;
     public string GetHostname() => _snapshot.Hostname;

@@ -5,12 +5,16 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-// TODO: expand implementation
 public interface ICpuService
 {
     void Update();
 
     string GetCpuName();
-    double[] GetCoreSpeeds();
-    CpuUsage[] GetCoreUsages();
+    double GetCpuSpeed();
+    int GetCpuUsage();
+    int GetCpuTemp();
+    double GetPowerDraw();
+    CpuCoreSpeed[] GetCoreSpeeds();
+    CpuCoreUsage[] GetCoreUsages();
+    CpuCoreTemp[] GetCoreTemps();
 }

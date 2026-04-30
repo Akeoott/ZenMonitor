@@ -42,16 +42,34 @@ public class Monitor(
                 await _dataReadyEvent.WaitAsync(cts);
 
                 Console.WriteLine("\n--------------------------------------\n");
+
                 Console.WriteLine(_cpuInfo.GetCpuName());
-                foreach (var speeds in _cpuInfo.GetCoreSpeeds())
+                Console.Write($"C0 {_cpuInfo.GetCpuSpeed()}GHz, ");
+                CpuCoreSpeed[] cpuCoreSpeed = _cpuInfo.GetCoreSpeeds();
+                for (int i = 0; i < cpuCoreSpeed.Length; i++)
                 {
-                    Console.Write($"{speeds}Mhz, ");
+                    CpuCoreSpeed speed = cpuCoreSpeed[i];
+                    Console.Write($"C{speed.Index + 1} {speed.Speed}Mhz, ");
                 }
                 Console.WriteLine("");
-                foreach (var speeds in _cpuInfo.GetCoreUsages())
+
+                Console.Write($"C0 {_cpuInfo.GetCpuUsage()}%, ");
+                CpuCoreUsage[] cpuCoreUsage = _cpuInfo.GetCoreUsages();
+                for (int i = 0; i < cpuCoreUsage.Length; i++)
                 {
-                    Console.Write($"C{speeds.Index} {speeds.Usage}%, ");
+                    CpuCoreUsage? usage = cpuCoreUsage[i];
+                    Console.Write($"C{usage.Index + 1} {usage.Usage}%, ");
                 }
+                Console.WriteLine("");
+
+                Console.Write($"C0 {_cpuInfo.GetCpuTemp()}°C, ");
+                CpuCoreTemp[] cpuCoreTemp = _cpuInfo.GetCoreTemps();
+                for (int i = 0; i < cpuCoreTemp.Length; i++)
+                {
+                    CpuCoreTemp? temp = cpuCoreTemp[i];
+                    Console.Write($"C{temp.Index + 1} {temp.Temp}°C, ");
+                }
+                Console.Write($"{_cpuInfo.GetPowerDraw()} Watts, ");
 
                 Console.WriteLine(
                     $"\n\n{_gpuInfo.GetGpuName()},\n{_gpuInfo.GetUsageGpu()}, " +

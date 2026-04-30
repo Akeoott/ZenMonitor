@@ -33,6 +33,8 @@ public class GpuAmd(ILogger<GpuAmd> logger) : IGpuService
 
     private GpuInfoSnapshot FetchGpuInfo()
     {
+        _logger.LogTrace("Fetching all GpuAmd info...");
+
         return new GpuInfoSnapshot(
             "", "", "", "", "", "", "", "");
     }

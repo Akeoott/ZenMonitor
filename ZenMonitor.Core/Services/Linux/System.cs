@@ -36,6 +36,7 @@ public class System(ILogger<System> logger) : ISystemService
     {
         try
         {
+            _logger.LogTrace("Fetching all System info...");
             // Kernel version from /proc/sys/kernel/osrelease
             string kernel = File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
 

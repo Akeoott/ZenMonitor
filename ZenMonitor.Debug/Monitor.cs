@@ -41,7 +41,7 @@ public class Monitor(
             {
                 await _dataReadyEvent.WaitAsync(cts);
 
-                Console.Clear();
+                Console.WriteLine("\n--------------------------------------\n");
                 Console.WriteLine(_cpuInfo.GetCpuName());
                 foreach (var speeds in _cpuInfo.GetCoreSpeeds())
                 {
@@ -53,13 +53,18 @@ public class Monitor(
                     Console.Write($"C{speeds.Index} {speeds.Usage}%, ");
                 }
 
-                Console.WriteLine($"\n\n{_gpuInfo.GetGpuName()}\n");
+                Console.WriteLine(
+                    $"\n\n{_gpuInfo.GetGpuName()},\n{_gpuInfo.GetUsageGpu()}, " +
+                    $"{_gpuInfo.GetUsageMemory()}, {_gpuInfo.GetMemoryUsed()}, " +
+                    $"{_gpuInfo.GetMemoryTotal()}, {_gpuInfo.GetTemperatureGpu()}, " +
+                    $"{_gpuInfo.GetPowerState()}, {_gpuInfo.GetPowerDraw()}\n"
+                );
 
                 Console.WriteLine(
                     $"{_memoryInfo.GetMemTotal()}, {_memoryInfo.GetMemFree()}, " +
                     $"{_memoryInfo.GetMemAvailable()}, {_memoryInfo.GetMemUsed()}, " +
                     $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
-                    $"{_memoryInfo.GetSwapFree()}"
+                    $"{_memoryInfo.GetSwapFree()}\n"
                 );
                 Console.WriteLine(
                     $"{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +

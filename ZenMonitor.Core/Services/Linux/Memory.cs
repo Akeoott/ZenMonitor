@@ -33,7 +33,7 @@ public class Memory(ILogger<Memory> logger) : IMemoryService
     {
         try
         {
-            _logger.LogTrace("Reading /proc/meminfo");
+            _logger.LogTrace("Fetching all Memory info...");
 
             // Read all lines and collect only the keys we need
             var values = new Dictionary<string, double>(StringComparer.Ordinal);

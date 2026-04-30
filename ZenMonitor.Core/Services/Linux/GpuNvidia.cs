@@ -34,6 +34,8 @@ public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpuService
 
     private GpuInfoSnapshot FetchGpuInfo()
     {
+        _logger.LogTrace("Fetching all GpuNvidia info...");
+
         string csv = RunNvidiaSmi(
             "--query-gpu=name,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,pstate,power.draw --format=csv,noheader,nounits");
 

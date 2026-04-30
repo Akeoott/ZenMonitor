@@ -13,9 +13,16 @@
 
 #### ZenMonitor aims to be a fast and modern Task manager providing you with every single detail there is.
 
+<div>
+    <a href="https://deepwiki.com/Akeoott/ZenMonitor">
+        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+    </a>
+</div>
+<br>
+
 > [!WARNING]
 > Heavily WIP, limited functionality.
 
 > [!NOTE]
 > Documentation: [DeepWiki/Akeoott/ZenMonitor](https://deepwiki.com/Akeoott/ZenMonitor)<br>
-> I wanna mention that the only reason I use DeepWiki is cause writing docs manually takes SO MUCH TIME...
+> I wanna mention that the only reason I use DeepWiki is cause writing docs alone manually takes SO MUCH TIME and this is automatic...

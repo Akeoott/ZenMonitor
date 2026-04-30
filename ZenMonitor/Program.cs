@@ -29,24 +29,24 @@ internal class Program
 public class MonitorSettings : CommandSettings
 {
     #region Cli Options
-    [CommandOption("-m|--mode <value>")]
-    [Description("Available values: cli, gui, or debug.")]
+    [CommandOption("-r|--run <value>")]
+    [Description("Available modes: cli, gui, debug.")]
     public required string Mode { get; set; }
 
     [CommandOption("-d|--delay <VALUE>")]
-    [Description("Change the delay before updating, max is 10. (value is in seconds)")]
-    [DefaultValue(1)]
-    public int LoopDelay { get; set; } = 1;
+    [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
+    [DefaultValue(1000)]
+    public int LoopDelay { get; set; } = 1000;
+
+    [CommandOption("-c|--cli-log <BOOL>")]
+    [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to debug)")]
+    [DefaultValue("false")]
+    public bool CliLogging { get; set; } = false;
 
     [CommandOption("-l|--log-level <LEVEL>")]
     [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace)")]
     [DefaultValue("info")]
     public string LogLevel { get; set; } = "info";
-
-    [CommandOption("-L|--log-cli <BOOL>")]
-    [Description("Enable console logging. Use `--log-cli true` to enable. (Mode has to be set to debug)")]
-    [DefaultValue("false")]
-    public bool CliLogging { get; set; } = false;
     #endregion
 
     #region Cli Validation
@@ -57,7 +57,7 @@ public class MonitorSettings : CommandSettings
         if (mode != "cli" && mode != "gui" && mode != "debug")
         {
             return ValidationResult.Error(
-                "Invalid arguments. Use '--help' for more information.");
+                "Require mode arguments. Use '--help' for more information.");
         }
 
         if (CliLogging && mode != "debug")
@@ -140,6 +140,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                     "ZenMonitor only supports Linux at the moment. Windows support will come in the future."
                 );
             }
+
             switch (settings.Mode)
             {
                 case "cli":
@@ -165,12 +166,17 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 _logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
             }
 
-            if (settings.LoopDelay > 10)
+            // In milliseconds
+            if (settings.LoopDelay > 10000)
             {
-                settings.LoopDelay = 10;
-                _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10");
+                settings.LoopDelay = 10000;
+                _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10 seconds");
             }
-            settings.LoopDelay *= 1000; // Used for Thread.Sleep()
+            else if (settings.LoopDelay < 100)
+            {
+                settings.LoopDelay = 100;
+                _logger.LogWarning("LoopDelay is below 0.1 seconds. Setting back to a minimum of 0.1 seconds");
+            }
 
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>

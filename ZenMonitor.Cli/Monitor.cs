@@ -14,6 +14,7 @@ public class Monitor(
     IGpuService gpuInfo,
     IMemoryService memoryInfo,
     INetworkService networkInfo,
+    IStorageService storageInfo,
     ISystemService systemInfo)
 {
     private readonly ILogger<Monitor> _logger = logger;
@@ -21,6 +22,7 @@ public class Monitor(
     private readonly IGpuService _gpuInfo = gpuInfo;
     private readonly IMemoryService _memoryInfo = memoryInfo;
     private readonly INetworkService _networkInfo = networkInfo;
+    private readonly IStorageService _storageInfo = storageInfo;
     private readonly ISystemService _systemInfo = systemInfo;
 
     private readonly SemaphoreSlim _dataReadyEvent = new(0, int.MaxValue);

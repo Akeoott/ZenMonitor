@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Memory(ILogger<Memory> logger) : IMemoryService
+public class Memory(ILogger<Memory> logger) : IMemory
 {
     private readonly ILogger<Memory> _logger = logger;
     private MemoryInfoSnapshot _snapshot = new(0, 0, 0, 0, 0, 0, 0);

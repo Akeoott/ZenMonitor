@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Storage(ILogger<Storage> logger) : IStorageService
+public class Storage(ILogger<Storage> logger) : IStorage
 {
     private readonly ILogger<Storage> _logger = logger;
 }

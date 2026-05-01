@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class GpuNull(ILogger<GpuNull> logger) : IGpuService
+public class GpuNull(ILogger<GpuNull> logger) : IGpu
 {
     private readonly ILogger<GpuNull> _logger = logger;
     private readonly GpuInfoSnapshot _snapshot = new(

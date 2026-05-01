@@ -5,8 +5,7 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-// TODO: add implementation
-public interface ISystemService
+public interface ISystem
 {
     void Update();
 

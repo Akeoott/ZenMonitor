@@ -151,25 +151,28 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 builder.AddSerilog(dispose: true);
             });
 
+            services.AddSingleton<System.IO.Abstractions.IFileSystem, System.IO.Abstractions.FileSystem>();
+            services.AddSingleton<ITimeService, Core.Services.TimeService>();
+
             bool gpuNotSupported = false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                services.AddSingleton<ICpuService, Core.Services.Linux.Cpu>();
+                services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
 
                 if (Directory.Exists("/proc/driver/nvidia"))
-                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuNvidia>();
+                    services.AddSingleton<IGpu, Core.Services.Linux.GpuNvidia>();
                 else if (Directory.Exists("/sys/class/drm/card0/device/hwmon"))
-                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuAmd>();
+                    services.AddSingleton<IGpu, Core.Services.Linux.GpuAmd>();
                 else
                 {
-                    services.AddSingleton<IGpuService, Core.Services.Linux.GpuNull>();
+                    services.AddSingleton<IGpu, Core.Services.Linux.GpuNull>();
                     gpuNotSupported = true;
                 }
 
-                services.AddSingleton<IMemoryService, Core.Services.Linux.Memory>();
-                services.AddSingleton<INetworkService, Core.Services.Linux.Network>();
-                services.AddSingleton<IStorageService, Core.Services.Linux.Storage>();
-                services.AddSingleton<ISystemService, Core.Services.Linux.System>();
+                services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
+                services.AddSingleton<INetwork, Core.Services.Linux.Network>();
+                services.AddSingleton<IStorage, Core.Services.Linux.Storage>();
+                services.AddSingleton<ISystem, Core.Services.Linux.System>();
             }
             else
             {
@@ -238,8 +241,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                     Console.WriteLine("gui is not implemented, come back later! (try cli)");
                     break;
                 default:
-                    _logger.LogCritical("Something really unexpected happened. Couldnt figure out which mode to use: {OutputMode}", settings.Mode);
-                    break;
+                    throw new Exception($"Something really unexpected happened. Couldnt figure out which mode to use: {settings.Mode}");
             }
 
             _logger.LogInformation("Application Finished");

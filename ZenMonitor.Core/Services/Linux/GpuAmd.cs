@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class GpuAmd(ILogger<GpuAmd> logger) : IGpuService
+public class GpuAmd(ILogger<GpuAmd> logger) : IGpu
 {
     private readonly ILogger<GpuAmd> _logger = logger;
     private GpuInfoSnapshot _snapshot = new(

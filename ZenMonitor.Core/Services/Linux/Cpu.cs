@@ -12,10 +12,11 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem) : ICpuService
+public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeService) : ICpu
 {
     private readonly ILogger<Cpu> _logger = logger;
     private readonly IFileSystem _fileSystem = fileSystem;
+    private readonly ITimeService _timeService = timeService;
     private CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
 
     // /proc/stat tick buffers
@@ -24,6 +25,7 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem) : ICpuService
     private long[][] _currentCoreTicks = [];
     private long[][] _previousCoreTicks = [];
 
+    // for PowerDraw
     private double _prevEnergyUj;
     private DateTime _prevEnergyTime;
 
@@ -342,19 +344,17 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem) : ICpuService
         try
         {
             double energyUj = double.Parse(_fileSystem.File.ReadAllText(raplPath).Trim());
-            DateTime now = DateTime.UtcNow;
+            DateTime now = _timeService.UtcNow;
 
-            double power = 0.0;
+            double power = 0;
             if (_prevEnergyUj > 0)
             {
                 double deltaUj = energyUj - _prevEnergyUj;
-                // handle counter wrap around
                 if (deltaUj < 0) deltaUj = 0;
                 double deltaSec = (now - _prevEnergyTime).TotalSeconds;
                 if (deltaSec > 0)
-                    power = deltaUj / 1_000_000.0 / deltaSec; // watts
+                    power = deltaUj / 1_000_000.0 / deltaSec;
             }
-
             _prevEnergyUj = energyUj;
             _prevEnergyTime = now;
 

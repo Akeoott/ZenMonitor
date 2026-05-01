@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 
 using Moq;
 
+using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Services.Linux;
 
 namespace ZenMonitor.Tests.Services.Linux.CpuTests;
@@ -17,25 +18,27 @@ public class CpuNameTests
 {
     private readonly Mock<ILogger<Cpu>> _mockLogger;
     private readonly MockFileSystem _mockFileSystem;
+    private readonly Mock<ITimeService> _timeService;
 
     public CpuNameTests()
     {
         _mockLogger = new Mock<ILogger<Cpu>>();
         _mockFileSystem = new MockFileSystem();
+        _timeService = new Mock<ITimeService>();
     }
 
     [Fact]
-    public void GetCpuName_ReturnsModelNameFromCpuinfo()
+    public void GetCpuName_ReturnsCpuName()
     {
         // Arrange
         string cpuinfo = TestData.CpuInfo();
-        string stat = TestData.Stat();
+        string stat = TestData.Stat1();
         _mockFileSystem.AddFile("/proc/cpuinfo", new MockFileData(cpuinfo));
 
         // A minimal /proc/stat is required so ReadCpuUsages doesn't throw
         _mockFileSystem.AddFile("/proc/stat", new MockFileData(stat));
 
-        var cpu = new Cpu(_mockLogger.Object, _mockFileSystem);
+        var cpu = new Cpu(_mockLogger.Object, _mockFileSystem, _timeService.Object);
 
         // Act
         cpu.Update();

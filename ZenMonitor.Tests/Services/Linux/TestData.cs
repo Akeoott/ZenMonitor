@@ -20,7 +20,12 @@ public static class TestData
     /// <summary>
     /// /proc/stat
     /// </summary>
-    public static string Stat() => ReadFile("stat");
+    public static string Stat1() => ReadFile("stat1");
+
+    /// <summary>
+    /// /proc/stat
+    /// </summary>
+    public static string Stat2() => ReadFile("stat2");
 
     /// <summary>
     /// /sys/class/hwmon directory listing (not a file, we'll handle hwmon as a set of files later)
@@ -30,7 +35,12 @@ public static class TestData
     /// <summary>
     /// /sys/class/powercap/intel-rapl:0/energy_uj
     /// </summary>
-    public static string EnergyUj() => ReadFile("energy_uj");
+    public static string EnergyUj1() => ReadFile("energy_uj1");
+
+    /// <summary>
+    /// /sys/class/powercap/intel-rapl:0/energy_uj
+    /// </summary>
+    public static string EnergyUj2() => ReadFile("energy_uj2");
 
     /// <summary>
     /// /proc/meminfo

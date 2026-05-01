@@ -12,7 +12,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpuService
+public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpu
 {
     private readonly ILogger<GpuNvidia> _logger = logger;
     private GpuInfoSnapshot _snapshot = new(

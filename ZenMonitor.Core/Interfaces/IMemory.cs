@@ -5,7 +5,7 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-public interface IMemoryService
+public interface IMemory
 {
     void Update();
 

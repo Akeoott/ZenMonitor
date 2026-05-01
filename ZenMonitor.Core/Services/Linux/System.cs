@@ -11,7 +11,7 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class System(ILogger<System> logger) : ISystemService
+public class System(ILogger<System> logger) : ISystem
 {
     private readonly ILogger<System> _logger = logger;
     private SystemInfoSnapshot _snapshot = new(

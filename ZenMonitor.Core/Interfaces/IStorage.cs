@@ -6,4 +6,4 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Interfaces;
 
 // TODO: add implementation
-public interface IStorageService { }
+public interface IStorage { }

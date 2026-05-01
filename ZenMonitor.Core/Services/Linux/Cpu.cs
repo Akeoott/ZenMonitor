@@ -1,6 +1,7 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.IO.Abstractions;
 using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
@@ -11,9 +12,10 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Cpu(ILogger<Cpu> logger) : ICpuService
+public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem) : ICpuService
 {
     private readonly ILogger<Cpu> _logger = logger;
+    private readonly IFileSystem _fileSystem = fileSystem;
     private CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
 
     // /proc/stat tick buffers
@@ -71,13 +73,13 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
     }
 
     #region CpuInfo
-    private static (string cpuName, CpuCoreSpeed[] coreSpeeds) ReadCpuInfo()
+    private (string cpuName, CpuCoreSpeed[] coreSpeeds) ReadCpuInfo()
     {
         string cpuName = "Unknown CPU";
         var speeds = new List<CpuCoreSpeed>();
         int coreIndex = 0;
 
-        foreach (var line in File.ReadLines("/proc/cpuinfo"))
+        foreach (var line in _fileSystem.File.ReadLines("/proc/cpuinfo"))
         {
             if (line.StartsWith("model name") && cpuName == "Unknown CPU")
             {
@@ -150,7 +152,7 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
     private void ReadCurrentTicks()
     {
-        var lines = File.ReadLines("/proc/stat").Where(l => l.StartsWith("cpu"));
+        var lines = _fileSystem.File.ReadLines("/proc/stat").Where(l => l.StartsWith("cpu"));
         bool first = true;
 
         var coreTickList = new List<long[]>();
@@ -205,12 +207,12 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
         try
         {
-            foreach (var hwmonDir in Directory.GetDirectories("/sys/class/hwmon"))
+            foreach (var hwmonDir in _fileSystem.Directory.GetDirectories("/sys/class/hwmon"))
             {
-                string nameFile = Path.Combine(hwmonDir, "name");
-                if (!File.Exists(nameFile)) continue;
+                string nameFile = _fileSystem.Path.Combine(hwmonDir, "name");
+                if (!_fileSystem.File.Exists(nameFile)) continue;
 
-                string name = File.ReadAllText(nameFile).Trim();
+                string name = _fileSystem.File.ReadAllText(nameFile).Trim();
                 if (name == "coretemp")
                 {
                     var (devOverall, devTemps) = ReadIntelTemps(hwmonDir);
@@ -245,9 +247,6 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
             )];
         }
 
-        _logger.LogTrace("Temperature scan done: overall={Overall}°C, uniform cores={Count}, values=[{Temps}]",
-            overall, uniformTemps.Length, string.Join(", ", uniformTemps.Select(t => $"{t.Temp}°C")));
-
         return (overall, uniformTemps);
     }
 
@@ -258,17 +257,16 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
         try
         {
-            foreach (var inputFile in Directory.GetFiles(hwmonDir, "temp*_input"))
+            foreach (var inputFile in _fileSystem.Directory.GetFiles(hwmonDir, "temp*_input"))
             {
-                string prefix = Path.GetFileName(inputFile).Replace("_input", "");
-                string labelFile = Path.Combine(hwmonDir, $"{prefix}_label");
+                string prefix = _fileSystem.Path.GetFileName(inputFile).Replace("_input", "");
+                string labelFile = _fileSystem.Path.Combine(hwmonDir, $"{prefix}_label");
 
-                if (!int.TryParse(File.ReadAllText(inputFile).Trim(), out int millideg))
+                if (!int.TryParse(_fileSystem.File.ReadAllText(inputFile).Trim(), out int millideg))
                     continue;
                 int temp = millideg / 1000;
 
-                string? label = File.Exists(labelFile) ? File.ReadAllText(labelFile).Trim() : null;
-                _logger.LogTrace("Intel sensor {Prefix}: label='{Label}', temp={Temp}°C", prefix, label ?? "(none)", temp);
+                string? label = _fileSystem.File.Exists(labelFile) ? _fileSystem.File.ReadAllText(labelFile).Trim() : null;
 
                 if (label != null && (label.Contains("Package") || label == "CPU"))
                 {
@@ -297,17 +295,16 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
 
         try
         {
-            foreach (var inputFile in Directory.GetFiles(hwmonDir, "temp*_input"))
+            foreach (var inputFile in _fileSystem.Directory.GetFiles(hwmonDir, "temp*_input"))
             {
-                string prefix = Path.GetFileName(inputFile).Replace("_input", "");
-                string labelFile = Path.Combine(hwmonDir, $"{prefix}_label");
+                string prefix = _fileSystem.Path.GetFileName(inputFile).Replace("_input", "");
+                string labelFile = _fileSystem.Path.Combine(hwmonDir, $"{prefix}_label");
 
-                if (!int.TryParse(File.ReadAllText(inputFile).Trim(), out int millideg))
+                if (!int.TryParse(_fileSystem.File.ReadAllText(inputFile).Trim(), out int millideg))
                     continue;
                 int temp = millideg / 1000;
 
-                string? label = File.Exists(labelFile) ? File.ReadAllText(labelFile).Trim() : null;
-                _logger.LogTrace("AMD sensor {Prefix}: label='{Label}', temp={Temp}°C", prefix, label ?? "(none)", temp);
+                string? label = _fileSystem.File.Exists(labelFile) ? _fileSystem.File.ReadAllText(labelFile).Trim() : null;
 
                 if (label != null && (label.Contains("Tctl") || label.Contains("Tdie")))
                 {
@@ -339,12 +336,12 @@ public class Cpu(ILogger<Cpu> logger) : ICpuService
     {
         const string raplPath = "/sys/class/powercap/intel-rapl:0/energy_uj";
 
-        if (!File.Exists(raplPath))
+        if (!_fileSystem.File.Exists(raplPath))
             return 0.0;
 
         try
         {
-            double energyUj = double.Parse(File.ReadAllText(raplPath).Trim());
+            double energyUj = double.Parse(_fileSystem.File.ReadAllText(raplPath).Trim());
             DateTime now = DateTime.UtcNow;
 
             double power = 0.0;

@@ -9,7 +9,8 @@
         <img src="https://img.shields.io/github/repo-size/Akeoott/ZenMonitor?style=for-the-badge&labelColor=%231a1b1f&color=%23a8c7ff"/>
     </a>
 </div>
-<br>
+
+[![codecov](https://codecov.io/gh/Akeoott/ZenMonitor/branch/main/graph/badge.svg)](https://codecov.io/gh/Akeoott/ZenMonitor)
 
 #### ZenMonitor aims to be a fast and modern Task manager providing you with every single detail there is.
 

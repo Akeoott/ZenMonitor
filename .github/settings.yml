@@ -4,7 +4,7 @@ repository:
   name: ZenMonitor
   description: Look behind the covers, see what your computer is actually doing!
   #homepage:
-  topics: system-monitoring, task-manager, dotnet, csharp
+  topics: system-monitoring, task-manager, cli, tui, gui, dotnet, csharp
   private: false
   has_issues: true
   has_wiki: false

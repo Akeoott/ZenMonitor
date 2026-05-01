@@ -3,12 +3,10 @@
 
 using Microsoft.Extensions.Logging;
 
-using Spectre.Console;
-
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
-namespace ZenMonitor.Debug;
+namespace ZenMonitor.Cli;
 
 public class Monitor(
     ILogger<Monitor> logger,

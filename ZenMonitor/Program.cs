@@ -57,14 +57,17 @@ internal class Program
         var app = new CommandApp<MonitorCommand>();
         return await app.RunAsync(args);
     }
-
 }
 
 public class MonitorSettings : CommandSettings
 {
     #region Cli Options
     [CommandOption("-r|--run <value>")]
-    [Description("Available modes: cli, gui, debug.")]
+    [Description(
+        "Available modes:\n" +
+        "\tcli (Raw Values)\n" +
+        "\ttui (Terminal User Interface)\n" +
+        "\tgui (Graphical User Interface)\n")]
     public required string Mode { get; set; }
 
     [CommandOption("-d|--delay <VALUE>")]
@@ -73,12 +76,12 @@ public class MonitorSettings : CommandSettings
     public int LoopDelay { get; set; } = 1000;
 
     [CommandOption("-c|--cli-log <BOOL>")]
-    [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to debug)")]
+    [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to cli)")]
     [DefaultValue("false")]
     public bool CliLogging { get; set; } = false;
 
     [CommandOption("-l|--log-level <LEVEL>")]
-    [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace)")]
+    [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace.")]
     [DefaultValue("info")]
     public string LogLevel { get; set; } = "info";
     #endregion
@@ -88,16 +91,16 @@ public class MonitorSettings : CommandSettings
     {
         string mode = Mode?.ToLowerInvariant() ?? "";
 
-        if (mode != "cli" && mode != "gui" && mode != "debug")
+        if (mode != "cli" && mode != "gui" && mode != "tui")
         {
             return ValidationResult.Error(
-                "Require mode arguments. Use '--help' for more information.");
+                "Require mode arguments (`--run <value>`). Use `--help` for more information.");
         }
 
-        if (CliLogging && mode != "debug")
+        if (CliLogging && mode != "cli")
         {
             return ValidationResult.Error(
-                "When --log-cli is enabled, mode must be 'debug'.");
+                "When --log-cli is enabled, mode must be `cli`.");
         }
 
         return ValidationResult.Success();
@@ -178,13 +181,13 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             switch (settings.Mode)
             {
                 case "cli":
+                    services.AddTransient<Cli.Monitor>();
+                    break;
+                case "tui":
                     //services.AddTransient<Cli.Monitor>();
                     break;
                 case "gui":
                     //services.AddTransient<Gui.Monitor>();
-                    break;
-                case "debug":
-                    services.AddTransient<Debug.Monitor>();
                     break;
             }
 
@@ -223,19 +226,19 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             switch (settings.Mode)
             {
                 case "cli":
-                    Console.WriteLine("cli is not implemented, come back later! (try debug)");
-                    break;
-                case "gui":
-                    Console.WriteLine("gui is not implemented, come back later! (try debug)");
-                    break;
-                case "debug":
                     {
-                        var engine = serviceProvider.GetRequiredService<Debug.Monitor>();
+                        var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
                         await engine.InitMonitor(settings.LoopDelay, cts.Token);
                         break;
                     }
+                case "tui":
+                    Console.WriteLine("tui is not implemented, come back later! (try cli)");
+                    break;
+                case "gui":
+                    Console.WriteLine("gui is not implemented, come back later! (try cli)");
+                    break;
                 default:
-                    _logger.LogCritical("Something really unexpected happened. Couldnt figure out what user interface to use: {OutputMode}", settings.Mode);
+                    _logger.LogCritical("Something really unexpected happened. Couldnt figure out which mode to use: {OutputMode}", settings.Mode);
                     break;
             }
 

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -21,9 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
-    <ProjectReference Include="..\ZenMonitor.Debug\ZenMonitor.Debug.csproj" />
     <ProjectReference Include="..\ZenMonitor.Core\ZenMonitor.Core.csproj" />
+    <ProjectReference Include="..\ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
+    <ProjectReference Include="..\ZenMonitor.Tui\ZenMonitor.Tui.csproj" />
+    <ProjectReference Include="..\ZenMonitor.Gui\ZenMonitor.Gui.csproj" />
   </ItemGroup>
 
 </Project>

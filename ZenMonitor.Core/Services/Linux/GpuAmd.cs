@@ -28,6 +28,7 @@ public class GpuAmd(ILogger<GpuAmd> logger) : IGpu
     public string GetPowerState() => _snapshot.PowerState;
     public string GetPowerDraw() => _snapshot.PowerDraw;
 
+    // TODO: Once implementation is done, update unit tests!
     private GpuInfoSnapshot FetchGpuInfo()
     {
         _logger.LogTrace("Fetching all GpuAmd info...");

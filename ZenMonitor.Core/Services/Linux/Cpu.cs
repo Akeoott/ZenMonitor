@@ -12,12 +12,12 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeService) : ICpu
+public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, IHelper helper) : ICpu
 {
     private const string EnergyUjPath = "/sys/class/powercap/intel-rapl:0/energy_uj";
     private readonly ILogger<Cpu> _logger = logger;
     private readonly IFileSystem _fileSystem = fileSystem;
-    private readonly ITimeService _timeService = timeService;
+    private readonly IHelper _helper = helper;
     private CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
 
     // /proc/stat tick buffers
@@ -342,7 +342,7 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeS
         try
         {
             double energyUj = double.Parse(_fileSystem.File.ReadAllText(EnergyUjPath).Trim());
-            DateTime now = _timeService.UtcNow;
+            DateTime now = _helper.UtcNow;
 
             double power = 0;
             if (_prevEnergyUj > 0)

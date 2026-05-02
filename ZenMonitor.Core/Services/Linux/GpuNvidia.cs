@@ -12,9 +12,10 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpu
+public class GpuNvidia(ILogger<GpuNvidia> logger, IHelper helper) : IGpu
 {
     private readonly ILogger<GpuNvidia> _logger = logger;
+    private readonly IHelper _helper = helper;
     private GpuInfoSnapshot _snapshot = new(
         "", "", "", "", "", "", "", "");
 
@@ -45,30 +46,14 @@ public class GpuNvidia(ILogger<GpuNvidia> logger) : IGpu
 
     private string RunNvidiaSmi(string arguments)
     {
-        var startInfo = new ProcessStartInfo
+        ProcessResult result = _helper.RunProcess("nvidia-smi", arguments);
+
+        if (result.ExitCode != 0)
         {
-            FileName = "nvidia-smi",
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
-
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            _logger.LogError("Running nvidia-smi failed with exit code {ExitCode}: {Error}", process.ExitCode, error);
-            throw new InvalidOperationException($"nvidia-smi error: {error}");
+            _logger.LogError("Running nvidia-smi failed with exit code {ExitCode}: {Error}", result.ExitCode, result.StandardError);
+            throw new InvalidOperationException($"nvidia-smi error: {result.StandardError}");
         }
 
-        return output.Trim();
+        return result.StandardOutput.Trim();
     }
 }

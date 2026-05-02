@@ -152,11 +152,12 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             });
 
             services.AddSingleton<System.IO.Abstractions.IFileSystem, System.IO.Abstractions.FileSystem>();
-            services.AddSingleton<ITimeService, Core.Services.TimeService>();
 
             bool gpuNotSupported = false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
+                services.AddSingleton<IHelper, Core.Services.Linux.Helper>();
+
                 services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
 
                 if (Directory.Exists("/proc/driver/nvidia"))

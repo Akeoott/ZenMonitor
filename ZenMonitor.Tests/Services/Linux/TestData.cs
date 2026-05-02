@@ -43,6 +43,33 @@ public static class TestData
     public static string EnergyUj2() => ReadFile("energy_uj2");
 
     /// <summary>
+    /// /proc/cpuinfo for small two-logical-processor test fixtures
+    /// </summary>
+    public static string CpuInfo2Core() => ReadFile("cpuinfo-2core");
+
+    /// <summary>
+    /// /sys/class/hwmon/hwmon0 for an Intel coretemp sensor
+    /// </summary>
+    public static string HwmonIntelName() => ReadFile("hwmon/intel/hwmon0/name");
+    public static string HwmonIntelTemp1Input() => ReadFile("hwmon/intel/hwmon0/temp1_input");
+    public static string HwmonIntelTemp1Label() => ReadFile("hwmon/intel/hwmon0/temp1_label");
+    public static string HwmonIntelTemp2Input() => ReadFile("hwmon/intel/hwmon0/temp2_input");
+    public static string HwmonIntelTemp2Label() => ReadFile("hwmon/intel/hwmon0/temp2_label");
+    public static string HwmonIntelTemp3Input() => ReadFile("hwmon/intel/hwmon0/temp3_input");
+    public static string HwmonIntelTemp3Label() => ReadFile("hwmon/intel/hwmon0/temp3_label");
+
+    /// <summary>
+    /// /sys/class/hwmon/hwmon0 for an AMD k10temp sensor
+    /// </summary>
+    public static string HwmonAmdName() => ReadFile("hwmon/amd/hwmon0/name");
+    public static string HwmonAmdTemp1Input() => ReadFile("hwmon/amd/hwmon0/temp1_input");
+    public static string HwmonAmdTemp1Label() => ReadFile("hwmon/amd/hwmon0/temp1_label");
+    public static string HwmonAmdTemp2Input() => ReadFile("hwmon/amd/hwmon0/temp2_input");
+    public static string HwmonAmdTemp2Label() => ReadFile("hwmon/amd/hwmon0/temp2_label");
+    public static string HwmonAmdTemp3Input() => ReadFile("hwmon/amd/hwmon0/temp3_input");
+    public static string HwmonAmdTemp3Label() => ReadFile("hwmon/amd/hwmon0/temp3_label");
+
+    /// <summary>
     /// /proc/meminfo
     /// </summary>
     public static string MemInfo() => ReadFile("meminfo");

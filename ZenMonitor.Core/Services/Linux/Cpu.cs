@@ -14,6 +14,7 @@ namespace ZenMonitor.Core.Services.Linux;
 [SupportedOSPlatform("linux")]
 public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeService) : ICpu
 {
+    private const string EnergyUjPath = "/sys/class/powercap/intel-rapl:0/energy_uj";
     private readonly ILogger<Cpu> _logger = logger;
     private readonly IFileSystem _fileSystem = fileSystem;
     private readonly ITimeService _timeService = timeService;
@@ -336,14 +337,11 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeS
     #region PowerDraw
     private double ReadPowerDraw()
     {
-        const string raplPath = "/sys/class/powercap/intel-rapl:0/energy_uj";
-
-        if (!_fileSystem.File.Exists(raplPath))
-            return 0.0;
+        if (!_fileSystem.File.Exists(EnergyUjPath)) return 1.0;
 
         try
         {
-            double energyUj = double.Parse(_fileSystem.File.ReadAllText(raplPath).Trim());
+            double energyUj = double.Parse(_fileSystem.File.ReadAllText(EnergyUjPath).Trim());
             DateTime now = _timeService.UtcNow;
 
             double power = 0;
@@ -355,6 +353,7 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, ITimeService timeS
                 if (deltaSec > 0)
                     power = deltaUj / 1_000_000.0 / deltaSec;
             }
+
             _prevEnergyUj = energyUj;
             _prevEnergyTime = now;
 

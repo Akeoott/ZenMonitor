@@ -101,7 +101,6 @@ public class Monitor(
 
     private Task RunBackend(int loopDelay, CancellationToken cts)
     {
-
         var backendThread = new Thread(() =>
         {
             while (!cts.IsCancellationRequested)

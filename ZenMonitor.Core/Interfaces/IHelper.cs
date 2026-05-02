@@ -5,6 +5,10 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
+/// <summary>
+/// Used for the mockability of code. No general helpers are here.
+/// Just required things for unit tests.
+/// </summary>
 public interface IHelper
 {
     /// <summary>

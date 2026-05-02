@@ -1,6 +1,7 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.IO.Abstractions;
 using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
@@ -11,9 +12,10 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class System(ILogger<System> logger) : ISystem
+public class System(ILogger<System> logger, IFileSystem fileSystem) : ISystem
 {
     private readonly ILogger<System> _logger = logger;
+    private readonly IFileSystem _fileSystem = fileSystem;
     private SystemInfoSnapshot _snapshot = new(
         "Unknown", "Unknown", 0, 0, 0, 0, 0, 0, 0);
 
@@ -35,17 +37,17 @@ public class System(ILogger<System> logger) : ISystem
         {
             _logger.LogTrace("Fetching all System info...");
             // Kernel version from /proc/sys/kernel/osrelease
-            string kernel = File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
+            string kernel = _fileSystem.File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
 
             // Hostname from /proc/sys/kernel/hostname
-            string hostname = File.ReadAllText("/proc/sys/kernel/hostname").Trim();
+            string hostname = _fileSystem.File.ReadAllText("/proc/sys/kernel/hostname").Trim();
 
             // Uptime (total uptime, idle time)
-            var uptimeParts = File.ReadAllText("/proc/uptime").Trim().Split(' ');
+            var uptimeParts = _fileSystem.File.ReadAllText("/proc/uptime").Trim().Split(' ');
             double uptime = double.Parse(uptimeParts[0]);
 
             // Load average
-            var loadParts = File.ReadAllText("/proc/loadavg").Trim().Split(' ');
+            var loadParts = _fileSystem.File.ReadAllText("/proc/loadavg").Trim().Split(' ');
             double load1 = double.Parse(loadParts[0]);
             double load5 = double.Parse(loadParts[1]);
             double load15 = double.Parse(loadParts[2]);
@@ -56,7 +58,7 @@ public class System(ILogger<System> logger) : ISystem
 
             // Boot time from /proc/stat (btime)
             long bootTime = 0;
-            foreach (var line in File.ReadLines("/proc/stat"))
+            foreach (var line in _fileSystem.File.ReadLines("/proc/stat"))
             {
                 if (line.StartsWith("btime "))
                 {

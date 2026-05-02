@@ -1,6 +1,7 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.IO.Abstractions;
 using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
@@ -11,9 +12,10 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Memory(ILogger<Memory> logger) : IMemory
+public class Memory(ILogger<Memory> logger, IFileSystem fileSystem) : IMemory
 {
     private readonly ILogger<Memory> _logger = logger;
+    private readonly IFileSystem _fileSystem = fileSystem;
     private MemoryInfoSnapshot _snapshot = new(0, 0, 0, 0, 0, 0, 0);
 
     public void Update() => _snapshot = FetchMemoryInfo();
@@ -36,7 +38,7 @@ public class Memory(ILogger<Memory> logger) : IMemory
             var values = new Dictionary<string, double>(StringComparer.Ordinal);
             const double KB_TO_GIB = 1.0 / 1_048_576;
 
-            foreach (var line in File.ReadLines("/proc/meminfo"))
+            foreach (var line in _fileSystem.File.ReadLines("/proc/meminfo"))
             {
                 int colon = line.IndexOf(':');
                 if (colon < 0) continue;

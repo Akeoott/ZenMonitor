@@ -10,6 +10,7 @@
     </a>
 </div>
 
+[![CodeFactor](https://www.codefactor.io/repository/github/akeoott/zenmonitor/badge)](https://www.codefactor.io/repository/github/akeoott/zenmonitor)
 [![codecov](https://codecov.io/gh/Akeoott/ZenMonitor/branch/main/graph/badge.svg)](https://codecov.io/gh/Akeoott/ZenMonitor)
 
 #### ZenMonitor aims to be a fast and modern Task manager providing you with every single detail there is.

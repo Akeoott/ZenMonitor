@@ -21,39 +21,8 @@ namespace ZenMonitor;
 
 internal class Program
 {
-    [DllImport("libc")]
-    private static extern uint geteuid();
-
-    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
-    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-
     internal static async Task<int> Main(string[] args)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
-        {
-            Console.Error.WriteLine("ZenMonitor requires root privileges. Please run with sudo.");
-            return 1;
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
-        {
-            Console.Error.WriteLine("Elevating to administrator...");
-            var psi = new ProcessStartInfo
-            {
-                FileName = Environment.ProcessPath,
-                Arguments = string.Join(" ", args),
-                UseShellExecute = true,
-                Verb = "runas"
-            };
-            try
-            {
-                Process.Start(psi);
-                return 0;
-            }
-            catch (Win32Exception) { /* canceled */ }
-            return 1;
-        }
-
         var app = new CommandApp<MonitorCommand>();
         return await app.RunAsync(args);
     }
@@ -74,6 +43,11 @@ public class MonitorSettings : CommandSettings
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
     [DefaultValue(1000)]
     public int LoopDelay { get; set; } = 1000;
+
+    [CommandOption("-n|--no-sudo <BOOL>")]
+    [Description("Run ZenMonitor without sudo (some things might not work!)")]
+    [DefaultValue("false")]
+    public bool NoSudo { get; set; } = false;
 
     [CommandOption("-c|--cli-log <BOOL>")]
     [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to cli)")]
@@ -110,11 +84,32 @@ public class MonitorSettings : CommandSettings
 
 public class MonitorCommand() : AsyncCommand<MonitorSettings>
 {
+    [DllImport("libc")]
+    private static extern uint geteuid();
+
+    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
+    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
         MonitorSettings settings,
         CancellationToken cancellationToken)
     {
+        if (!settings.NoSudo)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
+            {
+                Console.Error.WriteLine("ZenMonitor requires root privileges. Please run with sudo.");
+                return 1;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
+            {
+                Console.Error.WriteLine("ZenMonitor requires admin privileges. Please run as admin.");
+                return 1;
+            }
+        }
+
         #region Logging Config
         var logLevel = ParseSerilogLevel(settings.LogLevel);
         var logFilePath = "logs/ZenMonitor.log";
@@ -188,7 +183,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                     services.AddTransient<Cli.Monitor>();
                     break;
                 case "tui":
-                    //services.AddTransient<Cli.Monitor>();
+                    //services.AddTransient<Tui.Monitor>();
                     break;
                 case "gui":
                     //services.AddTransient<Gui.Monitor>();
@@ -199,26 +194,35 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
             #endregion
 
-            #region Init Application
+            #region Log + Safety Checks
             _logger.LogWarning("ZenMonitor initialized.");
+
+            if (settings.NoSudo)
+            {
+                _logger.LogWarning("Bypassing sudo/admin requirements!");
+            }
 
             if (gpuNotSupported)
             {
                 _logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
             }
 
-            // In milliseconds
-            if (settings.LoopDelay > 10000)
-            {
-                settings.LoopDelay = 10000;
-                _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10 seconds");
-            }
-            else if (settings.LoopDelay < 100)
-            {
-                settings.LoopDelay = 100;
-                _logger.LogWarning("LoopDelay is below 0.1 seconds. Setting back to a minimum of 0.1 seconds");
-            }
+            _logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
 
+            switch (settings.LoopDelay)
+            {
+                case > 10000:
+                    settings.LoopDelay = 10000;
+                    _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10 seconds");
+                    break;
+                case < 100:
+                    settings.LoopDelay = 100;
+                    _logger.LogWarning("LoopDelay is below 0.1 seconds. Setting back to a minimum of 0.1 seconds");
+                    break;
+            }
+            #endregion
+
+            #region Init Application
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -226,15 +230,12 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                 cts.Cancel();
             };
 
-            _logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
             switch (settings.Mode)
             {
                 case "cli":
-                    {
-                        var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
-                        await engine.InitMonitor(settings.LoopDelay, cts.Token);
-                        break;
-                    }
+                    var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
+                    await engine.InitMonitor(settings.LoopDelay, cts.Token);
+                    break;
                 case "tui":
                     Console.WriteLine("tui is not implemented, come back later! (try cli)");
                     break;
@@ -245,7 +246,7 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
                     throw new Exception($"Something really unexpected happened. Couldnt figure out which mode to use: {settings.Mode}");
             }
 
-            _logger.LogInformation("Application Finished");
+            _logger.LogInformation("Application Finished, bye bye!");
 
             return 0;
             #endregion

@@ -2,7 +2,6 @@
 // See the LICENSE file in the repository root for full license text.
 
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
@@ -63,18 +62,24 @@ public class MonitorSettings : CommandSettings
     #region Cli Validation
     public override ValidationResult Validate()
     {
-        string mode = Mode?.ToLowerInvariant() ?? "";
+        Mode = Mode?.ToLowerInvariant() ?? string.Empty;
 
-        if (mode != "cli" && mode != "gui" && mode != "tui")
+        if (Mode != "cli" && Mode != "gui" && Mode != "tui")
         {
             return ValidationResult.Error(
                 "Require mode arguments (`--run <value>`). Use `--help` for more information.");
         }
 
-        if (CliLogging && mode != "cli")
+        if (CliLogging && Mode != "cli")
         {
             return ValidationResult.Error(
-                "When --log-cli is enabled, mode must be `cli`.");
+                "When --cli-log is enabled, mode must be `cli`.");
+        }
+
+        if (LoopDelay < 100 || LoopDelay > 10000)
+        {
+            return ValidationResult.Error(
+                "--delay must be between 100 and 10000 milliseconds.");
         }
 
         return ValidationResult.Success();
@@ -82,7 +87,7 @@ public class MonitorSettings : CommandSettings
     #endregion
 }
 
-public class MonitorCommand() : AsyncCommand<MonitorSettings>
+public class MonitorCommand : AsyncCommand<MonitorSettings>
 {
     [DllImport("libc")]
     private static extern uint geteuid();
@@ -110,10 +115,32 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             }
         }
 
-        #region Logging Config
-        var logLevel = ParseSerilogLevel(settings.LogLevel);
-        var logFilePath = "logs/ZenMonitor.log";
+        try
+        {
+            var logLevel = ParseSerilogLevel(settings.LogLevel);
+            const string logFilePath = "logs/ZenMonitor.log";
 
+            ConfigureLogging(logLevel, logFilePath, settings.CliLogging);
+
+            using var serviceProvider = BuildServiceProvider(settings, out var gpuNotSupported);
+            var logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
+
+            ApplyRuntimeSafetyChecks(settings, logger, gpuNotSupported);
+
+            await RunApplicationAsync(serviceProvider, settings, cancellationToken);
+            logger.LogInformation("Application finished, bye bye!");
+
+            return 0;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+
+    #region Logging Config
+    private static void ConfigureLogging(LogEventLevel logLevel, string logFilePath, bool cliLogging)
+    {
         Directory.CreateDirectory("logs");
         File.WriteAllText(logFilePath, string.Empty);
 
@@ -121,141 +148,133 @@ public class MonitorCommand() : AsyncCommand<MonitorSettings>
             .MinimumLevel.Is(logLevel)
             .Enrich.WithProperty("RunId", Guid.NewGuid());
 
-        if (settings.CliLogging)
+        if (cliLogging)
         {
             loggerConfig.WriteTo.Console(
-                outputTemplate:
-                    "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+                outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
         }
 
         loggerConfig.WriteTo.File(
             logFilePath,
-            outputTemplate:
-                "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+
         Log.Logger = loggerConfig.CreateLogger();
-        #endregion
+    }
+    #endregion
 
-        #region Dependency Injection
-        try
+    #region Dependency Injection
+    private static ServiceProvider BuildServiceProvider(MonitorSettings settings, out bool gpuNotSupported)
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
         {
-            var services = new ServiceCollection();
+            builder.ClearProviders();
+            builder.AddSerilog(dispose: true);
+        });
 
-            services.AddLogging(builder =>
+        services.AddSingleton<System.IO.Abstractions.IFileSystem, System.IO.Abstractions.FileSystem>();
+
+        gpuNotSupported = false;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            services.AddSingleton<IHelper, Core.Services.Linux.Helper>();
+            services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
+
+            if (Directory.Exists("/proc/driver/nvidia"))
             {
-                builder.ClearProviders();
-                builder.AddSerilog(dispose: true);
-            });
-
-            services.AddSingleton<System.IO.Abstractions.IFileSystem, System.IO.Abstractions.FileSystem>();
-
-            bool gpuNotSupported = false;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                services.AddSingleton<IGpu, Core.Services.Linux.GpuNvidia>();
+            }
+            else if (Directory.Exists("/sys/class/drm/card0/device/hwmon"))
             {
-                services.AddSingleton<IHelper, Core.Services.Linux.Helper>();
-
-                services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
-
-                if (Directory.Exists("/proc/driver/nvidia"))
-                    services.AddSingleton<IGpu, Core.Services.Linux.GpuNvidia>();
-                else if (Directory.Exists("/sys/class/drm/card0/device/hwmon"))
-                    services.AddSingleton<IGpu, Core.Services.Linux.GpuAmd>();
-                else
-                {
-                    services.AddSingleton<IGpu, Core.Services.Linux.GpuNull>();
-                    gpuNotSupported = true;
-                }
-
-                services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
-                services.AddSingleton<INetwork, Core.Services.Linux.Network>();
-                services.AddSingleton<IStorage, Core.Services.Linux.Storage>();
-                services.AddSingleton<ISystem, Core.Services.Linux.System>();
+                services.AddSingleton<IGpu, Core.Services.Linux.GpuAmd>();
             }
             else
             {
-                throw new PlatformNotSupportedException(
-                    "ZenMonitor only supports Linux at the moment. Windows support will come in the future."
-                );
+                services.AddSingleton<IGpu, Core.Services.Linux.GpuNull>();
+                gpuNotSupported = true;
             }
 
-            switch (settings.Mode)
-            {
-                case "cli":
-                    services.AddTransient<Cli.Monitor>();
-                    break;
-                case "tui":
-                    //services.AddTransient<Tui.Monitor>();
-                    break;
-                case "gui":
-                    //services.AddTransient<Gui.Monitor>();
-                    break;
-            }
-
-            var serviceProvider = services.BuildServiceProvider();
-            var _logger = serviceProvider.GetRequiredService<ILogger<MonitorCommand>>();
-            #endregion
-
-            #region Log + Safety Checks
-            _logger.LogWarning("ZenMonitor initialized.");
-
-            if (settings.NoSudo)
-            {
-                _logger.LogWarning("Bypassing sudo/admin requirements!");
-            }
-
-            if (gpuNotSupported)
-            {
-                _logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
-            }
-
-            _logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
-
-            switch (settings.LoopDelay)
-            {
-                case > 10000:
-                    settings.LoopDelay = 10000;
-                    _logger.LogWarning("LoopDelay Exceeds 10 seconds. Setting back to a maximum of 10 seconds");
-                    break;
-                case < 100:
-                    settings.LoopDelay = 100;
-                    _logger.LogWarning("LoopDelay is below 0.1 seconds. Setting back to a minimum of 0.1 seconds");
-                    break;
-            }
-            #endregion
-
-            #region Init Application
-            using var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (sender, e) =>
-            {
-                e.Cancel = true;
-                cts.Cancel();
-            };
-
-            switch (settings.Mode)
-            {
-                case "cli":
-                    var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
-                    await engine.InitMonitor(settings.LoopDelay, cts.Token);
-                    break;
-                case "tui":
-                    Console.WriteLine("tui is not implemented, come back later! (try cli)");
-                    break;
-                case "gui":
-                    Console.WriteLine("gui is not implemented, come back later! (try cli)");
-                    break;
-                default:
-                    throw new Exception($"Something really unexpected happened. Couldnt figure out which mode to use: {settings.Mode}");
-            }
-
-            _logger.LogInformation("Application Finished, bye bye!");
-
-            return 0;
-            #endregion
+            services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
+            services.AddSingleton<INetwork, Core.Services.Linux.Network>();
+            services.AddSingleton<IStorage, Core.Services.Linux.Storage>();
+            services.AddSingleton<ISystem, Core.Services.Linux.System>();
         }
-        finally
+        else
         {
-            Log.CloseAndFlush();
+            throw new PlatformNotSupportedException(
+                "ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
+        }
+
+        switch (settings.Mode)
+        {
+            case "cli":
+                services.AddTransient<Cli.Monitor>();
+                break;
+            case "tui":
+                //services.AddTransient<Tui.Monitor>();
+                break;
+            case "gui":
+                //services.AddTransient<Gui.Monitor>();
+                break;
+        }
+
+        return services.BuildServiceProvider();
+    }
+    #endregion
+
+    #region Log + Safety Checks
+    private static void ApplyRuntimeSafetyChecks(MonitorSettings settings, Microsoft.Extensions.Logging.ILogger logger, bool gpuNotSupported)
+    {
+        logger.LogWarning("ZenMonitor initialized.");
+
+        if (settings.NoSudo)
+        {
+            logger.LogWarning("Bypassing sudo/admin requirements!");
+        }
+
+        if (gpuNotSupported)
+        {
+            logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
+        }
+
+        logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
+
+        if (settings.LoopDelay > 10000)
+        {
+            settings.LoopDelay = 10000;
+            logger.LogWarning("LoopDelay exceeds 10 seconds. Setting back to a maximum of 10 seconds.");
+        }
+        else if (settings.LoopDelay < 100)
+        {
+            settings.LoopDelay = 100;
+            logger.LogWarning("LoopDelay is below 0.1 seconds. Setting back to a minimum of 0.1 seconds.");
         }
     }
+    #endregion
+
+    #region Init Application
+    private static async Task RunApplicationAsync(ServiceProvider serviceProvider, MonitorSettings settings, CancellationToken cancellationToken)
+    {
+        switch (settings.Mode)
+        {
+            case "cli":
+                {
+                    var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
+                    await engine.InitMonitor(settings.LoopDelay, cancellationToken);
+                    break;
+                }
+            case "tui":
+                Console.WriteLine("tui is not implemented, come back later! (try cli)");
+                break;
+            case "gui":
+                Console.WriteLine("gui is not implemented, come back later! (try cli)");
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported mode: {settings.Mode}");
+        }
+    }
+    #endregion
 
     private static LogEventLevel ParseSerilogLevel(string level)
     {

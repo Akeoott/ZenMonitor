@@ -1,6 +1,7 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System.IO.Abstractions;
 using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,9 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Services.Linux;
 
 [SupportedOSPlatform("linux")]
-public class Storage(ILogger<Storage> logger) : IStorage
+public class Storage(ILogger<Storage> logger, IFileSystem fileSystem) : IStorage
 {
     private readonly ILogger<Storage> _logger = logger;
+    private readonly IFileSystem _fileSystem = fileSystem;
+    private StorageInfoSnapshot _snapshot = new();
 }

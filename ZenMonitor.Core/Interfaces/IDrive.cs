@@ -5,5 +5,9 @@ using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Core.Interfaces;
 
-// TODO: add implementation
-public interface IStorage { }
+public interface IDrive
+{
+    void Update();
+
+    DriveMountInfo[] GetMountInfos();
+}

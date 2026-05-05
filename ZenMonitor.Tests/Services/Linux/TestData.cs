@@ -94,6 +94,21 @@ public static class TestData
     /// </summary>
     public static string LoadAvg() => ReadFile("loadavg");
 
+    /// <summary>
+    /// df -T -B1 output
+    /// </summary>
+    public static string DfOutput() => ReadFile("df");
+
+    /// <summary>
+    /// /proc/diskstats first snapshot
+    /// </summary>
+    public static string DiskStats1() => ReadFile("diskstats1");
+
+    /// <summary>
+    /// /proc/diskstats second snapshot
+    /// </summary>
+    public static string DiskStats2() => ReadFile("diskstats2");
+
     private static string ReadFile(string filename)
     {
         string path = Path.Combine(BaseDir, filename);

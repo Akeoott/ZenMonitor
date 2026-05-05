@@ -17,12 +17,12 @@ namespace ZenMonitor.Tests.Services.Linux.GpuTests;
 public class GpuNvidiaTests
 {
     private readonly Mock<ILogger<GpuNvidia>> _mockLogger;
-    private readonly Mock<IHelper> _mockProcessRunner;
+    private readonly Mock<IHelper> _mockHelper;
 
     public GpuNvidiaTests()
     {
         _mockLogger = new Mock<ILogger<GpuNvidia>>();
-        _mockProcessRunner = new Mock<IHelper>();
+        _mockHelper = new Mock<IHelper>();
     }
 
     [Fact]
@@ -30,11 +30,11 @@ public class GpuNvidiaTests
     {
         // Arrange
         string output = "GeForce RTX 4090, 12, 6, 1024, 24576, 72, P0, 450.00";
-        _mockProcessRunner
+        _mockHelper
             .Setup(r => r.RunProcess("nvidia-smi", It.IsAny<string>()))
             .Returns(new ProcessResult(0, output, string.Empty));
 
-        var gpu = new GpuNvidia(_mockLogger.Object, _mockProcessRunner.Object);
+        var gpu = new GpuNvidia(_mockLogger.Object, _mockHelper.Object);
 
         // Act
         gpu.Update();
@@ -54,11 +54,11 @@ public class GpuNvidiaTests
     public void Update_ThrowsInvalidOperationExceptionWhenNvidiaSmiFails()
     {
         // Arrange
-        _mockProcessRunner
+        _mockHelper
             .Setup(r => r.RunProcess("nvidia-smi", It.IsAny<string>()))
             .Returns(new ProcessResult(1, string.Empty, "Failed to query GPU"));
 
-        var gpu = new GpuNvidia(_mockLogger.Object, _mockProcessRunner.Object);
+        var gpu = new GpuNvidia(_mockLogger.Object, _mockHelper.Object);
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => gpu.Update());

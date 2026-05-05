@@ -14,7 +14,7 @@ public class Monitor(
     IGpu gpuInfo,
     IMemory memoryInfo,
     INetwork networkInfo,
-    IStorage storageInfo,
+    IDrive driveInfo,
     ISystem systemInfo)
 {
     private readonly ILogger<Monitor> _logger = logger;
@@ -22,7 +22,7 @@ public class Monitor(
     private readonly IGpu _gpuInfo = gpuInfo;
     private readonly IMemory _memoryInfo = memoryInfo;
     private readonly INetwork _networkInfo = networkInfo;
-    private readonly IStorage _storageInfo = storageInfo;
+    private readonly IDrive _driveInfo = driveInfo;
     private readonly ISystem _systemInfo = systemInfo;
 
     private readonly SemaphoreSlim _dataReadyEvent = new(0, int.MaxValue);
@@ -84,8 +84,19 @@ public class Monitor(
                     $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
                     $"{_memoryInfo.GetSwapFree()}\n"
                 );
+
+                DriveMountInfo[] mountInfo = _driveInfo.GetMountInfos();
+                for (int i = 0; i < mountInfo.Length; i++)
+                {
+                    DriveMountInfo? info = mountInfo[i];
+                    Console.WriteLine(
+                        $"{info.Index}, {info.MountPoint}, " +
+                        $"{info.DeviceName}, {info.FileSystem}, " +
+                        $"{info.TotalBytes}, {info.AvailableBytes}, " +
+                        $"{info.UsedBytes}, {info.IOUsage}, ");
+                }
                 Console.WriteLine(
-                    $"{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
+                    $"\n{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
                     $"{_systemInfo.GetUptimeSeconds()}, {_systemInfo.GetLoadAvg1Min()}, " +
                     $"{_systemInfo.GetLoadAvg5Min()}, {_systemInfo.GetLoadAvg15Min()}, " +
                     $"{_systemInfo.GetRunningTasks()}, {_systemInfo.GetTotalTasks()}, " +
@@ -108,6 +119,7 @@ public class Monitor(
                 _cpuInfo.Update();
                 _gpuInfo.Update();
                 _memoryInfo.Update();
+                _driveInfo.Update();
                 _systemInfo.Update();
                 _dataReadyEvent.Release();
                 Thread.Sleep(loopDelay);

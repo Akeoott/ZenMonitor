@@ -197,7 +197,7 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
 
             services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
             services.AddSingleton<INetwork, Core.Services.Linux.Network>();
-            services.AddSingleton<IStorage, Core.Services.Linux.Storage>();
+            services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
             services.AddSingleton<ISystem, Core.Services.Linux.System>();
         }
         else

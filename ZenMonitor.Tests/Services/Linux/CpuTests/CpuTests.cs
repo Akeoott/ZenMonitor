@@ -19,16 +19,16 @@ public class CpuTests
 {
     private readonly Mock<ILogger<Cpu>> _mockLogger;
     private readonly MockFileSystem _mockFileSystem;
-    private readonly Mock<IHelper> _mockTimeService;
+    private readonly Mock<IHelper> _mockHelper;
 
     public CpuTests()
     {
         _mockLogger = new Mock<ILogger<Cpu>>();
         _mockFileSystem = new MockFileSystem();
-        _mockTimeService = new Mock<IHelper>();
+        _mockHelper = new Mock<IHelper>();
     }
 
-    private Cpu CreateCpu() => new(_mockLogger.Object, _mockFileSystem, _mockTimeService.Object);
+    private Cpu CreateCpu() => new(_mockLogger.Object, _mockFileSystem, _mockHelper.Object);
 
     [Fact]
     public void GetCpuUsage_ReturnsCpuUsage()
@@ -68,7 +68,7 @@ public class CpuTests
         cpu.Update();
 
         Assert.Equal(45, cpu.GetCpuTemp());
-        Assert.Equal(new[] { new CpuCoreTemp(0, 42), new CpuCoreTemp(1, 43) }, cpu.GetCoreTemps());
+        Assert.Equal([new CpuCoreTemp(0, 42), new CpuCoreTemp(1, 43)], cpu.GetCoreTemps());
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class CpuTests
         cpu.Update();
 
         Assert.Equal(51, cpu.GetCpuTemp());
-        Assert.Equal(new[] { new CpuCoreTemp(0, 49), new CpuCoreTemp(1, 49) }, cpu.GetCoreTemps());
+        Assert.Equal([new CpuCoreTemp(0, 49), new CpuCoreTemp(1, 49)], cpu.GetCoreTemps());
     }
 
     [Fact]
@@ -200,7 +200,7 @@ public class CpuTests
 
         cpu.Update();
 
-        Assert.Equal(new[] { new CpuCoreTemp(0, 42), new CpuCoreTemp(1, 43) }, cpu.GetCoreTemps());
+        Assert.Equal([new CpuCoreTemp(0, 42), new CpuCoreTemp(1, 43)], cpu.GetCoreTemps());
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public class CpuTests
 
         cpu.Update();
 
-        Assert.Equal(new[] { new CpuCoreTemp(0, 49), new CpuCoreTemp(1, 49) }, cpu.GetCoreTemps());
+        Assert.Equal([new CpuCoreTemp(0, 49), new CpuCoreTemp(1, 49)], cpu.GetCoreTemps());
     }
 
     [Fact]
@@ -231,13 +231,13 @@ public class CpuTests
         _mockFileSystem.AddFile("/proc/cpuinfo", new MockFileData(TestData.CpuInfo()));
         _mockFileSystem.AddFile("/proc/stat", new MockFileData(TestData.Stat1()));
 
-        _mockTimeService.Setup(c => c.UtcNow).Returns(new DateTime(2026, 1, 1, 0, 0, 1));
+        _mockHelper.Setup(c => c.UtcNow).Returns(new DateTime(2026, 1, 1, 0, 0, 1));
         _mockFileSystem.AddFile(energyUjPath, new MockFileData(TestData.EnergyUj1()));
         var cpu = CreateCpu();
 
         cpu.Update();
 
-        _mockTimeService.Setup(c => c.UtcNow).Returns(new DateTime(2026, 1, 1, 0, 0, 6));
+        _mockHelper.Setup(c => c.UtcNow).Returns(new DateTime(2026, 1, 1, 0, 0, 6));
         _mockFileSystem.AddFile(energyUjPath, new MockFileData(TestData.EnergyUj2()));
 
         cpu.Update();

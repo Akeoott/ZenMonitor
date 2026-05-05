@@ -36,12 +36,12 @@ public class GpuAmdTests
 
         // Assert
         Assert.Equal("", gpu.GetGpuName());
-        Assert.Equal("", gpu.GetUsageGpu());
-        Assert.Equal("", gpu.GetUsageMemory());
-        Assert.Equal("", gpu.GetMemoryUsed());
-        Assert.Equal("", gpu.GetMemoryTotal());
-        Assert.Equal("", gpu.GetTemperatureGpu());
+        Assert.Equal(0, gpu.GetUsageGpu());
+        Assert.Equal(0, gpu.GetUsageMemory());
+        Assert.Equal(0.0, gpu.GetMemoryUsed());
+        Assert.Equal(0.0, gpu.GetMemoryTotal());
+        Assert.Equal(0, gpu.GetTemperatureGpu());
         Assert.Equal("", gpu.GetPowerState());
-        Assert.Equal("", gpu.GetPowerDraw());
+        Assert.Equal(0.0, gpu.GetPowerDraw());
     }
 }

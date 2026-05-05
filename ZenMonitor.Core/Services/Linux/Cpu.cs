@@ -54,8 +54,8 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, IHelper helper) : 
             double powerDraw = ReadPowerDraw();
 
             double overallSpeed = coreSpeeds.Length > 0
-                ? Math.Round(coreSpeeds.Average(s => s.Speed) / 1000.0, 2)
-                : 0.0;
+                ? Math.Round(coreSpeeds.Average(s => s.Speed), 3)
+                : 0;
 
             return new CpuInfoSnapshot(
                 cpuName,

@@ -15,16 +15,16 @@ public class GpuNull(ILogger<GpuNull> logger) : IGpu
 {
     private readonly ILogger<GpuNull> _logger = logger;
     private readonly GpuInfoSnapshot _snapshot = new(
-        "", "", "", "", "", "", "", "");
+        "", 0, 0, 0.0, 0.0, 0, "", 0.0);
 
     public void Update() => _logger.LogTrace("Gpu not supported, using GpuNull...");
 
     public string GetGpuName() => _snapshot.GpuName;
-    public string GetUsageGpu() => _snapshot.UsageGpu;
-    public string GetUsageMemory() => _snapshot.UsageMemory;
-    public string GetMemoryUsed() => _snapshot.MemoryUsed;
-    public string GetMemoryTotal() => _snapshot.MemoryTotal;
-    public string GetTemperatureGpu() => _snapshot.TemperatureGpu;
+    public int GetUsageGpu() => _snapshot.UsageGpu;
+    public int GetUsageMemory() => _snapshot.UsageMemory;
+    public double GetMemoryUsed() => _snapshot.MemoryUsed;
+    public double GetMemoryTotal() => _snapshot.MemoryTotal;
+    public int GetTemperatureGpu() => _snapshot.TemperatureGpu;
     public string GetPowerState() => _snapshot.PowerState;
-    public string GetPowerDraw() => _snapshot.PowerDraw;
+    public double GetPowerDraw() => _snapshot.PowerDraw;
 }

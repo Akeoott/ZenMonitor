@@ -41,13 +41,13 @@ public class GpuNvidiaTests
 
         // Assert
         Assert.Equal("GeForce RTX 4090", gpu.GetGpuName());
-        Assert.Equal("12", gpu.GetUsageGpu());
-        Assert.Equal("6", gpu.GetUsageMemory());
-        Assert.Equal("1024", gpu.GetMemoryUsed());
-        Assert.Equal("24576", gpu.GetMemoryTotal());
-        Assert.Equal("72", gpu.GetTemperatureGpu());
+        Assert.Equal(12, gpu.GetUsageGpu());
+        Assert.Equal(6, gpu.GetUsageMemory());
+        Assert.Equal(1024.0, gpu.GetMemoryUsed());
+        Assert.Equal(24576.0, gpu.GetMemoryTotal());
+        Assert.Equal(72, gpu.GetTemperatureGpu());
         Assert.Equal("P0", gpu.GetPowerState());
-        Assert.Equal("450.00", gpu.GetPowerDraw());
+        Assert.Equal(450.00, gpu.GetPowerDraw());
     }
 
     [Fact]

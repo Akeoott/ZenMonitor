@@ -16,16 +16,17 @@ namespace ZenMonitor.Tests.Services.Linux.SystemTests;
 [SupportedOSPlatform("linux")]
 public class SystemTests
 {
-    private readonly Mock<ILogger<ZenMonitor.Core.Services.Linux.System>> _mockLogger;
+    // Need to use explicit naming cause of conflict with namespace System
+    private readonly Mock<ILogger<Core.Services.Linux.System>> _mockLogger;
     private readonly MockFileSystem _mockFileSystem;
 
     public SystemTests()
     {
-        _mockLogger = new Mock<ILogger<ZenMonitor.Core.Services.Linux.System>>();
+        _mockLogger = new Mock<ILogger<Core.Services.Linux.System>>();
         _mockFileSystem = new MockFileSystem();
     }
 
-    private ZenMonitor.Core.Services.Linux.System CreateSystem() => new(_mockLogger.Object, _mockFileSystem);
+    private Core.Services.Linux.System CreateSystem() => new(_mockLogger.Object, _mockFileSystem);
 
     [Fact]
     public void Update_ParsesSystemInfoCorrectly()

@@ -50,6 +50,8 @@ public class Drive(ILogger<Drive> logger, IFileSystem fileSystem, IHelper helper
         var mountInfos = new List<DriveMountInfo>();
         int index = 0;
 
+        // TODO: Filter out pseudo filesystems
+        //       (gonna sleep now, leaving that note just in case XP)
         foreach (var line in lines)
         {
             var parts = line.Split([' '], StringSplitOptions.RemoveEmptyEntries);
@@ -70,7 +72,8 @@ public class Drive(ILogger<Drive> logger, IFileSystem fileSystem, IHelper helper
                     totalBytes,
                     availableBytes,
                     usedBytes,
-                    0 // IOUsage will be updated later
+                    // TODO: Gotta test the ReadIOUsages method later
+                    0 // IOUsage will be used a little laterrrr
                 ));
             }
         }
@@ -93,7 +96,7 @@ public class Drive(ILogger<Drive> logger, IFileSystem fileSystem, IHelper helper
 
                 if (_previousDiskStats.TryGetValue(name, out var prev))
                 {
-                    double deltaTime = (DateTime.Now - prev.time).TotalMilliseconds;
+                    double deltaTime = (_helper.UtcNow - prev.time).TotalMilliseconds;
                     double deltaIo = ioTime - prev.ioTime;
                     double usage = deltaTime > 0 ? deltaIo / deltaTime * 100 : 0;
                     ioUsages[name] = usage;
@@ -103,7 +106,7 @@ public class Drive(ILogger<Drive> logger, IFileSystem fileSystem, IHelper helper
                     ioUsages[name] = 0;
                 }
 
-                _previousDiskStats[name] = (ioTime, DateTime.Now);
+                _previousDiskStats[name] = (ioTime, _helper.UtcNow);
             }
         }
 

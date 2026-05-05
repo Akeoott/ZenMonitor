@@ -2,7 +2,6 @@
 // See the LICENSE file in the repository root for full license text.
 
 using System.IO.Abstractions;
-using System.Linq;
 using System.Runtime.Versioning;
 
 using Microsoft.Extensions.Logging;
@@ -30,52 +29,53 @@ public class Drive(ILogger<Drive> logger, IFileSystem fileSystem, IHelper helper
     {
         _logger.LogTrace("Fetching all Drive info...");
 
-        var mountInfos = ReadMountInfos();
         var ioUsages = ReadIOUsages();
+        var mountInfos = ReadMountInfos(ioUsages);
 
-        var updatedMountInfos = mountInfos.Select(m =>
-        {
-            string device = m.DeviceName.StartsWith("/dev/") ? m.DeviceName[5..] : m.DeviceName;
-            double ioUsage = ioUsages.GetValueOrDefault(device, 0);
-            return m with { IOUsage = ioUsage };
-        }).ToArray();
-
-        return new DriveInfoSnapshot(updatedMountInfos);
+        return new DriveInfoSnapshot(mountInfos);
     }
 
-    private DriveMountInfo[] ReadMountInfos()
+    private DriveMountInfo[] ReadMountInfos(Dictionary<string, double> ioUsages)
     {
         string dfOutput = RunDf("-T -B1");
         var lines = dfOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Skip(1);
         var mountInfos = new List<DriveMountInfo>();
         int index = 0;
 
-        // TODO: Filter out pseudo filesystems
-        //       (gonna sleep now, leaving that note just in case XP)
+        HashSet<string> pseudoFileSystems = [
+            "tmpfs", "proc", "sysfs", "devtmpfs", "devpts",
+        "fusectl", "securityfs", "cgroup", "cgroup2", "pstore",
+        "debugfs", "hugetlbfs", "mqueue", "configfs", "bpf", "tracefs"
+        ];
+
         foreach (var line in lines)
         {
             var parts = line.Split([' '], StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 7)
-            {
-                string deviceName = parts[0];
-                string fileSystem = parts[1];
-                long totalBytes = long.Parse(parts[2]);
-                long usedBytes = long.Parse(parts[3]);
-                long availableBytes = long.Parse(parts[4]);
-                string mountPoint = parts[6];
+            if (parts.Length < 7) continue;
 
-                mountInfos.Add(new DriveMountInfo(
-                    index++,
-                    mountPoint,
-                    deviceName,
-                    fileSystem,
-                    totalBytes,
-                    availableBytes,
-                    usedBytes,
-                    // TODO: Gotta test the ReadIOUsages method later
-                    0 // IOUsage will be used a little laterrrr
-                ));
-            }
+            string deviceName = parts[0];
+            string fileSystem = parts[1];
+            if (pseudoFileSystems.Contains(fileSystem)) continue;
+
+            long totalBytes = long.Parse(parts[2]);
+            long usedBytes = long.Parse(parts[3]);
+            long availableBytes = long.Parse(parts[4]);
+            string mountPoint = parts[6];
+
+            // Compute IO usage for this device
+            string shortName = deviceName.StartsWith("/dev/") ? deviceName[5..] : deviceName;
+            double ioUsage = ioUsages.GetValueOrDefault(shortName, 0.0);
+
+            mountInfos.Add(new DriveMountInfo(
+                index++,
+                mountPoint,
+                deviceName,
+                fileSystem,
+                totalBytes,
+                availableBytes,
+                usedBytes,
+                ioUsage
+            ));
         }
 
         return [.. mountInfos];

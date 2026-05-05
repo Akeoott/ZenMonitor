@@ -42,7 +42,6 @@ public class Monitor(
 
                 Console.Write("\n\n========================DEBUG========================\n\n\n");
 
-                // CPU Information
                 Console.WriteLine("CPU INFORMATION");
                 Console.WriteLine($"  Name: {_cpuInfo.GetCpuName()}");
                 Console.Write($"  Speed (MHz): C0 {_cpuInfo.GetCpuSpeed()}");
@@ -73,7 +72,6 @@ public class Monitor(
                 Console.WriteLine();
                 Console.WriteLine($"  Power Draw (W): {_cpuInfo.GetPowerDraw()}\n");
 
-                // GPU Information
                 Console.WriteLine("GPU INFORMATION");
                 Console.WriteLine($"  Name: {_gpuInfo.GetGpuName()}");
                 Console.WriteLine($"  GPU Usage (%): {_gpuInfo.GetUsageGpu()}");
@@ -84,7 +82,6 @@ public class Monitor(
                 Console.WriteLine($"  Power State: {_gpuInfo.GetPowerState()}");
                 Console.WriteLine($"  Power Draw (W): {_gpuInfo.GetPowerDraw()}\n");
 
-                // Memory Information
                 Console.WriteLine("MEMORY INFORMATION");
                 Console.WriteLine($"  Total: {_memoryInfo.GetMemTotal()}");
                 Console.WriteLine($"  Free: {_memoryInfo.GetMemFree()}");
@@ -94,7 +91,6 @@ public class Monitor(
                 Console.WriteLine($"  Swap Total: {_memoryInfo.GetSwapTotal()}");
                 Console.WriteLine($"  Swap Free: {_memoryInfo.GetSwapFree()}\n");
 
-                // System Information
                 Console.WriteLine("SYSTEM INFORMATION");
                 Console.WriteLine($"  Kernel: {_systemInfo.GetKernelVersion()}");
                 Console.WriteLine($"  Hostname: {_systemInfo.GetHostname()}");
@@ -105,6 +101,15 @@ public class Monitor(
                 Console.WriteLine($"  Running Tasks: {_systemInfo.GetRunningTasks()}");
                 Console.WriteLine($"  Total Tasks: {_systemInfo.GetTotalTasks()}");
                 Console.WriteLine($"  Boot Time (Unix): {_systemInfo.GetBootTimeUnixSeconds()}\n");
+
+                Console.WriteLine("DRIVE INFORMATION");
+                var mountInfos = _driveInfo.GetMountInfos();
+                foreach (var mount in mountInfos)
+                {
+                    double usagePercent = mount.TotalBytes > 0 ? (double)mount.UsedBytes / mount.TotalBytes * 100 : 0;
+                    Console.WriteLine($"  {mount.MountPoint}: {mount.DeviceName} ({mount.FileSystem}) - {usagePercent:F1}% used ({mount.UsedBytes}/{mount.TotalBytes} bytes), IO: {mount.IOUsage:F1}%");
+                }
+                Console.WriteLine();
             }
             catch (TaskCanceledException)
             {

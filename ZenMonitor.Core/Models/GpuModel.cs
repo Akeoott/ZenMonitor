@@ -5,12 +5,12 @@ namespace ZenMonitor.Core.Models;
 
 public record GpuInfoSnapshot(
     string GpuName,
-    string UsageGpu,
-    string UsageMemory,
-    string MemoryUsed,
-    string MemoryTotal,
-    string TemperatureGpu,
+    int UsageGpu,
+    int UsageMemory,
+    double MemoryUsed,
+    double MemoryTotal,
+    int TemperatureGpu,
     string PowerState,
-    string PowerDraw
+    double PowerDraw
 );
 

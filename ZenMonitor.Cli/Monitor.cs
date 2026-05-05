@@ -29,8 +29,7 @@ public class Monitor(
 
     public async Task InitMonitor(int loopDelay, CancellationToken cts)
     {
-        await RunBackend(loopDelay, cts);
-        await RunDashboard(cts);
+        await Task.WhenAll(RunBackend(loopDelay, cts), RunDashboard(cts));
     }
 
     private async Task RunDashboard(CancellationToken cts)
@@ -41,67 +40,71 @@ public class Monitor(
             {
                 await _dataReadyEvent.WaitAsync(cts);
 
-                Console.WriteLine("\n--------------------------------------\n");
+                Console.Write("\n\n========================DEBUG========================\n\n\n");
 
-                Console.WriteLine(_cpuInfo.GetCpuName());
-                Console.Write($"C0 {_cpuInfo.GetCpuSpeed()}GHz, ");
+                // CPU Information
+                Console.WriteLine("CPU INFORMATION");
+                Console.WriteLine($"  Name: {_cpuInfo.GetCpuName()}");
+                Console.Write($"  Speed (MHz): C0 {_cpuInfo.GetCpuSpeed()}");
                 CpuCoreSpeed[] cpuCoreSpeed = _cpuInfo.GetCoreSpeeds();
                 for (int i = 0; i < cpuCoreSpeed.Length; i++)
                 {
                     CpuCoreSpeed speed = cpuCoreSpeed[i];
-                    Console.Write($"C{speed.Index + 1} {speed.Speed}Mhz, ");
+                    Console.Write($", C{speed.Index + 1} {speed.Speed}");
                 }
-                Console.WriteLine("");
+                Console.WriteLine();
 
-                Console.Write($"C0 {_cpuInfo.GetCpuUsage()}%, ");
+                Console.Write($"  Usage (%): C0 {_cpuInfo.GetCpuUsage()}");
                 CpuCoreUsage[] cpuCoreUsage = _cpuInfo.GetCoreUsages();
                 for (int i = 0; i < cpuCoreUsage.Length; i++)
                 {
                     CpuCoreUsage? usage = cpuCoreUsage[i];
-                    Console.Write($"C{usage.Index + 1} {usage.Usage}%, ");
+                    Console.Write($", C{usage.Index + 1} {usage.Usage}");
                 }
-                Console.WriteLine("");
+                Console.WriteLine();
 
-                Console.Write($"C0 {_cpuInfo.GetCpuTemp()}°C, ");
+                Console.Write($"  Temperature (°C): C0 {_cpuInfo.GetCpuTemp()}");
                 CpuCoreTemp[] cpuCoreTemp = _cpuInfo.GetCoreTemps();
                 for (int i = 0; i < cpuCoreTemp.Length; i++)
                 {
                     CpuCoreTemp? temp = cpuCoreTemp[i];
-                    Console.Write($"C{temp.Index + 1} {temp.Temp}°C, ");
+                    Console.Write($", C{temp.Index + 1} {temp.Temp}");
                 }
-                Console.Write($"{_cpuInfo.GetPowerDraw()} Watts, ");
+                Console.WriteLine();
+                Console.WriteLine($"  Power Draw (W): {_cpuInfo.GetPowerDraw()}\n");
 
-                Console.WriteLine(
-                    $"\n\n{_gpuInfo.GetGpuName()},\n{_gpuInfo.GetUsageGpu()}, " +
-                    $"{_gpuInfo.GetUsageMemory()}, {_gpuInfo.GetMemoryUsed()}, " +
-                    $"{_gpuInfo.GetMemoryTotal()}, {_gpuInfo.GetTemperatureGpu()}, " +
-                    $"{_gpuInfo.GetPowerState()}, {_gpuInfo.GetPowerDraw()}\n"
-                );
+                // GPU Information
+                Console.WriteLine("GPU INFORMATION");
+                Console.WriteLine($"  Name: {_gpuInfo.GetGpuName()}");
+                Console.WriteLine($"  GPU Usage (%): {_gpuInfo.GetUsageGpu()}");
+                Console.WriteLine($"  Memory Usage (%): {_gpuInfo.GetUsageMemory()}");
+                Console.WriteLine($"  Memory Used: {_gpuInfo.GetMemoryUsed()}");
+                Console.WriteLine($"  Memory Total: {_gpuInfo.GetMemoryTotal()}");
+                Console.WriteLine($"  Temperature (°C): {_gpuInfo.GetTemperatureGpu()}");
+                Console.WriteLine($"  Power State: {_gpuInfo.GetPowerState()}");
+                Console.WriteLine($"  Power Draw (W): {_gpuInfo.GetPowerDraw()}\n");
 
-                Console.WriteLine(
-                    $"{_memoryInfo.GetMemTotal()}, {_memoryInfo.GetMemFree()}, " +
-                    $"{_memoryInfo.GetMemAvailable()}, {_memoryInfo.GetMemUsed()}, " +
-                    $"{_memoryInfo.GetCached()}, {_memoryInfo.GetSwapTotal()}, " +
-                    $"{_memoryInfo.GetSwapFree()}\n"
-                );
+                // Memory Information
+                Console.WriteLine("MEMORY INFORMATION");
+                Console.WriteLine($"  Total: {_memoryInfo.GetMemTotal()}");
+                Console.WriteLine($"  Free: {_memoryInfo.GetMemFree()}");
+                Console.WriteLine($"  Available: {_memoryInfo.GetMemAvailable()}");
+                Console.WriteLine($"  Used: {_memoryInfo.GetMemUsed()}");
+                Console.WriteLine($"  Cached: {_memoryInfo.GetCached()}");
+                Console.WriteLine($"  Swap Total: {_memoryInfo.GetSwapTotal()}");
+                Console.WriteLine($"  Swap Free: {_memoryInfo.GetSwapFree()}\n");
 
-                DriveMountInfo[] mountInfo = _driveInfo.GetMountInfos();
-                for (int i = 0; i < mountInfo.Length; i++)
-                {
-                    DriveMountInfo? info = mountInfo[i];
-                    Console.WriteLine(
-                        $"{info.Index}, {info.MountPoint}, " +
-                        $"{info.DeviceName}, {info.FileSystem}, " +
-                        $"{info.TotalBytes}, {info.AvailableBytes}, " +
-                        $"{info.UsedBytes}, {info.IOUsage}, ");
-                }
-                Console.WriteLine(
-                    $"\n{_systemInfo.GetKernelVersion()}, {_systemInfo.GetHostname()}, " +
-                    $"{_systemInfo.GetUptimeSeconds()}, {_systemInfo.GetLoadAvg1Min()}, " +
-                    $"{_systemInfo.GetLoadAvg5Min()}, {_systemInfo.GetLoadAvg15Min()}, " +
-                    $"{_systemInfo.GetRunningTasks()}, {_systemInfo.GetTotalTasks()}, " +
-                    $"{_systemInfo.GetBootTimeUnixSeconds()}\n"
-                );
+                // System Information
+                Console.WriteLine("SYSTEM INFORMATION");
+                Console.WriteLine($"  Kernel: {_systemInfo.GetKernelVersion()}");
+                Console.WriteLine($"  Hostname: {_systemInfo.GetHostname()}");
+                Console.WriteLine($"  Uptime (s): {_systemInfo.GetUptimeSeconds()}");
+                Console.WriteLine($"  Load Average (1m): {_systemInfo.GetLoadAvg1Min()}");
+                Console.WriteLine($"  Load Average (5m): {_systemInfo.GetLoadAvg5Min()}");
+                Console.WriteLine($"  Load Average (15m): {_systemInfo.GetLoadAvg15Min()}");
+                Console.WriteLine($"  Running Tasks: {_systemInfo.GetRunningTasks()}");
+                Console.WriteLine($"  Total Tasks: {_systemInfo.GetTotalTasks()}");
+                Console.WriteLine($"  Boot Time (Unix): {_systemInfo.GetBootTimeUnixSeconds()}\n");
             }
             catch (TaskCanceledException)
             {
@@ -112,7 +115,7 @@ public class Monitor(
 
     private Task RunBackend(int loopDelay, CancellationToken cts)
     {
-        var backendThread = new Thread(() =>
+        return Task.Run(async () =>
         {
             while (!cts.IsCancellationRequested)
             {
@@ -121,13 +124,10 @@ public class Monitor(
                 _memoryInfo.Update();
                 _driveInfo.Update();
                 _systemInfo.Update();
+                _logger.LogTrace("Done! Sending event to update interface.");
                 _dataReadyEvent.Release();
-                Thread.Sleep(loopDelay);
+                await Task.Delay(loopDelay, cts);
             }
-        })
-        { IsBackground = true };
-        backendThread.Start();
-
-        return Task.CompletedTask;
+        }, cts);
     }
 }

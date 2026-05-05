@@ -17,18 +17,18 @@ public class GpuNvidia(ILogger<GpuNvidia> logger, IHelper helper) : IGpu
     private readonly ILogger<GpuNvidia> _logger = logger;
     private readonly IHelper _helper = helper;
     private GpuInfoSnapshot _snapshot = new(
-        "", "", "", "", "", "", "", "");
+        "", 0, 0, 0.0, 0.0, 0, "", 0.0);
 
     public void Update() => _snapshot = FetchGpuInfo();
 
     public string GetGpuName() => _snapshot.GpuName;
-    public string GetUsageGpu() => _snapshot.UsageGpu;
-    public string GetUsageMemory() => _snapshot.UsageMemory;
-    public string GetMemoryUsed() => _snapshot.MemoryUsed;
-    public string GetMemoryTotal() => _snapshot.MemoryTotal;
-    public string GetTemperatureGpu() => _snapshot.TemperatureGpu;
+    public int GetUsageGpu() => _snapshot.UsageGpu;
+    public int GetUsageMemory() => _snapshot.UsageMemory;
+    public double GetMemoryUsed() => _snapshot.MemoryUsed;
+    public double GetMemoryTotal() => _snapshot.MemoryTotal;
+    public int GetTemperatureGpu() => _snapshot.TemperatureGpu;
     public string GetPowerState() => _snapshot.PowerState;
-    public string GetPowerDraw() => _snapshot.PowerDraw;
+    public double GetPowerDraw() => _snapshot.PowerDraw;
 
     private GpuInfoSnapshot FetchGpuInfo()
     {
@@ -39,9 +39,16 @@ public class GpuNvidia(ILogger<GpuNvidia> logger, IHelper helper) : IGpu
 
         string[] part = [.. csv.Split(',').Select(p => p.Trim())];
 
+        // If this ever fails to parse, too bad XP
         return new GpuInfoSnapshot(
-            part[0], part[1], part[2], part[3],
-            part[4], part[5], part[6], part[7]);
+            part[0],
+            int.TryParse(part[1], out var usageGpu) ? usageGpu : 0,
+            int.TryParse(part[2], out var usageMemory) ? usageMemory : 0,
+            double.TryParse(part[3], out var memoryUsed) ? memoryUsed : 0.0,
+            double.TryParse(part[4], out var memoryTotal) ? memoryTotal : 0.0,
+            int.TryParse(part[5], out var temperatureGpu) ? temperatureGpu : 0,
+            part[6],
+            double.TryParse(part[7], out var powerDraw) ? powerDraw : 0.0);
     }
 
     private string RunNvidiaSmi(string arguments)

@@ -124,7 +124,7 @@ public class CpuTests
 
         cpu.Update();
 
-        Assert.Equal(4, cpu.GetCpuSpeed());
+        Assert.Equal(3997.17, cpu.GetCpuSpeed());
     }
 
     [Fact]

@@ -10,11 +10,11 @@ public interface IGpu
     void Update();
 
     string GetGpuName();
-    string GetUsageGpu();
-    string GetUsageMemory();
-    string GetMemoryUsed();
-    string GetMemoryTotal();
-    string GetTemperatureGpu();
+    int GetUsageGpu();
+    int GetUsageMemory();
+    double GetMemoryUsed();
+    double GetMemoryTotal();
+    int GetTemperatureGpu();
     string GetPowerState();
-    string GetPowerDraw();
+    double GetPowerDraw();
 }

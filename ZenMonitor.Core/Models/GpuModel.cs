@@ -3,6 +3,7 @@
 
 namespace ZenMonitor.Core.Models;
 
+// TODO: Instead of all strings, make type specific to match other models/implementations
 public record GpuInfoSnapshot(
     string GpuName,
     string UsageGpu,

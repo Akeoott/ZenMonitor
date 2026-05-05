@@ -35,6 +35,7 @@ public class Monitor(
 
     private async Task RunDashboard(CancellationToken cts)
     {
+        // TODO: Add clearer formatting on different branch after this one gets merged
         while (true)
         {
             try
@@ -99,6 +100,7 @@ public class Monitor(
         }
     }
 
+    // TODO: Dont use raw thread, use Task.Run with proper cancellation
     private Task RunBackend(int loopDelay, CancellationToken cts)
     {
         var backendThread = new Thread(() =>

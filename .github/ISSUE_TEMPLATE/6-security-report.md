@@ -7,7 +7,7 @@ assignees: Akeoott
 
 ---
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
@@ -23,8 +23,8 @@ If this security report (or the guide on how to "identify the security bug") inc
 certain personal information or involves personal identifiable data, or you believe
 that the data that you might leak by exposing the way on how to attack the project
 could be considered as a data leak or could violate the privacy of any kind of
-data or sensible data, please do not post it here and directly email the developer:
-(akeoot@pm.me). You should post the issue with the least amount of
+data or sensible data, please do not post it here and directly email the developer: akeoot@pm.me
+You should post the issue with the least amount of
 sensible or private data as possible to help us manage the security issue, and
 with the extra data sent from your email to the developer (if any), we will deeply
 analyze and try to fix it as fast as possible.
@@ -40,12 +40,26 @@ The data that must NOT be posted here:
 * Information about political or religious affiliations
 * Information about race, ethnicity, sexual orientation, gender, or other identifying information that could be used for discriminatory purposes
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->
 
 # **⚠️ Security Report**
 
 ## **Describe the security issue**
 <!-- A clear and concise description of what the bug is. -->
+
+*
+
+---
+
+### **Expected behavior**
+<!-- A clear and concise description of what you expected to happen. -->
+
+*
+
+---
+
+### **Actual behavior**
+<!-- A clear and concise description of whats actually happening. -->
 
 *
 
@@ -66,18 +80,6 @@ The data that must NOT be posted here:
 2.
 3.
 4.
-
----
-
-### **Expected behaviour**
-<!-- A clear and concise description of what you expected to happen. -->
-
-*
-
----
-
-### **Media prove**
-<!-- If applicable, add logs, screenshots or videos to help explain your problem. -->
 
 ---
 

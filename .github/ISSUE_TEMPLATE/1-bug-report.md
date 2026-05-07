@@ -16,21 +16,21 @@ labels: "Type: Bug"
 ---
 
 ### **Is this a regression?**
-<!-- Did this behaviour used to work in the previous version? -->
+<!-- Did this behavior used to work in the previous version? -->
 <!-- Yes, the last version in which this bug was not present was: ... -->
 
 *
 
 ---
 
-### **Expected behaviour**
+### **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
 *
 
 ---
 
-### **Actual behaviour**
+### **Actual behavior**
 <!-- A clear and concise description of whats actually happening. -->
 
 *
@@ -76,10 +76,10 @@ and remove all the bulleted list elements that are not relevant for this issue. 
 
 *
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->

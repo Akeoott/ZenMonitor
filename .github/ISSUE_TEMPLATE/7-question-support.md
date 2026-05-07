@@ -1,19 +1,19 @@
 ---
-name: "Question or Support Request"
+name: "Support Request"
 about: "Questions and requests for support."
 title: ""
 labels: "Type: Question"
 
 ---
 
-# **Question or Support Request**
+# **Support Request**
 
-## **Describe your question or ask for support.**
+## **Qestion**
 <!-- A clear and concise description of what your doubt is. -->
 
 *
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
@@ -23,4 +23,4 @@ in the project's README.md file.
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->

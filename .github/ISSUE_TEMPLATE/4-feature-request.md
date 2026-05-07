@@ -8,21 +8,21 @@ labels: "Type: Feature"
 
 # **Feature Request**
 
-## **Is your feature request related to a problem? Please describe.**
-<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
+## **Issue / Demand**
+<!-- A clear and concise description of what the issue is or whats missing. Ex. I'm always frustrated when [...] -->
 
 *
 
 ---
 
-## **Describe the solution you'd like**
+## **Preferred solution**
 <!-- A clear and concise description of what you want to happen. -->
 
 *
 
 ---
 
-## **Describe alternatives you've considered**
+## **Alternative solutions**
 <!-- A clear and concise description of any alternative solutions or features you've considered. -->
 
 *
@@ -34,10 +34,10 @@ labels: "Type: Feature"
 
 *
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->

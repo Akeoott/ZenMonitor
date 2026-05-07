@@ -8,21 +8,23 @@ labels: "Type: Enhancement"
 
 # **Enhancement Request**
 
-## **Is your enhancement request related to a problem? Please describe.**
+<!-- Adjust sections as needed -->
+
+## **Issue / Demand**
 <!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
 
 *
 
 ---
 
-## **Describe the solution you'd like**
+## **Preferred solution**
 <!-- A clear and concise description of what you want to happen. -->
 
 *
 
 ---
 
-## **Describe alternatives you've considered**
+## **Alternative solutions**
 <!-- A clear and concise description of any alternative solutions or features you've considered. -->
 
 *
@@ -34,10 +36,10 @@ labels: "Type: Enhancement"
 
 *
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->

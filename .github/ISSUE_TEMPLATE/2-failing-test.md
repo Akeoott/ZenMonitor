@@ -30,10 +30,10 @@ labels: "Type: Test"
 
 *
 
-<!--📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛
+<!--
 
 Hi there!
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 
-📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛📛-->
+-->

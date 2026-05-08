@@ -30,31 +30,33 @@ internal class Program
 public class MonitorSettings : CommandSettings
 {
     #region Cli Options
-    [CommandOption("-r|--run <value>")]
+    [CommandOption("-r|--run <cli|tui|gui>")]
     [Description(
         "Available modes:\n" +
-        "\tcli (Raw Values)\n" +
+        "\tcli (Command Line Interface Providing Raw Values)\n" +
         "\ttui (Terminal User Interface)\n" +
         "\tgui (Graphical User Interface)\n")]
     public required string Mode { get; set; }
 
-    [CommandOption("-d|--delay <VALUE>")]
+    [CommandOption("-d|--delay <ms>")]
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
     [DefaultValue(1000)]
     public int LoopDelay { get; set; } = 1000;
 
-    [CommandOption("-n|--no-sudo <BOOL>")]
+    [CommandOption("-n|--no-sudo <bool>")]
     [Description("Run ZenMonitor without sudo (some things might not work!)")]
     [DefaultValue("false")]
     public bool NoSudo { get; set; } = false;
 
-    [CommandOption("-c|--cli-log <BOOL>")]
+    [CommandOption("-c|--cli-log <bool>")]
     [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to cli)")]
     [DefaultValue("false")]
     public bool CliLogging { get; set; } = false;
 
-    [CommandOption("-l|--log-level <LEVEL>")]
-    [Description("Set logging verbosity: c|critical, r|error, w|warning, i|info, d|debug, t|trace.")]
+    [CommandOption("-l|--log-level <level>")]
+    [Description(
+        "Set logging verbosity: `t|trace`, `d|debug`, `i|info`, `w|warning`, `e|error`, `c|critical`.\n" +
+        "Logs are written to `logs/ZenMonitor.log` (cleared on each run)")]
     [DefaultValue("info")]
     public string LogLevel { get; set; } = "info";
     #endregion
@@ -67,7 +69,7 @@ public class MonitorSettings : CommandSettings
         if (Mode != "cli" && Mode != "gui" && Mode != "tui")
         {
             return ValidationResult.Error(
-                "Require mode arguments (`--run <value>`). Use `--help` for more information.");
+                "Require mode arguments (`--run <cli|tui|gui>`). Use `--help` for more information.");
         }
 
         if (CliLogging && Mode != "cli")

@@ -209,16 +209,17 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
             services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
             services.AddSingleton<ISystem, Core.Services.Linux.System>();
         }
+        /*
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             services.AddSingleton<IHelper, Core.Services.Windows.Helper>();
             services.AddSingleton<ICpu, Core.Services.Windows.Cpu>();
 
-            if (false /* Check for AMD gpu */)
+            if (false) // Check for Nvidia gpu
             {
                 services.AddSingleton<IGpu, Core.Services.Windows.GpuNvidia>();
             }
-            else if (false /* Check for AMD gpu */)
+            else if (false) // Check for AMD gpu
             {
                 services.AddSingleton<IGpu, Core.Services.Windows.GpuAmd>();
             }
@@ -233,6 +234,7 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
             services.AddSingleton<IDrive, Core.Services.Windows.Drive>();
             services.AddSingleton<ISystem, Core.Services.Windows.System>();
         }
+        */
         else
         {
             throw new PlatformNotSupportedException(

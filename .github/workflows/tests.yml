@@ -2,13 +2,16 @@ name: Tests & Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,13 +26,24 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
+      # Set test filter based on the current OS
+      - name: Set test filter for Linux
+        if: runner.os == 'Linux'
+        run: echo "TEST_FILTER=Platform=Linux" >> $GITHUB_ENV
+
+      - name: Set test filter for Windows
+        if: runner.os == 'Windows'
+        run: echo "TEST_FILTER=Platform=Windows" >> $GITHUB_ENV
+
       - name: Run Tests with Coverage
         run: >
           dotnet test --no-build --collect:"XPlat Code Coverage"
           --results-directory ./coverage --settings coverlet.runsettings
+          --filter "${{ env.TEST_FILTER }}"
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           directory: ./coverage
+          flags: unittests-${{ runner.os }} # e.g., unittests-Linux, unittests-Windows
           fail_ci_if_error: true

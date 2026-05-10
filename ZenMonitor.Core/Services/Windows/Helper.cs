@@ -8,14 +8,14 @@ using System.Runtime.Versioning;
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
 
-namespace ZenMonitor.Core.Services.Linux;
+namespace ZenMonitor.Core.Services.Windows;
 
 /// <summary>
 /// Used for the mockability of code. No general helpers are here.
 /// Just required things for unit tests.
 /// </summary>
 [ExcludeFromCodeCoverage]
-[SupportedOSPlatform("linux")]
+[SupportedOSPlatform("windows")]
 public class Helper : IHelper
 {
     public DateTime UtcNow => DateTime.UtcNow;

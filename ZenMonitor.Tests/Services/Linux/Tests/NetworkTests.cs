@@ -9,8 +9,9 @@ using Moq;
 
 using ZenMonitor.Core.Services.Linux;
 
-namespace ZenMonitor.Tests.Services.Linux.NetworkTests;
+namespace ZenMonitor.Tests.Services.Linux.Tests;
 
+[Trait("Platform", "Linux")]
 [SupportedOSPlatform("linux")]
 public class NetworkTests
 {

@@ -12,10 +12,6 @@ public interface ISystem
     string GetKernelVersion();
     string GetHostname();
     double GetUptimeSeconds();
-    double GetLoadAvg1Min();
-    double GetLoadAvg5Min();
-    double GetLoadAvg15Min();
     int GetRunningTasks();
     int GetTotalTasks();
-    long GetBootTimeUnixSeconds();
 }

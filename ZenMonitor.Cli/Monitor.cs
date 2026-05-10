@@ -95,12 +95,8 @@ public class Monitor(
                 Console.WriteLine($"  Kernel: {_systemInfo.GetKernelVersion()}");
                 Console.WriteLine($"  Hostname: {_systemInfo.GetHostname()}");
                 Console.WriteLine($"  Uptime (s): {_systemInfo.GetUptimeSeconds()}");
-                Console.WriteLine($"  Load Average (1m): {_systemInfo.GetLoadAvg1Min()}");
-                Console.WriteLine($"  Load Average (5m): {_systemInfo.GetLoadAvg5Min()}");
-                Console.WriteLine($"  Load Average (15m): {_systemInfo.GetLoadAvg15Min()}");
                 Console.WriteLine($"  Running Tasks: {_systemInfo.GetRunningTasks()}");
                 Console.WriteLine($"  Total Tasks: {_systemInfo.GetTotalTasks()}");
-                Console.WriteLine($"  Boot Time (Unix): {_systemInfo.GetBootTimeUnixSeconds()}\n");
 
                 Console.WriteLine("DRIVE INFORMATION");
                 var mountInfos = _driveInfo.GetMountInfos();

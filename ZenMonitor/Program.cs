@@ -209,10 +209,34 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
             services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
             services.AddSingleton<ISystem, Core.Services.Linux.System>();
         }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            services.AddSingleton<IHelper, Core.Services.Windows.Helper>();
+            services.AddSingleton<ICpu, Core.Services.Windows.Cpu>();
+
+            if (false /* Check for AMD gpu */)
+            {
+                services.AddSingleton<IGpu, Core.Services.Windows.GpuNvidia>();
+            }
+            else if (false /* Check for AMD gpu */)
+            {
+                services.AddSingleton<IGpu, Core.Services.Windows.GpuAmd>();
+            }
+            else
+            {
+                services.AddSingleton<IGpu, Core.Services.Windows.GpuNull>();
+                gpuNotSupported = true;
+            }
+
+            services.AddSingleton<IMemory, Core.Services.Windows.Memory>();
+            services.AddSingleton<INetwork, Core.Services.Windows.Network>();
+            services.AddSingleton<IDrive, Core.Services.Windows.Drive>();
+            services.AddSingleton<ISystem, Core.Services.Windows.System>();
+        }
         else
         {
             throw new PlatformNotSupportedException(
-                "ZenMonitor only supports Linux at the moment. Windows support will come in the future.");
+                "ZenMonitor only supports Linux and Windows at the moment.");
         }
 
         switch (settings.Mode)

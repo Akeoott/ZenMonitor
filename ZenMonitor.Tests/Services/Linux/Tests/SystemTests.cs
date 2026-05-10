@@ -11,8 +11,9 @@ using Moq;
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Services.Linux;
 
-namespace ZenMonitor.Tests.Services.Linux.SystemTests;
+namespace ZenMonitor.Tests.Services.Linux.Tests;
 
+[Trait("Platform", "Linux")]
 [SupportedOSPlatform("linux")]
 public class SystemTests
 {
@@ -91,51 +92,6 @@ public class SystemTests
     }
 
     [Fact]
-    public void GetLoadAvg1Min_ReturnsLoadAvg1Min()
-    {
-        _mockFileSystem.AddFile("/proc/sys/kernel/osrelease", new MockFileData(TestData.OsRelease()));
-        _mockFileSystem.AddFile("/proc/sys/kernel/hostname", new MockFileData(TestData.Hostname()));
-        _mockFileSystem.AddFile("/proc/uptime", new MockFileData(TestData.Uptime()));
-        _mockFileSystem.AddFile("/proc/loadavg", new MockFileData(TestData.LoadAvg()));
-        _mockFileSystem.AddFile("/proc/stat", new MockFileData(TestData.Stat1()));
-
-        var system = CreateSystem();
-        system.Update();
-
-        Assert.Equal(1.18, system.GetLoadAvg1Min());
-    }
-
-    [Fact]
-    public void GetLoadAvg5Min_ReturnsLoadAvg5Min()
-    {
-        _mockFileSystem.AddFile("/proc/sys/kernel/osrelease", new MockFileData(TestData.OsRelease()));
-        _mockFileSystem.AddFile("/proc/sys/kernel/hostname", new MockFileData(TestData.Hostname()));
-        _mockFileSystem.AddFile("/proc/uptime", new MockFileData(TestData.Uptime()));
-        _mockFileSystem.AddFile("/proc/loadavg", new MockFileData(TestData.LoadAvg()));
-        _mockFileSystem.AddFile("/proc/stat", new MockFileData(TestData.Stat1()));
-
-        var system = CreateSystem();
-        system.Update();
-
-        Assert.Equal(0.98, system.GetLoadAvg5Min());
-    }
-
-    [Fact]
-    public void GetLoadAvg15Min_ReturnsLoadAvg15Min()
-    {
-        _mockFileSystem.AddFile("/proc/sys/kernel/osrelease", new MockFileData(TestData.OsRelease()));
-        _mockFileSystem.AddFile("/proc/sys/kernel/hostname", new MockFileData(TestData.Hostname()));
-        _mockFileSystem.AddFile("/proc/uptime", new MockFileData(TestData.Uptime()));
-        _mockFileSystem.AddFile("/proc/loadavg", new MockFileData(TestData.LoadAvg()));
-        _mockFileSystem.AddFile("/proc/stat", new MockFileData(TestData.Stat1()));
-
-        var system = CreateSystem();
-        system.Update();
-
-        Assert.Equal(0.93, system.GetLoadAvg15Min());
-    }
-
-    [Fact]
     public void GetRunningTasks_ReturnsRunningTasks()
     {
         _mockFileSystem.AddFile("/proc/sys/kernel/osrelease", new MockFileData(TestData.OsRelease()));
@@ -163,20 +119,5 @@ public class SystemTests
         system.Update();
 
         Assert.Equal(2209, system.GetTotalTasks());
-    }
-
-    [Fact]
-    public void GetBootTimeUnixSeconds_ReturnsBootTimeUnixSeconds()
-    {
-        _mockFileSystem.AddFile("/proc/sys/kernel/osrelease", new MockFileData(TestData.OsRelease()));
-        _mockFileSystem.AddFile("/proc/sys/kernel/hostname", new MockFileData(TestData.Hostname()));
-        _mockFileSystem.AddFile("/proc/uptime", new MockFileData(TestData.Uptime()));
-        _mockFileSystem.AddFile("/proc/loadavg", new MockFileData(TestData.LoadAvg()));
-        _mockFileSystem.AddFile("/proc/stat", new MockFileData(TestData.Stat1()));
-
-        var system = CreateSystem();
-        system.Update();
-
-        Assert.Equal(1777647863, system.GetBootTimeUnixSeconds());
     }
 }

@@ -2,12 +2,15 @@ name: Tests & Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,10 +26,39 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
-      - name: Run Tests with Coverage
+      - name: Run Linux Tests with Coverage
         run: >
           dotnet test --no-build --collect:"XPlat Code Coverage"
           --results-directory ./coverage --settings coverlet.runsettings
+          --filter "Platform=Linux"
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./coverage
+          fail_ci_if_error: true
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.203"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Run Windows Tests with Coverage
+        run: >
+          dotnet test --no-build --collect:"XPlat Code Coverage"
+          --results-directory ./coverage --settings coverlet.runsettings
+          --filter "Platform=Windows"
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4

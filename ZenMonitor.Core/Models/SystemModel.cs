@@ -7,10 +7,6 @@ public record SystemInfoSnapshot(
     string KernelVersion,
     string Hostname,
     double UptimeSeconds,
-    double LoadAvg1Min,
-    double LoadAvg5Min,
-    double LoadAvg15Min,
     int RunningTasks,
-    int TotalTasks,
-    long BootTimeUnixSeconds
+    int TotalTasks
 );

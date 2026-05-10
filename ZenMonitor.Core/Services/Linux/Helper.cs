@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 
 using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Models;
@@ -14,6 +15,7 @@ namespace ZenMonitor.Core.Services.Linux;
 /// Just required things for unit tests.
 /// </summary>
 [ExcludeFromCodeCoverage]
+[SupportedOSPlatform("linux")]
 public class Helper : IHelper
 {
     public DateTime UtcNow => DateTime.UtcNow;

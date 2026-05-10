@@ -9,5 +9,4 @@ namespace ZenMonitor.Tests.Services.Windows;
 /// </summary>
 public static class TestData
 {
-
 }

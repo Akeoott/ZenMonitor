@@ -134,6 +134,13 @@ public class MonitorCommand : AsyncCommand<MonitorSettings>
 
             return 0;
         }
+        catch (PlatformNotSupportedException ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            Console.Write("Press any key to exit... ");
+            Console.ReadKey();
+            return 1;
+        }
         finally
         {
             Log.CloseAndFlush();

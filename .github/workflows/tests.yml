@@ -7,11 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  test-linux:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -26,24 +23,42 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
-      # Set test filter based on the current OS
-      - name: Set test filter for Linux
-        if: runner.os == 'Linux'
-        run: echo "TEST_FILTER=Platform=Linux" >> $GITHUB_ENV
-
-      - name: Set test filter for Windows
-        if: runner.os == 'Windows'
-        run: echo "TEST_FILTER=Platform=Windows" >> $GITHUB_ENV
-
-      - name: Run Tests with Coverage
+      - name: Run Linux Tests with Coverage
         run: >
           dotnet test --no-build --collect:"XPlat Code Coverage"
           --results-directory ./coverage --settings coverlet.runsettings
-          --filter "${{ env.TEST_FILTER }}"
+          --filter "Platform=Linux"
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           directory: ./coverage
-          flags: unittests-${{ runner.os }} # e.g., unittests-Linux, unittests-Windows
+          fail_ci_if_error: true
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.203"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Run Windows Tests with Coverage
+        run: >
+          dotnet test --no-build --collect:"XPlat Code Coverage"
+          --results-directory ./coverage --settings coverlet.runsettings
+          --filter "Platform=Windows"
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./coverage
           fail_ci_if_error: true

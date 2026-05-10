@@ -17,7 +17,7 @@ List any dependencies required for this change, if there are any.
 
 <!-- Tell us your motivation behind your changes -->
 
-
+*
 
 ---
 
@@ -31,13 +31,11 @@ List any dependencies required for this change, if there are any.
 
 ### Testing
 
-<!-- Unit tests and specific tests have to be displayed here if applicable -->
-
-*
-
-```
-unit test logs...
-```
+<!-- Fill out -->
+- Unit tests conducted on: Windows <!-- adjust: e.g. Windows, Ubuntu, ArchLinux -->
+- [ ] Adjusted unit tests if needed.
+- [ ] All unit tests passed.
+  - [ ] Unit tests pass on github actions.
 
 <!--
 If it fixes any current issue please let us know this way:

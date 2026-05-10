@@ -22,24 +22,6 @@ public class Helper : IHelper
 
     public ProcessResult RunProcess(string fileName, string arguments)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = fileName,
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
-
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-
-        process.WaitForExit();
-
-        return new ProcessResult(process.ExitCode, output.Trim(), error.Trim());
+        return new(1, "", "RunProcess is NOT implemented!");
     }
 }

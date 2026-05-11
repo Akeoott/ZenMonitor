@@ -29,6 +29,13 @@ public class ProgramSettings : CommandSettings
     [DefaultValue("false")]
     public bool NoSudo { get; set; } = false;
 
+    [CommandOption("-f|--force-run <bool>")]
+    [Description(
+        "Run ZenMonitor regardless of what OS you're on.\n" +
+        "(no data will be returned if your OS is not supported! some things might break!)")]
+    [DefaultValue("false")]
+    public bool ForceRun { get; set; } = false;
+
     [CommandOption("-c|--cli-log <bool>")]
     [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to cli)")]
     [DefaultValue("false")]

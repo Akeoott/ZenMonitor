@@ -44,8 +44,8 @@ internal class ProgramHelper
             }
             else
             {
-                services.AddSingleton<IGpu, Core.Services.Linux.GpuNull>();
                 gpuNotSupported = true;
+                services.AddSingleton<IGpu, Core.Services.Null.Gpu>();
             }
 
             services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
@@ -56,33 +56,25 @@ internal class ProgramHelper
         /*
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            services.AddSingleton<IHelper, Core.Services.Windows.Helper>();
-            services.AddSingleton<ICpu, Core.Services.Windows.Cpu>();
 
-            if (false) // Check for Nvidia gpu
-            {
-                services.AddSingleton<IGpu, Core.Services.Windows.GpuNvidia>();
-            }
-            else if (false) // Check for AMD gpu
-            {
-                services.AddSingleton<IGpu, Core.Services.Windows.GpuAmd>();
-            }
-            else
-            {
-                services.AddSingleton<IGpu, Core.Services.Windows.GpuNull>();
-                gpuNotSupported = true;
-            }
-
-            services.AddSingleton<IMemory, Core.Services.Windows.Memory>();
-            services.AddSingleton<INetwork, Core.Services.Windows.Network>();
-            services.AddSingleton<IDrive, Core.Services.Windows.Drive>();
-            services.AddSingleton<ISystem, Core.Services.Windows.System>();
         }
         */
         else
         {
-            throw new PlatformNotSupportedException(
-                "ZenMonitor only supports Linux and Windows at the moment.");
+            if (settings.ForceRun)
+            {
+                services.AddSingleton<ICpu, Core.Services.Null.Cpu>();
+                services.AddSingleton<IGpu, Core.Services.Null.Gpu>();
+                services.AddSingleton<IMemory, Core.Services.Null.Memory>();
+                services.AddSingleton<INetwork, Core.Services.Null.Network>();
+                services.AddSingleton<IDrive, Core.Services.Null.Drive>();
+                services.AddSingleton<ISystem, Core.Services.Null.System>();
+            }
+            else
+            {
+                throw new PlatformNotSupportedException(
+                    "ZenMonitor only supports Linux at the moment.");
+            }
         }
 
         switch (settings.Mode)
@@ -141,18 +133,28 @@ internal class ProgramHelper
     #endregion
 
     #region Log + Safety Checks
-    internal static void ApplyRuntimeSafetyChecks(ProgramSettings settings, Microsoft.Extensions.Logging.ILogger logger, bool gpuNotSupported)
+    internal static void ApplyRuntimeSafetyChecks(
+        ProgramSettings settings,
+        Microsoft.Extensions.Logging.ILogger logger,
+        bool gpuNotSupported)
     {
         logger.LogWarning("ZenMonitor initialized.");
+
+        logger.LogInformation("Running on {OSDescription}", RuntimeInformation.OSDescription);
 
         if (settings.NoSudo)
         {
             logger.LogWarning("Bypassing sudo/admin requirements!");
         }
 
+        if (settings.ForceRun)
+        {
+            logger.LogWarning("Force running! No data will be returned if your OS is not supported.");
+        }
+
         if (gpuNotSupported)
         {
-            logger.LogError("Unsupported GPU. Falling back to `GpuNull`, no graphics information will be returned.");
+            logger.LogError("Unsupported GPU. Falling back to `Null.Gpu`, no graphics information will be returned.");
         }
 
         logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);

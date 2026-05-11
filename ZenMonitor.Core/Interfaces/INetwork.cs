@@ -6,4 +6,9 @@ using ZenMonitor.Core.Models;
 namespace ZenMonitor.Core.Interfaces;
 
 // TODO: add implementation
-public interface INetwork { }
+public interface INetwork
+{
+    void Update();
+
+    string GetNone();
+}

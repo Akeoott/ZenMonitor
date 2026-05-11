@@ -11,7 +11,7 @@ namespace ZenMonitor.Core.Services.Null;
 public class Cpu(ILogger<Cpu> logger) : ICpu
 {
     private readonly ILogger<Cpu> _logger = logger;
-    private readonly CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
+    private readonly CpuInfoSnapshot _snapshot = new("", 0, 0, 0, 0, [], [], []);
 
     public void Update() => _logger.LogWarning("Overriding platform specific code. Returning empty snapshot...");
 

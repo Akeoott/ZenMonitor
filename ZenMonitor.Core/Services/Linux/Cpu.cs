@@ -18,7 +18,7 @@ public class Cpu(ILogger<Cpu> logger, IFileSystem fileSystem, IHelper helper) : 
     private readonly ILogger<Cpu> _logger = logger;
     private readonly IFileSystem _fileSystem = fileSystem;
     private readonly IHelper _helper = helper;
-    private CpuInfoSnapshot _snapshot = new("Unknown CPU", 0, 0, 0, 0, [], [], []);
+    private CpuInfoSnapshot _snapshot = new("", 0, 0, 0, 0, [], [], []);
 
     // /proc/stat tick buffers
     private long[] _currentTotalTicks = [];

@@ -3,14 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-using Terminal.Gui.App;
-using Terminal.Gui.Configuration;
-using Terminal.Gui.Input;
-using Terminal.Gui.ViewBase;
-using Terminal.Gui.Views;
-
 using ZenMonitor.Core.Interfaces;
-using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Tui;
 

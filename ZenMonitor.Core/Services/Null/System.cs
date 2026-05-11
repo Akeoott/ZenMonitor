@@ -11,7 +11,7 @@ namespace ZenMonitor.Core.Services.Null;
 public class System(ILogger<System> logger) : ISystem
 {
     private readonly ILogger<System> _logger = logger;
-    private readonly SystemInfoSnapshot _snapshot = new("Unknown", "Unknown", 0, 0, 0);
+    private readonly SystemInfoSnapshot _snapshot = new("", "", 0, 0, 0);
 
     public void Update() => _logger.LogWarning("Overriding platform specific code. Returning empty snapshot...");
 

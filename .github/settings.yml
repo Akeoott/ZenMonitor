@@ -49,11 +49,11 @@ labels:
     description: Currently being worked on.
 
   - name: "Status: Waiting"
-    color: 38C968
+    color: 6b8e9e
     description: Waiting on something else to be ready.
 
   - name: "Status: Stale"
-    color: 66b38a
+    color: 8a6d3b
     description: Has had no activity for some time.
 
   - name: "Duplicate"
@@ -61,24 +61,28 @@ labels:
     description: Duplicate of another issue.
 
   - name: "Invalid"
-    color: faef50
+    color: c4a500
     description: This issue doesn't seem right.
 
   - name: "Priority: High +"
-    color: ff008c
+    color: e80c0c
     description: Task is considered higher-priority.
 
   - name: "Priority: Med ±"
-    color: b4060b
+    color: e8a60c
     description: Task is considered medium-priority.
 
   - name: "Priority: Low -"
-    color: 690a34
+    color: 0c9e3e
     description: Task is considered lower-priority.
 
   - name: "Documentation"
     color: 2fbceb
     description: An issue/change with the documentation.
+
+  - name: "Type: CI"
+    color: 54b2ff
+    description: A problem or change related to CI/CD workflows.
 
   - name: "Won't fix"
     color: C8D9E6

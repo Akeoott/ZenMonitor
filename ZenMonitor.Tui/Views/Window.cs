@@ -2,6 +2,7 @@
 // See the LICENSE file in the repository root for full license text.
 
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -10,56 +11,136 @@ using ZenMonitor.Core.Interfaces;
 
 namespace ZenMonitor.Tui.Views;
 
+#region Class & Fields
+
+/// <summary>
+/// Main TUI window with a grid layout:
+/// Key map: 1=CPU, 2=GPU, 3=Mem+Disk, 4=Placeholder, 5=Network.
+/// </summary>
 public sealed class Window : Runnable<bool>
 {
-    private readonly CpuTab _cpuTab;
-    //private readonly GpuTab _gpuTab;
-    //private readonly MemoryTab _memoryTab;
-    //private readonly DrivesTab _drivesTab;
-    //private readonly NetworkTab _networkTab;
-    //private readonly SystemTab _systemTab;
+    private readonly HeaderView _header;
+    private readonly CpuSection _cpuSection;
+    private readonly GpuSection _gpuSection;
+    private readonly MemoryDiskSection _memDiskSection;
+    private readonly NetworkSection _networkSection;
+    private readonly PlaceholderSection _placeholderSection;
+    private readonly Label _noSectionsLabel;
+
+    private readonly View _zoneA;
+    private readonly View _zoneB;
+    private readonly View _leftPanel;
+    private readonly View _rightPanel;
+    private readonly List<View> _zoneContainers;
+
+    /// <summary>
+    /// Gets or sets the visibility state of all sections.
+    /// Modify this property, then call <see cref="RecalculateLayout"/> to reflow.
+    /// </summary>
+    public SectionVisibility SectionVisibility { get; set; } = new();
+
+    #endregion
+
+    #region Constructor
 
     public Window(
         ICpu cpu,
+        IDrive drive,
         IGpu gpu,
         IMemory memory,
-        IDrive drive,
         INetwork network,
         ISystem system)
     {
         Title = "ZenMonitor";
         BorderStyle = LineStyle.Rounded;
 
-        _cpuTab = new CpuTab(cpu);
-        //_gpuTab = new GpuTab(gpu);
-        //_memoryTab = new MemoryTab(memory);
-        //_drivesTab = new DrivesTab(drive);
-        //_networkTab = new NetworkTab(network);
-        //_systemTab = new SystemTab(system);
+        _header = new HeaderView(system);
+        Add(_header);
 
-        var tabView = new TabView
+        _cpuSection = new CpuSection(cpu);
+        _gpuSection = new GpuSection(gpu);
+        _memDiskSection = new MemoryDiskSection(memory, drive);
+        _networkSection = new NetworkSection(network);
+        _placeholderSection = new PlaceholderSection();
+
+        // Zone A - CPU | GPU (top row)
+        _zoneA = new View
         {
             X = 0,
-            Y = 0,
             Width = Dim.Fill(),
-            Height = Dim.Fill()
+            Y = Pos.Bottom(_header),
+            Height = 0,
+            CanFocus = false,
+            Visible = false
+        };
+        _cpuSection.X = 0;
+        _cpuSection.Width = Dim.Percent(50);
+        _cpuSection.Y = 0;
+        _cpuSection.Height = Dim.Fill();
+        _gpuSection.X = Pos.Percent(50);
+        _gpuSection.Width = Dim.Fill();
+        _gpuSection.Y = 0;
+        _gpuSection.Height = Dim.Fill();
+        _zoneA.Add(_cpuSection, _gpuSection);
+
+        // Zone B - LeftPanel | RightPanel (mid area)
+        _zoneB = new View
+        {
+            X = 0,
+            Width = Dim.Fill(),
+            Y = Pos.Bottom(_zoneA),
+            Height = 0,
+            CanFocus = false,
+            Visible = false
         };
 
-        var cpuTabObj = new Tab { View = _cpuTab, Text = "CPU" };
-        //var gpuTabObj = new Tab { View = _gpuTab, Text = "GPU" };
-        //var memTabObj = new Tab { View = _memoryTab, Text = "Memory" };
-        //var drvTabObj = new Tab { View = _drivesTab, Text = "Drives" };
-        //var netTabObj = new Tab { View = _networkTab, Text = "Network" };
-        //var sysTabObj = new Tab { View = _systemTab, Text = "System" };
+        _leftPanel = new View
+        {
+            X = 0,
+            Width = Dim.Percent(50),
+            Y = 0,
+            Height = Dim.Fill(),
+            CanFocus = false
+        };
+        _memDiskSection.X = 0;
+        _memDiskSection.Width = Dim.Fill();
+        _memDiskSection.Y = 0;
+        _memDiskSection.Height = Dim.Fill();
+        _networkSection.X = 0;
+        _networkSection.Width = Dim.Fill();
+        _networkSection.Y = Pos.Bottom(_memDiskSection);
+        _networkSection.Height = Dim.Fill();
+        _leftPanel.Add(_memDiskSection, _networkSection);
 
-        tabView.AddTab(cpuTabObj, true);
-        //tabView.AddTab(gpuTabObj, false);
-        //tabView.AddTab(memTabObj, false);
-        //tabView.AddTab(drvTabObj, false);
-        //tabView.AddTab(netTabObj, false);
-        //tabView.AddTab(sysTabObj, false);
+        _rightPanel = new View
+        {
+            X = Pos.Percent(50),
+            Width = Dim.Fill(),
+            Y = 0,
+            Height = Dim.Fill(),
+            CanFocus = false
+        };
+        _placeholderSection.X = 0;
+        _placeholderSection.Width = Dim.Fill();
+        _placeholderSection.Y = 0;
+        _placeholderSection.Height = Dim.Fill();
+        _rightPanel.Add(_placeholderSection);
 
-        Add(tabView);
+        _zoneB.Add(_leftPanel, _rightPanel);
+
+        _zoneContainers = [_zoneA, _zoneB];
+        foreach (var z in _zoneContainers) Add(z);
+
+        _noSectionsLabel = new Label
+        {
+            X = Pos.Center(),
+            Y = Pos.Center(),
+            Text = "No sections selected - press 1-5 to show a section",
+            Visible = false
+        };
+        Add(_noSectionsLabel);
+
+        RecalculateLayout();
 
         AddCommand(Command.Quit, () =>
         {
@@ -69,13 +150,160 @@ public sealed class Window : Runnable<bool>
         KeyBindings.Add(Key.Esc, Command.Quit);
     }
 
-    public void RefreshAll()
+    #endregion
+
+    #region Key Handling
+
+    protected override bool OnKeyDown(Key key)
     {
-        _cpuTab.Refresh();
-        //_gpuTab.Refresh();
-        //_memoryTab.Refresh();
-        //_drivesTab.Refresh();
-        //_networkTab.Refresh();
-        //_systemTab.Refresh();
+        KeyCode code = (KeyCode)key;
+
+        int index = code switch
+        {
+            KeyCode.D1 => 0,
+            KeyCode.D2 => 1,
+            KeyCode.D3 => 2,
+            KeyCode.D4 => 3,
+            KeyCode.D5 => 4,
+            _ => -1
+        };
+
+        if (index >= 0)
+        {
+            SectionVisibility.Toggle(index);
+            RecalculateLayout();
+            return true;
+        }
+
+        if ((code & KeyCode.CtrlMask) != 0 && (code & ~KeyCode.CtrlMask) == KeyCode.Q)
+        {
+            App?.RequestStop();
+            return true;
+        }
+
+        return base.OnKeyDown(key);
     }
+
+    #endregion
+
+    #region Layout
+
+    /// <summary>
+    /// Reflows the grid layout based on current visibility.
+    /// Zones and sections adapt proportionally to fill available space.
+    /// </summary>
+    public void RecalculateLayout()
+    {
+        var vis = SectionVisibility;
+
+        _cpuSection.Visible = vis.Cpu;
+        _gpuSection.Visible = vis.Gpu;
+        _memDiskSection.Visible = vis.MemDisk;
+        _networkSection.Visible = vis.Network;
+        _placeholderSection.Visible = vis.Placeholder;
+
+        // --- Left panel internal layout ---
+        bool leftHasContent = vis.MemDisk || vis.Network;
+        if (leftHasContent)
+        {
+            _leftPanel.Visible = true;
+
+            if (vis.MemDisk && vis.Network)
+            {
+                // 50/50 split between MemDisk and Network
+                _memDiskSection.Height = Dim.Percent(50);
+                _networkSection.Height = Dim.Fill();
+                _networkSection.Y = Pos.Bottom(_memDiskSection);
+            }
+            else if (vis.MemDisk)
+            {
+                // Only MemDisk visible: fills left panel
+                _memDiskSection.Height = Dim.Fill();
+                _networkSection.Height = 0;
+            }
+            else
+            {
+                // Only Network visible: fills left panel
+                _memDiskSection.Height = 0;
+                _networkSection.Y = 0;
+                _networkSection.Height = Dim.Fill();
+            }
+        }
+        else
+        {
+            _leftPanel.Visible = false;
+        }
+
+        // --- Zone B split (left panel / right panel) ---
+        if (vis.Placeholder)
+        {
+            _rightPanel.Visible = true;
+            _leftPanel.Width = Dim.Percent(50);
+            _rightPanel.X = Pos.Percent(50);
+            _rightPanel.Width = Dim.Fill();
+        }
+        else
+        {
+            _rightPanel.Visible = false;
+            _leftPanel.Width = Dim.Fill();
+        }
+
+        // --- Zone visibility and sizing ---
+        bool zoneAHasContent = vis.Cpu || vis.Gpu;
+        bool zoneBHasContent = leftHasContent || vis.Placeholder;
+
+        foreach (var z in _zoneContainers) z.Visible = false;
+
+        if (!zoneAHasContent && !zoneBHasContent)
+        {
+            _noSectionsLabel.Visible = true;
+            return;
+        }
+        _noSectionsLabel.Visible = false;
+
+        var visibleZones = new List<View>();
+        if (zoneAHasContent) visibleZones.Add(_zoneA);
+        if (zoneBHasContent) visibleZones.Add(_zoneB);
+
+        for (int i = 0; i < visibleZones.Count; i++)
+        {
+            var zone = visibleZones[i];
+            zone.Visible = true;
+
+            if (visibleZones.Count == 1)
+            {
+                // Only one zone visible: fill everything
+                zone.Height = Dim.Fill();
+            }
+            else if (i == 0)
+            {
+                // First zone (Zone A) gets 30% of available space
+                zone.Height = Dim.Percent(30);
+            }
+            else
+            {
+                // Last zone gets remaining space
+                zone.Height = Dim.Fill();
+            }
+        }
+    }
+
+    #endregion
+
+    #region Refresh
+
+    /// <summary>
+    /// Updates all visible section data from the background loop.
+    /// </summary>
+    public void RefreshData()
+    {
+        _header.Refresh();
+        _cpuSection.Refresh();
+        _gpuSection.Refresh();
+        _memDiskSection.Refresh();
+        _networkSection.Refresh();
+        _placeholderSection.Refresh();
+    }
+
+    #endregion
 }

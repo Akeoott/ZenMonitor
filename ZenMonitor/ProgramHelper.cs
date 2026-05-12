@@ -33,6 +33,7 @@ internal class ProgramHelper
         {
             services.AddSingleton<IHelper, Core.Services.Linux.Helper>();
             services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
+            services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
 
             if (Directory.Exists("/proc/driver/nvidia"))
             {
@@ -50,7 +51,6 @@ internal class ProgramHelper
 
             services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
             services.AddSingleton<INetwork, Core.Services.Linux.Network>();
-            services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
             services.AddSingleton<ISystem, Core.Services.Linux.System>();
         }
         /*
@@ -64,10 +64,10 @@ internal class ProgramHelper
             if (settings.ForceRun)
             {
                 services.AddSingleton<ICpu, Core.Services.Null.Cpu>();
+                services.AddSingleton<IDrive, Core.Services.Null.Drive>();
                 services.AddSingleton<IGpu, Core.Services.Null.Gpu>();
                 services.AddSingleton<IMemory, Core.Services.Null.Memory>();
                 services.AddSingleton<INetwork, Core.Services.Null.Network>();
-                services.AddSingleton<IDrive, Core.Services.Null.Drive>();
                 services.AddSingleton<ISystem, Core.Services.Null.System>();
             }
             else

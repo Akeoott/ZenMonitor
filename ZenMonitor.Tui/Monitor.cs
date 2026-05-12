@@ -11,6 +11,8 @@ using ZenMonitor.Tui.Views;
 
 namespace ZenMonitor.Tui;
 
+#region Primary Constructor
+
 public class Monitor(
     ILogger<Monitor> logger,
     ICpu cpuInfo,
@@ -22,13 +24,17 @@ public class Monitor(
 {
     private readonly ILogger<Monitor> _logger = logger;
     private readonly ICpu _cpuInfo = cpuInfo;
+    private readonly IDrive _driveInfo = driveInfo;
     private readonly IGpu _gpuInfo = gpuInfo;
     private readonly IMemory _memoryInfo = memoryInfo;
     private readonly INetwork _networkInfo = networkInfo;
-    private readonly IDrive _driveInfo = driveInfo;
     private readonly ISystem _systemInfo = systemInfo;
 
-    public async Task InitMonitor(int loopDelay, CancellationToken cts)
+    #endregion
+
+    #region Public Methods
+
+    public async Task InitMonitor(int loopDelay, CancellationToken cancellationToken)
     {
         ConfigurationManager.Enable(ConfigLocations.All);
         ConfigurationManager.RuntimeConfig = """
@@ -39,11 +45,11 @@ public class Monitor(
         try
         {
             var window = new Window(
-                _cpuInfo, _gpuInfo, _memoryInfo, _driveInfo, _networkInfo, _systemInfo);
+                _cpuInfo, _driveInfo, _gpuInfo, _memoryInfo, _networkInfo, _systemInfo);
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var backgroundTask = Task.Run(() =>
-                RunDataLoop(loopDelay, app, window, linkedCts.Token), cts);
+                DataLoop(loopDelay, app, window, linkedCts.Token), cancellationToken);
 
             app.Run(window);
 
@@ -56,20 +62,24 @@ public class Monitor(
         }
     }
 
-    private async Task RunDataLoop(
+    #endregion
+
+    #region Private Methods
+
+    private async Task DataLoop(
         int loopDelay, IApplication app, Window window,
         CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
             _cpuInfo.Update();
+            _driveInfo.Update();
             _gpuInfo.Update();
             _memoryInfo.Update();
-            _driveInfo.Update();
+            _networkInfo.Update();
             _systemInfo.Update();
 
-            // Marshal UI refresh to the main terminal thread
-            app.Invoke(() => window.RefreshAll());
+            app.Invoke(window.RefreshData);
 
             try
             {
@@ -80,6 +90,8 @@ public class Monitor(
                 break;
             }
         }
-        _logger.LogTrace("Background data loop stopped.");
+        _logger.LogDebug("Background data loop stopped.");
     }
+
+    #endregion
 }

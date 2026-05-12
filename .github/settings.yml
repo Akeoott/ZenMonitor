@@ -68,6 +68,10 @@ labels:
     color: ff008c
     description: Task is considered higher-priority.
 
+  - name: "Priority: Med ±"
+    color: b4060b
+    description: Task is considered medium-priority.
+
   - name: "Priority: Low -"
     color: 690a34
     description: Task is considered lower-priority.

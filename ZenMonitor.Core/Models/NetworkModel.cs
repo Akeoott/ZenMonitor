@@ -1,12 +1,8 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
-namespace ZenMonitor.Core.Interfaces;
+namespace ZenMonitor.Core.Models;
 
-// TODO: add implementation
-public interface INetwork
-{
-    void Update();
-
-    string GetNone();
-}
+public record NetworkInfoSnapshot(
+    string None
+);

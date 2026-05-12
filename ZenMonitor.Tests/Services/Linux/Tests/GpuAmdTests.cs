@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 
 using Moq;
 
-using ZenMonitor.Core.Interfaces;
 using ZenMonitor.Core.Services.Linux;
 
 namespace ZenMonitor.Tests.Services.Linux.Tests;

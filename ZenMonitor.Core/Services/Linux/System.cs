@@ -17,7 +17,7 @@ public class System(ILogger<System> logger, IFileSystem fileSystem) : ISystem
     private readonly ILogger<System> _logger = logger;
     private readonly IFileSystem _fileSystem = fileSystem;
     private SystemInfoSnapshot _snapshot = new(
-        "Unknown", "Unknown", 0, 0, 0);
+        "", "", 0, 0, 0);
 
     public void Update() => _snapshot = FetchSystemInfo();
 

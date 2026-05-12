@@ -11,18 +11,18 @@ namespace ZenMonitor.Cli;
 public class Monitor(
     ILogger<Monitor> logger,
     ICpu cpuInfo,
+    IDrive driveInfo,
     IGpu gpuInfo,
     IMemory memoryInfo,
     INetwork networkInfo,
-    IDrive driveInfo,
     ISystem systemInfo)
 {
     private readonly ILogger<Monitor> _logger = logger;
     private readonly ICpu _cpuInfo = cpuInfo;
+    private readonly IDrive _driveInfo = driveInfo;
     private readonly IGpu _gpuInfo = gpuInfo;
     private readonly IMemory _memoryInfo = memoryInfo;
     private readonly INetwork _networkInfo = networkInfo;
-    private readonly IDrive _driveInfo = driveInfo;
     private readonly ISystem _systemInfo = systemInfo;
 
     private readonly SemaphoreSlim _dataReadyEvent = new(0, int.MaxValue);
@@ -121,9 +121,9 @@ public class Monitor(
             while (!cts.IsCancellationRequested)
             {
                 _cpuInfo.Update();
+                _driveInfo.Update();
                 _gpuInfo.Update();
                 _memoryInfo.Update();
-                _driveInfo.Update();
                 _systemInfo.Update();
                 _logger.LogTrace("Done! Sending event to update interface.");
                 _dataReadyEvent.Release();

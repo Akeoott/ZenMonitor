@@ -24,7 +24,6 @@ public class NetworkTests
     [Fact]
     public void GetAll_CheckThatEverythingIsNull()
     {
-
         var network = CreateNetwork();
         network.Update();
         Assert.Equal("", network.GetNone());

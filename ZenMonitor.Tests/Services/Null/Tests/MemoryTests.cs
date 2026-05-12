@@ -24,7 +24,6 @@ public class MemoryTests
     [Fact]
     public void GetAll_CheckThatEverythingIsNull()
     {
-
         var memory = CreateMemory();
         memory.Update();
         Assert.Equal(0, memory.GetMemTotal());

@@ -22,7 +22,6 @@ public class SystemTests
     [Fact]
     public void GetAll_CheckThatEverythingIsNull()
     {
-
         var system = CreateSystem();
         system.Update();
         Assert.Equal("", system.GetKernelVersion());

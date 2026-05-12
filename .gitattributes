@@ -22,4 +22,3 @@ App.config text eol=crlf
 .gitignore text eol=lf
 .gitattributes text eol=lf
 *.md text eol=lf
-.travis.yml text eol=lf

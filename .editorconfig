@@ -15,14 +15,6 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-# ====================
-# Web Styling Settings
-
-[*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,vue}]
-indent_size = 4
-[*.{css,scss,sass,less,styl}]
-indent_size = 2
-
 # ==============================
 # C# (.NET SDK) Styling Settings
 
@@ -53,6 +45,10 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_preserve_single_line_blocks = true
 
+# License header
+dotnet_diagnostic.OLOC001.words_in_name = 5
+dotnet_diagnostic.OLOC001.license_header = // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.\n// See the LICENCE file in the repository root for full licence text.
+
 [*.{csproj,props,targets}]
 charset = utf-8-bom
 end_of_line = crlf
@@ -70,9 +66,6 @@ insert_final_newline = true
 indent_style = space
 indent_size = 2
 trim_trailing_whitespace = true
-
-dotnet_diagnostic.OLOC001.words_in_name = 5
-dotnet_diagnostic.OLOC001.license_header = // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.\n// See the LICENCE file in the repository root for full licence text.
 
 # =======================
 # Markdown and Text Files

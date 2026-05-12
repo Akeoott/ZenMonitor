@@ -19,6 +19,10 @@ namespace ZenMonitor.Tui.Views;
 /// </summary>
 public sealed class Window : Runnable<bool>
 {
+    private const int ZoneAHeightPercent = 30;
+    private const int PanelSplitPercent = 50;
+    private const int LeftPanelInternalSplitPercent = 50;
+
     private readonly HeaderView _header;
     private readonly CpuSection _cpuSection;
     private readonly GpuSection _gpuSection;
@@ -32,6 +36,9 @@ public sealed class Window : Runnable<bool>
     private readonly View _leftPanel;
     private readonly View _rightPanel;
     private readonly List<View> _zoneContainers;
+
+    // Reusable buffer to avoid allocating a new List on every layout pass
+    private readonly List<View> _visibleZonesBuffer = new(capacity: 2);
 
     /// <summary>
     /// Gets or sets the visibility state of all sections.
@@ -194,52 +201,74 @@ public sealed class Window : Runnable<bool>
     /// </summary>
     public void RecalculateLayout()
     {
-        var vis = SectionVisibility;
+        ArgumentNullException.ThrowIfNull(SectionVisibility);
 
+        SectionVisibility vis = SectionVisibility;
+        ApplySectionVisibility(vis);
+
+        bool leftHasContent = ArrangeLeftPanel(vis);
+        ArrangeZoneB(vis, leftHasContent);
+        ArrangeZones(vis, leftHasContent);
+    }
+
+    private void ApplySectionVisibility(SectionVisibility vis)
+    {
         _cpuSection.Visible = vis.Cpu;
         _gpuSection.Visible = vis.Gpu;
         _memDiskSection.Visible = vis.MemDisk;
         _networkSection.Visible = vis.Network;
         _placeholderSection.Visible = vis.Placeholder;
+    }
 
-        // --- Left panel internal layout ---
-        bool leftHasContent = vis.MemDisk || vis.Network;
-        if (leftHasContent)
+    /// <summary>
+    /// Arranges the left panel (MemDisk + Network).
+    /// Returns <c>true</c> if the left panel has any visible content.
+    /// </summary>
+    private bool ArrangeLeftPanel(SectionVisibility vis)
+    {
+        bool hasContent = vis.MemDisk || vis.Network;
+        if (!hasContent)
         {
-            _leftPanel.Visible = true;
+            _leftPanel.Visible = false;
+            return false;
+        }
 
-            if (vis.MemDisk && vis.Network)
-            {
-                // 50/50 split between MemDisk and Network
-                _memDiskSection.Height = Dim.Percent(50);
-                _networkSection.Height = Dim.Fill();
-                _networkSection.Y = Pos.Bottom(_memDiskSection);
-            }
-            else if (vis.MemDisk)
-            {
-                // Only MemDisk visible: fills left panel
-                _memDiskSection.Height = Dim.Fill();
-                _networkSection.Height = 0;
-            }
-            else
-            {
-                // Only Network visible: fills left panel
-                _memDiskSection.Height = 0;
-                _networkSection.Y = 0;
-                _networkSection.Height = Dim.Fill();
-            }
+        _leftPanel.Visible = true;
+
+        if (vis.MemDisk && vis.Network)
+        {
+            // 50/50 split between MemDisk and Network
+            _memDiskSection.Height = Dim.Percent(LeftPanelInternalSplitPercent);
+            _networkSection.Height = Dim.Fill();
+            _networkSection.Y = Pos.Bottom(_memDiskSection);
+        }
+        else if (vis.MemDisk)
+        {
+            // Only MemDisk visible: fills left panel
+            _memDiskSection.Height = Dim.Fill();
+            _networkSection.Height = 0;
         }
         else
         {
-            _leftPanel.Visible = false;
+            // Only Network visible: fills left panel
+            _memDiskSection.Height = 0;
+            _networkSection.Y = 0;
+            _networkSection.Height = Dim.Fill();
         }
 
-        // --- Zone B split (left panel / right panel) ---
+        return true;
+    }
+
+    /// <summary>
+    /// Arranges the Zone B split between the left panel and the right (placeholder) panel.
+    /// </summary>
+    private void ArrangeZoneB(SectionVisibility vis, bool leftHasContent)
+    {
         if (vis.Placeholder)
         {
             _rightPanel.Visible = true;
-            _leftPanel.Width = Dim.Percent(50);
-            _rightPanel.X = Pos.Percent(50);
+            _leftPanel.Width = Dim.Percent(PanelSplitPercent);
+            _rightPanel.X = Pos.Percent(PanelSplitPercent);
             _rightPanel.Width = Dim.Fill();
         }
         else
@@ -247,12 +276,20 @@ public sealed class Window : Runnable<bool>
             _rightPanel.Visible = false;
             _leftPanel.Width = Dim.Fill();
         }
+    }
 
-        // --- Zone visibility and sizing ---
+    /// <summary>
+    /// Arranges the top-level zone containers (<see cref="_zoneA"/> and <see cref="_zoneB"/>).
+    /// Shows or hides them based on content, sizes them proportionally,
+    /// and handles the "no sections" fallback label.
+    /// </summary>
+    private void ArrangeZones(SectionVisibility vis, bool leftHasContent)
+    {
         bool zoneAHasContent = vis.Cpu || vis.Gpu;
         bool zoneBHasContent = leftHasContent || vis.Placeholder;
 
-        foreach (var z in _zoneContainers) z.Visible = false;
+        foreach (View z in _zoneContainers)
+            z.Visible = false;
 
         if (!zoneAHasContent && !zoneBHasContent)
         {
@@ -261,28 +298,25 @@ public sealed class Window : Runnable<bool>
         }
         _noSectionsLabel.Visible = false;
 
-        var visibleZones = new List<View>();
-        if (zoneAHasContent) visibleZones.Add(_zoneA);
-        if (zoneBHasContent) visibleZones.Add(_zoneB);
+        _visibleZonesBuffer.Clear();
+        if (zoneAHasContent) _visibleZonesBuffer.Add(_zoneA);
+        if (zoneBHasContent) _visibleZonesBuffer.Add(_zoneB);
 
-        for (int i = 0; i < visibleZones.Count; i++)
+        for (int i = 0; i < _visibleZonesBuffer.Count; i++)
         {
-            var zone = visibleZones[i];
+            View zone = _visibleZonesBuffer[i];
             zone.Visible = true;
 
-            if (visibleZones.Count == 1)
+            if (_visibleZonesBuffer.Count == 1)
             {
-                // Only one zone visible: fill everything
                 zone.Height = Dim.Fill();
             }
             else if (i == 0)
             {
-                // First zone (Zone A) gets 30% of available space
-                zone.Height = Dim.Percent(30);
+                zone.Height = Dim.Percent(ZoneAHeightPercent);
             }
             else
             {
-                // Last zone gets remaining space
                 zone.Height = Dim.Fill();
             }
         }

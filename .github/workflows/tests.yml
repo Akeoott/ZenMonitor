@@ -6,12 +6,28 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
-  test-linux:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-latest
+            filter: Platform=Linux
+          - os: windows
+            runner: windows-latest
+            filter: Platform=Windows
+
+    name: test-${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,33 +36,13 @@ jobs:
         with:
           dotnet-version: "10.0.203"
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore
-
-      - name: Run Linux Tests with Coverage
-        run: >
-          dotnet test --no-build --collect:"XPlat Code Coverage"
-          --results-directory ./coverage --settings coverlet.runsettings
-          --filter "Platform=Linux"
-
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
         with:
-          directory: ./coverage
-          fail_ci_if_error: true
-
-  test-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.203"
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Restore
         run: dotnet restore
@@ -54,14 +50,17 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
-      - name: Run Windows Tests with Coverage
+      - name: Check code style
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Run ${{ matrix.os }} tests with coverage
         run: >
           dotnet test --no-build --collect:"XPlat Code Coverage"
           --results-directory ./coverage --settings coverlet.runsettings
-          --filter "Platform=Windows"
+          --filter "${{ matrix.filter }}"
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v4
         with:
           directory: ./coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false

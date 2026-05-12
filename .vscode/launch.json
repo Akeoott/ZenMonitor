@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core (TUI)",
+            "name": ".NET (TUI)",
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}"
         },
         {
-            "name": ".NET Core (GUI)",
+            "name": ".NET (GUI)",
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
@@ -22,28 +22,28 @@
             "cwd": "${workspaceFolder}"
         },
         {
-            "name": ".NET Core (CLI, Debug)",
+            "name": ".NET (CLI, Debug)",
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
             "args": [
                 "-r", "cli",
                 "-n", "true",
-                "-l ", "d",
-                "-c",
+                "-l", "d",
+                "-c"
             ],
             "cwd": "${workspaceFolder}"
         },
         {
-            "name": ".NET Core (CLI, Trace)",
+            "name": ".NET (CLI, Trace)",
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
             "args": [
                 "-r", "cli",
                 "-n", "true",
-                "-l ", "t",
-                "-c",
+                "-l", "t",
+                "-c"
             ],
             "cwd": "${workspaceFolder}"
         }

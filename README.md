@@ -28,7 +28,7 @@
 
 ## Quick Start
 
-**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](global.json)).<br>
+**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
 **Platform:** Linux (primary), Windows (partial, WIP).
 
 ```bash
@@ -43,7 +43,7 @@ dotnet build
 dotnet run --project ZenMonitor -- -r cli
 ```
 
-> See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the full contribution workflow and our [Code of Conduct](.github/CODE_OF_CONDUCT.md).
+> See [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for the full contribution workflow and our [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).
 
 ---
 
@@ -112,7 +112,7 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 ## Running Tests
 
-The project uses **xUnit** with platform-filtered test categories that match the CI workflow ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
+The project uses **xUnit** with platform-filtered test categories that match the CI workflow ([`.github/workflows/tests.yml`](https://github.com/Akeoott/ZenMonitor/blob/main/.github/workflows/tests.yml)).
 
 ```bash
 # Run all tests
@@ -126,7 +126,7 @@ dotnet test --filter "Platform=Windows"
 dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 ```
 
-- Coverage configuration is in [`coverlet.runsettings`](coverlet.runsettings) at the repo root.
+- Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings) at the repo root.
 - Linux service tests use `System.IO.Abstractions.MockFileSystem` to parse `/proc` and `/sys` files without real hardware.
 - Test data fixtures live in `ZenMonitor.Tests/Services/Linux/TestData/`.
 

@@ -35,7 +35,7 @@ We appreciate your efforts to disclose findings responsibly. Please choose the a
 
 ### Non-Sensitive Issues (Public)
 
-If the issue does **not** expose sensitive data or reveal exploitable details, open a public issue using the [Security Report template](ISSUE_TEMPLATE/6-security-report.md). Follow the template instructions carefully.
+If the issue does **not** expose sensitive data or reveal exploitable details, open a public issue using the [Security Report template](https://github.com/Akeoott/ZenMonitor/blob/main/.github/ISSUE_TEMPLATE/6-security-report.md). Follow the template instructions carefully.
 
 ### Sensitive Issues (Private)
 

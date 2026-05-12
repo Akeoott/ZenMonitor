@@ -4,7 +4,7 @@ First off, thanks for taking the time to contribute!
 
 When contributing to this repository, please first discuss the change you wish to make via an issue, discussion, email, or any other method with the owners or contributors of this repository before making a change and opening a pull request about it.
 
-Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md).<br>
+Please note we have a [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).<br>
 Please follow it in all your interactions with the project.
 
 ---
@@ -27,7 +27,7 @@ Please follow it in all your interactions with the project.
 
 ### Prerequisites
 
-- [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](../global.json))
+- [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json))
 - **Linux** (primary development target). Windows works for the host but hardware services are Linux-only at this time.
 - A terminal and your editor of choice (VS Code, Rider, etc.)
 
@@ -77,7 +77,7 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 ### Project Layout
 
-A quick orientation, the [`README.md`](../README.md) has the full breakdown, but here are the key directories:
+A quick orientation, the [`README.md`](https://github.com/Akeoott/ZenMonitor/blob/main/README.md) has the full breakdown, but here are the key directories:
 
 | Directory | Purpose |
 |-----------|---------|
@@ -99,7 +99,7 @@ A quick orientation, the [`README.md`](../README.md) has the full breakdown, but
 
 ### Editor Config
 
-An [`.editorconfig`](../.editorconfig) file is at the repo root. Most editors pick it up automatically. If yours doesn't, configure it to match the project's indentation and style rules.
+An [`.editorconfig`](https://github.com/Akeoott/ZenMonitor/blob/main/.editorconfig) file is at the repo root. Most editors pick it up automatically. If yours doesn't, configure it to match the project's indentation and style rules.
 
 ### Naming Conventions
 
@@ -165,7 +165,7 @@ dotnet test --filter "Platform=Windows"
 dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 ```
 
-Coverage configuration is in [`coverlet.runsettings`](../coverlet.runsettings). Output is written to `./coverage/`.
+Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings). Output is written to `./coverage/`.
 
 ### CI Workflow
 
@@ -313,7 +313,7 @@ Read the template instructions carefully before submitting.
 
 ### Security Disclosures
 
-If your report could disclose a vulnerability or sensitive information, **do not** open a public issue. Instead, email [akeoot@pm.me](mailto:akeoot@pm.me) with **"SECURITY"** in the subject line. See [SECURITY.md](SECURITY.md) for details.
+If your report could disclose a vulnerability or sensitive information, **do not** open a public issue. Instead, email [akeoot@pm.me](mailto:akeoot@pm.me) with **"SECURITY"** in the subject line. See [SECURITY.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/SECURITY.md) for details.
 
 </details>
 
@@ -354,7 +354,7 @@ Prefixes: `feature/`, `fix/`, `docs/`, `chore/`, `refactor/`, `test/`
    git rebase upstream/main
    ```
 2. Open the PR against the `main` branch.
-3. Fill out the [pull request template](pull_request_template.md).
+3. Fill out the [pull request template](https://github.com/Akeoott/ZenMonitor/blob/main/.github/pull_request_template.md).
 4. Ensure all CI checks pass.
 5. Request a review from a project maintainer.
 

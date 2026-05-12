@@ -21,13 +21,14 @@
 > [!WARNING]
 > WIP, limited functionality.<br>
 > Backend functional with limitations.<br>
-> No Tui or Gui available at the moment.
+> No Gui available at the moment.<br>
+> Tui available with limitations (WIP)
 
 <br>
 
 ## Project Summary
 
-ZenMonitor is a modern task manager built on .NET 10.0 (C# only). It uses a modular, interface-driven backend for system telemetry and a Producer-Consumer pattern to decouple data collection from rendering. Currently Linux-only; TUI and GUI frontend's are planned but not yet implemented.
+ZenMonitor is a modern task manager built on .NET 10.0 (C# only). It uses a modular, interface-driven backend for system telemetry and a Producer-Consumer pattern to decouple data collection from rendering. Currently Linux-only; GUI frontend is planned but not yet implemented.
 
 ---
 
@@ -44,19 +45,20 @@ ZenMonitor is a modern task manager built on .NET 10.0 (C# only). It uses a modu
 ### CLI Usage (building from terminal)
 
 ```bash
-dotnet run --project ZenMonitor -- -r cli        # Run CLI mode (only working mode)
-dotnet run --project ZenMonitor -- -r cli -l d   # Debug logging
-dotnet run --project ZenMonitor -- -r cli -l t   # Trace logging
-dotnet run --project ZenMonitor -- -r cli -d 500 # 500ms update interval
-dotnet run --project ZenMonitor -- -r cli -n     # Skip root check
+dotnet run --project ZenMonitor -- -r cli         # Run CLI mode
+dotnet run --project ZenMonitor -- -r cli -l d    # Debug logging
+dotnet run --project ZenMonitor -- -r cli -d 500  # 500ms update interval
+dotnet run --project ZenMonitor -- -r cli -n      # Skip root check
+dotnet run --project ZenMonitor -- -r cli -n -f   # Force launch no matter what
 ```
 
-<!-- YES fucking EM-Dashes -->
+<!-- YES fucking EM-Dashes oil me with them up -->
 
 Options:
 - `-r|--run <cli|tui|gui>` — required, selects frontend mode
 - `-d|--delay <ms>` — update interval, 100–10000ms, default 1000
 - `-n|--no-sudo <bool>` — bypass privilege check
+- `-f|--force-run <bool>` — run regardless of unsupported OS (may break)
 - `-c|--cli-log <bool>` — enable console log output (cli mode only)
 - `-l|--log-level <level>` — `t|trace`, `d|debug`, `i|info`, `w|warning`, `e|error`, `c|critical`
 
@@ -68,16 +70,24 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 - **ZenMonitor/**
   - `./Program.cs`: Entry point.<br>
-  Contains `MonitorCommand` (Spectre.Console.Cli `AsyncCommand`), `MonitorSettings` (CLI argument definitions), DI wiring, logging setup via Serilog, and mode dispatch (`cli`/`tui`/`gui`).
+  Contains `InitProgram` (Spectre.Console.Cli `AsyncCommand<ProgramSettings>`), DI wiring, logging setup via Serilog, privilege check (Linux root / Windows admin), and mode dispatch (`cli`/`tui`/`gui`).
+  - `./ProgramSettings.cs`: CLI argument definitions with Spectre.Console validation.
+  - `./ProgramHelper.cs`: Shared helpers (logging setup, service provider building, runtime safety checks).
 - **ZenMonitor.Core/**
   - `./Interfaces/`: Hardware abstraction interfaces. Each has a `void Update()` method plus typed getters.
   - `./Models/`: Immutable C# `record` types used as data snapshots.
   - `./Services/Linux/`: Concrete Linux implementations of all interfaces.
   - `./Services/Windows/`: Concrete **future** Windows implementations of all interfaces.
 - **ZenMonitor.Cli/**
-  - `./Monitor.cs`: The only working frontend at the moment. Injects all hardware interfaces, runs the backend thread, and prints raw telemetry values to stdout in a loop.
+  - `./Monitor.cs`: CLI frontend. Injects all hardware interfaces, runs a background data loop with `SemaphoreSlim` signalling, and prints raw telemetry values to stdout.
 - **ZenMonitor.Tui/**
-  - `./`: Planned TUI frontend (not implemented).
+  - `./Monitor.cs`: TUI frontend using **Terminal.Gui**. Injects all hardware interfaces, runs a background data loop, and updates views via `app.Invoke(window.RefreshData)`.
+  - `./Views/`: TUI view components:
+    - `HeaderView` — system info header
+    - `CpuSection`, `GpuSection`, `MemoryDiskSection`, `NetworkSection` — per-component panels
+    - `PlaceholderSection` — reserved slot
+    - `SectionVisibility` — toggle-state model for key-based section switching (1–5)
+    - `Window` — main window with dynamic grid layout, section visibility toggling, and `RefreshData` dispatch
 - **ZenMonitor.Gui/**
   - `./`: Planned GUI frontend (not implemented).
 - **ZenMonitor.Tests/**

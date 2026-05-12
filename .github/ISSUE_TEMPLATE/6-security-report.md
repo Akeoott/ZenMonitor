@@ -24,10 +24,11 @@ certain personal information or involves personal identifiable data, or you beli
 that the data that you might leak by exposing the way on how to attack the project
 could be considered as a data leak or could violate the privacy of any kind of
 data or sensible data, please do not post it here and directly email the developer: akeoot@pm.me
-You should post the issue with the least amount of
+
+You may post the issue with the least amount of
 sensible or private data as possible to help us manage the security issue, and
 with the extra data sent from your email to the developer (if any), we will deeply
-analyze and try to fix it as fast as possible.
+analyse and try to fix it as fast as possible.
 
 If you are in doubt about the data that you might post here (screenshots or media
 also, count as data), please directly email us.
@@ -45,36 +46,29 @@ The data that must NOT be posted here:
 # **⚠️ Security Report**
 
 ## **Describe the security issue**
-<!-- A clear and concise description of what the bug is. -->
+<!-- A clear and concise description of what the issue is. -->
 
-*
+[replace with description]
 
 ---
 
-### **Expected behavior**
+### **Expected behaviour**
 <!-- A clear and concise description of what you expected to happen. -->
 
-*
+[replace with description]
 
 ---
 
-### **Actual behavior**
-<!-- A clear and concise description of whats actually happening. -->
+### **Actual behaviour**
+<!-- A clear and concise description of what is actually happening. -->
 
-*
+[replace with description]
 
 ---
 
-### **To Reproduce**
+### **Steps to reproduce**
 
-<!-- Steps to reproduce the error:
-(e.g.:)
-1. Use x argument / navigate to
-2. Fill this information
-3. Go to...
-4. See error -->
-
-<!-- Write the steps here (add or remove as many steps as needed)-->
+<!-- Steps to reproduce the error (add or remove as many steps as needed). -->
 
 1.
 2.
@@ -85,15 +79,14 @@ The data that must NOT be posted here:
 
 ### **Your environment**
 
-<!-- use all the applicable bulleted list elements for this specific issue,
-and remove all the bulleted list elements that are not relevant for this issue. -->
+<!-- Fill in the relevant fields. Remove any that are not applicable. -->
 
-* OS: <!--[e.g. Ubuntu 5.4.0-26-generic x86_64 / Windows 1904 ...]-->
-* Application version: <!--[e.g. v1.0.3 / Release tag]-->
+* **OS:** <!-- e.g. Ubuntu 24.04 x86_64 / Windows 11 23H2 -->
+* **Application version:** <!-- e.g. v1.0.3, commit hash, or `main` -->
 
 ---
 
 ### **Additional context**
-<!-- Add any other context or additional information about the problem here.-->
+<!-- Add any other context or additional information about the problem here. -->
 
-*
+[replace with additional context]

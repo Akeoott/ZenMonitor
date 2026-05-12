@@ -1,45 +1,60 @@
 ---
 name: "Enhancement Request"
-about: "Suggest an enhancement for this project. Improve an existing feature"
+about: "Suggest an improvement to an existing feature."
 title: ""
 labels: "Type: Enhancement"
 
 ---
 
+<!--
+Hi there!
+
+To expedite issue processing, please search open and closed issues before submitting a new one.
+-->
+
 # **Enhancement Request**
 
-<!-- Adjust sections as needed -->
+## **Which area?**
+<!-- Select the component(s) this enhancement relates to. -->
 
-## **Issue / Demand**
-<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
-
-*
+- [ ] **Core** — existing hardware service, data model, or interface
+- [ ] **CLI** — command-line frontend
+- [ ] **TUI** — Terminal.Gui frontend
+- [ ] **GUI** — planned graphical frontend
+- [ ] **Build / CI** — tooling, workflows, project configuration
+- [ ] **Other**
 
 ---
 
-## **Preferred solution**
-<!-- A clear and concise description of what you want to happen. -->
+## **Problem / Demand**
+<!-- A clear and concise description of what the problem is with the current behaviour. Ex. I'm always frustrated when [...] -->
 
-*
+[replace with description]
+
+---
+
+## **Preferred improvement**
+<!-- A clear and concise description of what you want to change or add. -->
+
+[replace with description]
 
 ---
 
 ## **Alternative solutions**
-<!-- A clear and concise description of any alternative solutions or features you've considered. -->
+<!-- A clear and concise description of any alternative solutions or improvements you have considered. -->
 
-*
+[replace with description]
 
 ---
 
-### **Additional context**
-<!-- Add any other context or additional information about the problem here.-->
+## **Impact**
+<!-- How many users would this benefit? Is it a niche use case or broadly useful? -->
 
-*
+[replace with description]
 
-<!--
+---
 
-Hi there!
+## **Additional context**
+<!-- Add any other context or screenshots about the enhancement here. -->
 
-To expedite issue processing, please search open and closed issues before submitting a new one.
-
--->
+[replace with additional context]

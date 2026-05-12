@@ -1,21 +1,377 @@
-# **Contributing**
+# Contributing to ZenMonitor
 
-When contributing to this repository, please first discuss the change you wish to make via an issue,
-email, or any other method with the owners of this repository before making a change and opening a pull request about it.
+First off, thanks for taking the time to contribute!
 
-Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+When contributing to this repository, please first discuss the change you wish to make via an issue, discussion, email, or any other method with the owners or contributors of this repository before making a change and opening a pull request about it.
 
-## Pull Request Process
+Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md).<br>
+Please follow it in all your interactions with the project.
 
-1. Ensure that all unit tests pass before attempting to merge.
-2. Update any documentation if applicable.
-3. Make sure that all your commits are signed and all checks/workflows pass.
-4. You may merge the Pull Request once you have the sign-off of two other developers, or if you
-   do not have permission to do that, you may request the second reviewer to merge it for you.
+---
 
-## Issue Report Process
+## Table of Contents
 
-1. Go to the project's issues.
-2. Select the template that better fits your issue.
-3. Read the instructions carefully and write within the template guidelines.
-4. Submit it and wait for support.
+- [Getting Started with Development](#getting-started-with-development)
+- [Code Style & Conventions](#code-style--conventions)
+- [Unit Tests & CI](#unit-tests--ci)
+- [Commit Message Standards](#commit-message-standards)
+- [Opening Issues](#opening-issues)
+- [Making Pull Requests](#making-pull-requests)
+
+---
+
+## Getting Started with Development
+
+<details>
+<summary>Prerequisites, build instructions, and first run</summary>
+
+### Prerequisites
+
+- [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](../global.json))
+- **Linux** (primary development target). Windows works for the host but hardware services are Linux-only at this time.
+- A terminal and your editor of choice (VS Code, Rider, etc.)
+
+### Fork & Clone
+
+1. Fork the repository on GitHub.
+2. Clone your fork:
+   ```bash
+   git clone https://github.com/<your-username>/ZenMonitor
+   cd ZenMonitor
+   ```
+3. Add the upstream remote to stay in sync:
+   ```bash
+   git remote add upstream https://github.com/Akeoott/ZenMonitor
+   ```
+
+### Build & Verify
+
+```bash
+dotnet restore
+dotnet build
+dotnet test
+```
+
+Some tests WILL fail due to platform compatibility and differences.<br>
+Read [Unit Tests & CI](#unit-tests--ci) more more details.
+
+### Run the CLI Frontend
+
+```bash
+dotnet run --project ZenMonitor -- -r cli
+```
+
+### Run the TUI Frontend
+
+```bash
+dotnet run --project ZenMonitor -- -r tui
+```
+
+### Debug Logging
+
+```bash
+dotnet run --project ZenMonitor -- -r cli -l d
+```
+
+Logs are written to `logs/ZenMonitor.log` (cleared on each run).
+
+### Project Layout
+
+A quick orientation, the [`README.md`](../README.md) has the full breakdown, but here are the key directories:
+
+| Directory | Purpose |
+|-----------|---------|
+| `ZenMonitor/` | Entry point, DI wiring, CLI argument parsing |
+| `ZenMonitor.Core/` | Hardware abstraction interfaces, models, platform services |
+| `ZenMonitor.Cli/` | CLI frontend |
+| `ZenMonitor.Tui/` | Terminal.Gui-based TUI frontend |
+| `ZenMonitor.Gui/` | Planned GUI frontend (not yet implemented) |
+| `ZenMonitor.Tests/` | xUnit test suite |
+
+</details>
+
+---
+
+## Code Style & Conventions
+
+<details>
+<summary>Formatting, naming, and project conventions</summary>
+
+### Editor Config
+
+An [`.editorconfig`](../.editorconfig) file is at the repo root. Most editors pick it up automatically. If yours doesn't, configure it to match the project's indentation and style rules.
+
+### Naming Conventions
+
+| Element | Convention | Example |
+|---------|------------|---------|
+| Public classes, methods, properties | `PascalCase` | `CpuService`, `Update()` |
+| Private fields | `_camelCase` | `_semaphore`, `_logger` |
+| Method parameters, local variables | `camelCase` | `updateInterval` |
+| Interfaces | `I` prefix + `PascalCase` | `ICpu`, `ISystem` |
+
+### File-Scoped Namespaces
+
+Use file-scoped namespaces (no braces):
+
+```csharp
+namespace ZenMonitor.Core.Interfaces;
+```
+
+### Code Quality
+
+- No warnings on build. Run `dotnet build` before pushing.
+- Keep interfaces focused, each interface in `ZenMonitor.Core/Interfaces/` has a single responsibility.
+- Use the `Update()` pattern: each hardware service exposes a `void Update()` method that refreshes its internal snapshot.
+
+</details>
+
+---
+
+## Unit Tests & CI
+
+<details>
+<summary>Test framework, platform filters, coverage, and CI workflow</summary>
+
+### Test Framework
+
+The project uses **xUnit**. Tests are organized under `ZenMonitor.Tests/`.
+
+### Platform-Filtered Tests
+
+Tests are annotated with `[Trait("Platform", "Linux")]` or `[Trait("Platform", "Windows")]` to enable platform-specific runs:
+
+```csharp
+[Trait("Platform", "Linux")]
+public class CpuServiceTests
+{
+    // ...
+}
+```
+
+### Running Tests Locally
+
+```bash
+# All tests
+dotnet test
+
+# Linux-only tests
+dotnet test --filter "Platform=Linux"
+
+# Windows-only tests
+dotnet test --filter "Platform=Windows"
+
+# With code coverage
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+```
+
+Coverage configuration is in [`coverlet.runsettings`](../coverlet.runsettings). Output is written to `./coverage/`.
+
+### CI Workflow
+
+The CI workflow (`.github/workflows/tests.yml`) runs on every push and pull request to `main`:
+
+1. **Setup .NET** — installs SDK 10.0.203
+2. **Restore** — `dotnet restore`
+3. **Build** — `dotnet build --no-restore`
+4. **Test** — platform-filtered via `--filter "Platform=Linux"` / `--filter "Platform=Windows"`
+5. **Coverage** — uploads results to [Codecov](https://codecov.io/gh/Akeoott/ZenMonitor)
+
+Patch coverage is set to `informational: true` (see `.github/codecov.yml`), so a coverage drop won't block a PR — but aim to cover new code. Maintainers might tell you to add more Unit Tests.
+
+> [!NOTE]
+> When creating a pull request to main,<br>
+> Codecov will automatically run Unit Tests and determine coverage
+
+### Writing Tests with MockFileSystem
+
+Linux service tests use `System.IO.Abstractions.MockFileSystem` to simulate `/proc` and `/sys` files without real hardware. Test data fixtures are in `ZenMonitor.Tests/Services/Linux/TestData/`.
+
+Example:
+
+```csharp
+var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+{
+    { "/proc/stat", new MockFileData("cpu  100 200 300 400 500") }
+});
+
+var service = new CpuService(fileSystem);
+service.Update();
+```
+
+We want deterministic data, checking for exact values instead for simple null checks etc.
+
+</details>
+
+---
+
+## Commit Message Standards
+
+<details>
+<summary>Conventional Commits, scopes, and signed commits</summary>
+
+### Conventional Commits
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages. This keeps the history readable and enables automated changelog generation.
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+[optional footer]
+```
+
+### Types
+
+| Type | Usage |
+|------|-------|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `chore` | Maintenance, tooling, config changes |
+| `docs` | Documentation changes |
+| `test` | Adding or updating tests |
+| `refactor` | Code restructuring without feature or fix |
+| `style` | Formatting, linting, code style (not CSS) |
+| `ci` | CI/CD workflow changes |
+
+### Scopes
+
+Scopes indicate which part of the project or concept the commit touches.
+Here are some example scopes:
+
+| Scope | When to use |
+|-------|-------------|
+| `project` | Global changes (e.g. `style(project): apply editorconfig across all files`) |
+| `core` | Core parts of the project like `ZenMonitor.Core/` |
+| `tui(window)` | Specific view within the TUI |
+| `api` | Something revolving around API's |
+
+#### Examples
+
+```
+fix(tui, window): correct section visibility not updating on key press
+
+The SectionVisibility model was not being invalidated when
+toggling sections 1-5 via keyboard input.
+
+fix(tests): update ICpu test expectations for arm64 parsing
+```
+
+### Signed Commits
+
+All commits **must** be signed (GPG or SSH). Unsigned commits will not be accepted in pull requests.
+
+#### Minimal Git Setup
+
+If you haven't configured Git for signing yet:
+
+```bash
+# Set your identity (must match your commit signature)
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+
+# Tell Git which signing key to use (get the key ID from gpg --list-secret-keys)
+git config --global user.signingkey <key-id>
+
+# Enable signing for all commits
+git config --global commit.gpgsign true
+```
+
+> [!IMPORTANT]
+> For full guides on generating GPG keys and linking them to GitHub, see:
+> - [GitHub: Managing commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification)
+> - [Git Tools — Signing Your Work](https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work)
+
+### Atomic Commits
+
+Each commit should represent **one logical change**. If a commit includes a bug fix, a refactor, and a documentation update, split it into multiple commits.
+
+</details>
+
+---
+
+## Opening Issues
+
+<details>
+<summary>Issue templates and security disclosures</summary>
+
+### Issue Templates
+
+We provide templates for most scenarios. Select the one that best fits your issue when creating it in the [issue tracker](https://github.com/Akeoott/ZenMonitor/issues/new/choose).
+
+| Template | Use when... |
+|----------|-------------|
+| [Bug Report](ISSUE_TEMPLATE/1-bug-report.md) | Something doesn't work as expected |
+| [Failing Test](ISSUE_TEMPLATE/2-failing-test.md) | A test is failing or missing |
+| [Docs Issue](ISSUE_TEMPLATE/3-docs-issue.md) | Documentation is wrong or missing |
+| [Feature Request](ISSUE_TEMPLATE/4-feature-request.md) | You want a new capability |
+| [Enhancement Request](ISSUE_TEMPLATE/5-enhancement-request.md) | You want to improve existing behaviour |
+| [Security Report](ISSUE_TEMPLATE/6-security-report.md) | You found a vulnerability |
+| [Question / Support](ISSUE_TEMPLATE/7-question-support.md) | You need help or clarification |
+
+Read the template instructions carefully before submitting.
+
+### Security Disclosures
+
+If your report could disclose a vulnerability or sensitive information, **do not** open a public issue. Instead, email [akeoot@pm.me](mailto:akeoot@pm.me) with **"SECURITY"** in the subject line. See [SECURITY.md](SECURITY.md) for details.
+
+</details>
+
+---
+
+## Making Pull Requests
+
+<details>
+<summary>PR checklist, branch naming, review process, and merge strategy</summary>
+
+### Before You Open
+
+- [ ] All tests pass based on your platform (`dotnet test`)
+- [ ] Build completes without warnings (`dotnet build`)
+- [ ] New code includes tests (if applicable)
+- [ ] Commits are signed
+- [ ] Documentation is updated (if applicable)
+- [ ] Branch is up to date with `main`
+
+### Branch Naming
+
+Use a prefix that matches the type of change, followed by a short descriptor:
+
+```
+feature/windows-cpu
+fix/tui-window-crash
+docs/improve-contributing-guide
+chore/update-dependencies
+```
+
+Prefixes: `feature/`, `fix/`, `docs/`, `chore/`, `refactor/`, `test/`
+
+### Pull Request Process
+
+1. Ensure your branch is up to date with the upstream `main`:
+   ```bash
+   git fetch upstream
+   git rebase upstream/main
+   ```
+2. Open the PR against the `main` branch.
+3. Fill out the [pull request template](pull_request_template.md).
+4. Ensure all CI checks pass.
+5. Request a review from a project maintainer.
+
+### Review Process
+
+- Pull requests require approval from at least **2 project maintainers**.
+- Repository **owners** may merge at their discretion after a thorough review. This ensures important changes aren't blocked when maintainers are unavailable.
+- All reviews are strict — changes that don't meet the standards above will be asked to improve before merging.
+
+### Merge Strategy
+
+**Squash merge** is preferred. This keeps the commit history clean by collapsing multiple commits into one logical commit per PR. The squashed commit message should follow the Conventional Commits format.
+
+Exceptions for squash merges are when there are changes that go beyond the scope of the PR.
+
+</details>
+
+---
+
+*Thank you for contributing to ZenMonitor!*

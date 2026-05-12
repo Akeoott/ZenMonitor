@@ -13,7 +13,7 @@
 
 <div>
     <a href="https://deepwiki.com/Akeoott/ZenMonitor">
-        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki (use with caution)">
     </a>
 </div>
 <br>
@@ -21,10 +21,31 @@
 > [!WARNING]
 > WIP, limited functionality.<br>
 > Backend functional with limitations.<br>
-> No Gui available at the moment.<br>
-> Tui available with limitations (WIP)
+> Tui available with limitations (WIP)<br>
+> No Gui available at the moment.
 
 <br>
+
+## Quick Start
+
+**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](global.json)).<br>
+**Platform:** Linux (primary), Windows (partial, WIP).
+
+```bash
+git clone https://github.com/Akeoott/ZenMonitor
+cd ZenMonitor
+
+dotnet restore
+dotnet build
+
+# Run the CLI frontend
+# (requires sudo/admin privileges, to bypass add `-n` after `-r cli`)
+dotnet run --project ZenMonitor -- -r cli
+```
+
+> See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the full contribution workflow and our [Code of Conduct](.github/CODE_OF_CONDUCT.md).
+
+---
 
 ## Project Summary
 
@@ -32,17 +53,40 @@ ZenMonitor is a modern task manager built on .NET 10.0 (C# only). It uses a modu
 
 ---
 
-### Key Concepts
+## Architecture
 
-- **Producer-Consumer pattern**: A background thread calls `Update()` on each hardware service at a configurable interval, then signals a `SemaphoreSlim`. The frontend waits on the semaphore and reads the latest snapshot data.
+### Design Overview
 
-- **Dependency Injection**: All hardware services are registered as singletons via `Microsoft.Extensions.DependencyInjection`. The frontend's (Cli/Tui/Gui) are registered as transient.
+A background data loop calls `Update()` on each hardware service at a configurable interval. Frontends (CLI, TUI, or planned GUI) can then read the latest snapshot and render it to the user.
 
+- **Dependency Injection**: All hardware services are registered as singletons via `Microsoft.Extensions.DependencyInjection`. Frontends (`Cli`/`Tui`/`Gui`) are registered as transient.
 - **Root required**: The app checks for root (Linux) or admin (Windows) privileges at startup unless `--no-sudo` is passed.
+
+### Hardware Interfaces
+
+All telemetry data flows through interfaces in `ZenMonitor.Core/Interfaces/`. Each exposes a `void Update()` method plus typed getters:
+
+| Interface | Provides |
+|-----------|----------|
+| `ICpu`    | CPU usage, temperature, frequency |
+| `IDrive`  | Disk I/O, partition usage |
+| `IGpu`    | GPU utilization, VRAM |
+| `IHelper` | Utility / helper methods |
+| `IMemory` | RAM usage, swap |
+| `INetwork` | Network throughput, interfaces |
+| `ISystem` | OS info, uptime, hostname |
+
+Concrete implementations live in `ZenMonitor.Core/Services/<Platform>/`.
+
+### Adding a New Hardware Metric or Platform
+
+1. **Implement the interface** — create a new class in `Core/Services/<Platform>/` that implements the relevant `IXxx` interface.
+2. **Register in DI** — add the service in `Program.cs` → `InitProgram` using the DI container.
+3. **Add a frontend view** — consume the data from a `Cli`, `Tui`, or `Gui` view.
 
 ---
 
-### CLI Usage (building from terminal)
+## CLI Usage (building from terminal)
 
 ```bash
 dotnet run --project ZenMonitor -- -r cli         # Run CLI mode
@@ -66,11 +110,33 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 ---
 
-### Project Structure
+## Running Tests
+
+The project uses **xUnit** with platform-filtered test categories that match the CI workflow ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)).
+
+```bash
+# Run all tests
+dotnet test
+
+# Platform-specific runs
+dotnet test --filter "Platform=Linux"
+dotnet test --filter "Platform=Windows"
+
+# With code coverage (local)
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+```
+
+- Coverage configuration is in [`coverlet.runsettings`](coverlet.runsettings) at the repo root.
+- Linux service tests use `System.IO.Abstractions.MockFileSystem` to parse `/proc` and `/sys` files without real hardware.
+- Test data fixtures live in `ZenMonitor.Tests/Services/Linux/TestData/`.
+
+---
+
+## Project Structure
 
 - **ZenMonitor/**
   - `./Program.cs`: Entry point.<br>
-  Contains `InitProgram` (Spectre.Console.Cli `AsyncCommand<ProgramSettings>`), DI wiring, logging setup via Serilog, privilege check (Linux root / Windows admin), and mode dispatch (`cli`/`tui`/`gui`).
+    Contains `InitProgram` (Spectre.Console.Cli `AsyncCommand<ProgramSettings>`), DI wiring, logging setup via Serilog, privilege check (Linux root / Windows admin), and mode dispatch (`cli`/`tui`/`gui`).
   - `./ProgramSettings.cs`: CLI argument definitions with Spectre.Console validation.
   - `./ProgramHelper.cs`: Shared helpers (logging setup, service provider building, runtime safety checks).
 - **ZenMonitor.Core/**
@@ -79,7 +145,7 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
   - `./Services/Linux/`: Concrete Linux implementations of all interfaces.
   - `./Services/Windows/`: Concrete **future** Windows implementations of all interfaces.
 - **ZenMonitor.Cli/**
-  - `./Monitor.cs`: CLI frontend. Injects all hardware interfaces, runs a background data loop with `SemaphoreSlim` signalling, and prints raw telemetry values to stdout.
+  - `./Monitor.cs`: CLI frontend. Injects all hardware interfaces, runs a background data loop and prints raw telemetry values to stdout.
 - **ZenMonitor.Tui/**
   - `./Monitor.cs`: TUI frontend using **Terminal.Gui**. Injects all hardware interfaces, runs a background data loop, and updates views via `app.Invoke(window.RefreshData)`.
   - `./Views/`: TUI view components:
@@ -92,11 +158,11 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
   - `./`: Planned GUI frontend (not implemented).
 - **ZenMonitor.Tests/**
   - `./Services/Linux/`: xUnit test suite.<br>
-  Uses `System.IO.Abstractions.MockFileSystem` to test Linux service parsing logic without real hardware.
+    Uses `System.IO.Abstractions.MockFileSystem` to test Linux service parsing logic without real hardware.
 
 ---
 
-### Technical Details
+## Technical Details
 
 - **Stack**: C# 100%, .NET 10.0.203
 - **Key dependencies**: `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Microsoft.Extensions.DependencyInjection`, `System.IO.Abstractions` (testability)
@@ -107,6 +173,6 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 ---
 
 > [!NOTE]
-> Documentation: [DeepWiki/Akeoott/ZenMonitor](https://deepwiki.com/Akeoott/ZenMonitor)<br>
+> Documentation if you need more help: [DeepWiki/Akeoott/ZenMonitor](https://deepwiki.com/Akeoott/ZenMonitor)<br>
 > I wanna mention that it provides a broad overview.<br>
 > YOU CAN NOT 100% rely on it. You know how AI is, its not a permanent solution. Just a temporary fix.

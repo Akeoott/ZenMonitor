@@ -1,43 +1,49 @@
 <!--
 Hi there!
 
-To make our work more accessible, we recommend you to choose any of our available issue templates rather than using (this) a blank template.
+To make our work more accessible, we recommend you choose one of our available issue templates rather than using this blank template.
 
 To expedite issue processing, please search open and closed issues before submitting a new one.
 -->
 
 # **Blank Issue Report**
 
-## **Expected behavior**
-<!-- A clear and concise description of what you expected. -->
+## **Describe the issue**
+<!-- A clear and concise description of what the issue is. -->
 
-*
-
----
-
-## **Actual behavior**
-<!-- A clear and concise description of the actual behavior. -->
-
-*
+[replace with description]
 
 ---
 
-### **Media prove**
+### **Expected behaviour**
+<!-- A clear and concise description of what you expected to happen. -->
+
+[replace with description]
+
+---
+
+### **Actual behaviour**
+<!-- A clear and concise description of what is actually happening. -->
+
+[replace with description]
+
+---
+
+### **Screenshots / Logs**
 <!-- If applicable, add logs, screenshots or videos to help explain your problem. -->
 
 ---
 
 ### **Your environment**
 
-<!-- use all the applicable bulleted list elements for this specific issue,
-and remove or add all the bulleted list elements that are not relevant for this issue. -->
+<!-- Fill in the relevant fields. Remove any that are not applicable. -->
 
-* OS: <!--[e.g. Ubuntu 5.4.0-26-generic x86_64 / Windows 1904 ...]-->
-* Application version: <!--[e.g. v1.0.3 / Release tag]-->
+* **OS:** <!-- e.g. Ubuntu 24.04 x86_64 / Windows 11 23H2 -->
+* **Application version:** <!-- e.g. v1.0.3, commit hash, or `main` -->
 
 ---
 
 ### **Additional context**
-<!-- Add any other context or additional information about the issue here.-->
+<!-- Add any other context or additional information about the issue here. -->
 
-*
+[replace with additional context]

@@ -1,47 +1,77 @@
-# **Name of PR**
+# **Pull Request**
 
-<!-- This PR fixes #NUMBER_OF_THE_ISSUE, and fixes #NUMBER_OF_THE_ISSUE -->
+<!--
+Thank you for contributing! Before submitting, please make sure you have read and followed the guidelines in CONTRIBUTING.md.
+-->
+
+## **Related Issues**
+<!-- Link to any related issues using keywords like "Fixes #123" or "Closes #456". -->
+
+[replace with related issues, e.g. "Fixes #12"]
+
+---
+
+## **Type of change**
+<!-- Select the type(s) of change introduced by this PR. -->
+
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
+- [ ] Enhancement (improvement to an existing feature)
+- [ ] Refactor (code restructuring without feature or fix)
+- [ ] Documentation (README, CONTRIBUTING, comments, etc.)
+- [ ] Test (adding or updating tests)
+- [ ] CI / Build (workflow, tooling, project configuration)
+- [ ] Breaking change (fix or feature that would break existing functionality)
+
+---
 
 ## **Summary**
+<!-- Provide a brief summary of the changes and the motivation behind them. -->
 
-<!--
-Please include a summary of the change and/or which issue is fixed.
-List any dependencies required for this change, if there are any.
--->
-
-*
+[replace with summary]
 
 ---
 
-### **Motivation**
+## **Changes**
+<!-- List specific changes made to the code, including file paths where relevant. -->
 
-<!-- Tell us your motivation behind your changes -->
-
-*
-
----
-
-### **Changes**
-
-<!-- List specific changes made to the code including location/path.-->
-
-*
+- [replace with change 1]
+- [replace with change 2]
+- [replace with change 3]
 
 ---
 
-### Testing
+## **Checklist**
+<!-- Ensure all items are completed before requesting review. -->
 
-<!-- Fill out -->
-- Unit tests conducted on: Windows <!-- adjust: e.g. Windows, Ubuntu, ArchLinux -->
-- [ ] Adjusted unit tests if needed.
-- [ ] All unit tests passed.
-  - [ ] Unit tests pass on github actions.
+- [ ] All tests pass (`dotnet test`)
+- [ ] Build completes without warnings (`dotnet build`)
+- [ ] New code includes tests (if applicable)
+- [ ] Commits are signed
+- [ ] Documentation is updated (if applicable)
+- [ ] Branch is up to date with `main`
 
-<!--
-If it fixes any current issue please let us know this way:
-Uncomment the comment above "summary", then add your number of issues after the "#".
-Example: # **This pull request fixes #NUMBER_OF_THE_ISSUE issue**
-If there are multiple issues to be closed with the merge of this pull request
-please do it like so: **This pull request fixes #NUMBER_OF_THE_ISSUE, fixes #NUMBER_OF_THE_ISSUE and fixes #NUMBER_OF_THE_ISSUE issue**.
-For more information on closing issues using keywords, please check https://docs.github.com/en/enterprise/2.16/user/github/managing-your-work-on-github/closing-issues-using-keywords#closing-multiple-issues
--->
+---
+
+## **Testing**
+<!-- Describe the testing you performed. Indicate the platform(s) you tested on. -->
+
+* **Platform(s) tested on:** <!-- e.g. Ubuntu 24.04, Windows 11 -->
+* **Test results:** <!-- e.g. All tests pass, or list specific test results -->
+
+---
+
+## **Breaking change?**
+<!-- If this PR introduces a breaking change, describe what breaks and what users need to do about it. -->
+
+- [ ] Yes (describe below)
+- [ ] No
+
+[replace with description if breaking]
+
+---
+
+## **Additional context**
+<!-- Add any other context about the PR here, such as screenshots, design decisions, or dependencies. -->
+
+[replace with additional context]

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZenMonitor.Core\ZenMonitor.Core.csproj" />
+    <ProjectReference Include="..\..\ZenMonitor.Core\src\ZenMonitor.Core\ZenMonitor.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@
 
 using Terminal.Gui.ViewBase;
 
-using ZenMonitor.Core.Interfaces;
+using ZenMonitor.Core.Abstractions;
 
 namespace ZenMonitor.Tui.Views;
 

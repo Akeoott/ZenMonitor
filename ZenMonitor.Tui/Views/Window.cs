@@ -7,7 +7,7 @@ using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-using ZenMonitor.Core.Interfaces;
+using ZenMonitor.Core.Abstractions;
 
 namespace ZenMonitor.Tui.Views;
 

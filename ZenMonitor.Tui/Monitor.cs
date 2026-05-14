@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 
-using ZenMonitor.Core.Interfaces;
+using ZenMonitor.Core.Abstractions;
 using ZenMonitor.Tui.Views;
 
 namespace ZenMonitor.Tui;

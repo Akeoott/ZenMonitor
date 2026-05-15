@@ -1,8 +1,4 @@
 <Solution>
-  <Project Path="..\ZenMonitor.Core\src\ZenMonitor.Core\ZenMonitor.Core.csproj" />
-  <Project Path="..\ZenMonitor.Core\src\ZenMonitor.Core.Hosting\ZenMonitor.Core.Hosting.csproj" />
-  <Project Path="..\ZenMonitor.Core\src\ZenMonitor.Core.Linux\ZenMonitor.Core.Linux.csproj" />
-  <Project Path="..\ZenMonitor.Core\src\ZenMonitor.Core.Windows\ZenMonitor.Core.Windows.csproj" />
   <Project Path="ZenMonitor\ZenMonitor.csproj" />
   <Project Path="ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
   <Project Path="ZenMonitor.Tui\ZenMonitor.Tui.csproj" />

@@ -18,18 +18,11 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Spectre.Console" Version="0.55.2" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageReference Include="ZenMonitor.Core" Version="1.0.1-alpha" />
+    <PackageReference Include="ZenMonitor.Core.Hosting" Version="1.0.1-alpha" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Core library references — point to standalone ZenMonitor.Core for local testing.
-         To switch to NuGet packages when Core is released, replace these ProjectReference
-         lines with PackageReference entries:
-           <PackageReference Include="ZenMonitor.Core" Version="..." />
-           <PackageReference Include="ZenMonitor.Core.Hosting" Version="..." />
-           <PackageReference Include="ZenMonitor.Core.Linux" Version="..." />
-    -->
-    <ProjectReference Include="..\..\ZenMonitor.Core\src\ZenMonitor.Core\ZenMonitor.Core.csproj" />
-    <ProjectReference Include="..\..\ZenMonitor.Core\src\ZenMonitor.Core.Hosting\ZenMonitor.Core.Hosting.csproj" />
     <ProjectReference Include="..\ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
     <ProjectReference Include="..\ZenMonitor.Tui\ZenMonitor.Tui.csproj" />
     <ProjectReference Include="..\ZenMonitor.Gui\ZenMonitor.Gui.csproj" />

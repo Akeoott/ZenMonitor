@@ -28,7 +28,7 @@
 
 ## Quick Start
 
-**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
+**Prerequisites:** [.NET SDK 10.0.300](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
 **Platform:** Linux (primary), Windows (partial, WIP).
 
 ```bash
@@ -164,7 +164,7 @@ dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
 ## Technical Details
 
-- **Stack**: C# 100%, .NET 10.0.203
+- **Stack**: C# 100%, .NET 10.0.300
 - **Key dependencies**: `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Microsoft.Extensions.DependencyInjection`, `System.IO.Abstractions` (testability)
 - **Test framework**: xUnit + `coverlet` (coverage config in `coverlet.runsettings`)
 - **Platform**: Linux only (Windows support planned)

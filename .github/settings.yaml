@@ -1,7 +1,7 @@
 repository:
-  name: ZenMonitor.Core
-  description: All kinds of system telemetry!
-  topics: system-monitoring, dotnet, csharp, nuget
+  name: ZenMonitor
+  description: A light and fast system monitor built on .NET
+  topics: system-monitoring, dotnet, csharp
   private: false
   has_issues: true
   has_wiki: false

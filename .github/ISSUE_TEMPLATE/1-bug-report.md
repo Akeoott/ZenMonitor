@@ -32,8 +32,8 @@ To expedite issue processing, please search open and closed issues before submit
 ### **Which component?**
 <!-- Select the component(s) affected by this bug. -->
 
-- [ ] **Core** — hardware services, data collection
-- [ ] **CLI** — command-line frontend
+- [ ] **ZenMonitor** — entry point, DI wiring, CLI argument parsing
+- [ ] **CLI** — CLI frontend
 - [ ] **TUI** — Terminal.Gui frontend
 - [ ] **GUI** — planned graphical frontend
 - [ ] **Other** — build, CI, documentation

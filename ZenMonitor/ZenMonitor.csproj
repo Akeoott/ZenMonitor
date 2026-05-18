@@ -18,10 +18,11 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Spectre.Console" Version="0.55.2" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageReference Include="ZenMonitor.Core" Version="1.0.2-alpha" />
+    <PackageReference Include="ZenMonitor.Core.Hosting" Version="1.0.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZenMonitor.Core\ZenMonitor.Core.csproj" />
     <ProjectReference Include="..\ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
     <ProjectReference Include="..\ZenMonitor.Tui\ZenMonitor.Tui.csproj" />
     <ProjectReference Include="..\ZenMonitor.Gui\ZenMonitor.Gui.csproj" />

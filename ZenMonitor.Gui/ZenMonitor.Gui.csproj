@@ -10,8 +10,4 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ZenMonitor.Core\ZenMonitor.Core.csproj" />
-  </ItemGroup>
-
 </Project>

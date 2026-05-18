@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ZenMonitor\ZenMonitor.csproj" />
+  <Project Path="ZenMonitor.Cli\ZenMonitor.Cli.csproj" />
+  <Project Path="ZenMonitor.Tui\ZenMonitor.Tui.csproj" />
+  <Project Path="ZenMonitor.Gui\ZenMonitor.Gui.csproj" />
+</Solution>

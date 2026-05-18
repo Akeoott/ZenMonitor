@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-using ZenMonitor.Core.Interfaces;
+using ZenMonitor.Core.Abstractions;
 using ZenMonitor.Core.Models;
 
 namespace ZenMonitor.Cli;

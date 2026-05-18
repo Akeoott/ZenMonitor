@@ -24,12 +24,10 @@
 > Tui available with limitations (WIP)<br>
 > No Gui available at the moment.
 
-<br>
-
 ## Quick Start
 
-**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
-**Platform:** Linux (primary), Windows (partial, WIP).
+**Prerequisites:** [.NET SDK 10.0.300](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
+**Platform:** Depends on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) (see [Architecture](#architecture) below).
 
 ```bash
 git clone https://github.com/Akeoott/ZenMonitor
@@ -64,25 +62,43 @@ A background data loop calls `Update()` on each hardware service at a configurab
 
 ### Hardware Interfaces
 
-All telemetry data flows through interfaces in `ZenMonitor.Core/Interfaces/`. Each exposes a `void Update()` method plus typed getters:
+Hardware abstraction interfaces are defined in, and provided by, the [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) NuGet package.
+Each interface exposes a `void Update()` method plus typed getters:
 
 | Interface | Provides |
 |-----------|----------|
 | `ICpu`    | CPU usage, temperature, frequency |
 | `IDrive`  | Disk I/O, partition usage |
 | `IGpu`    | GPU utilization, VRAM |
-| `IHelper` | Utility / helper methods |
 | `IMemory` | RAM usage, swap |
 | `INetwork` | Network throughput, interfaces |
 | `ISystem` | OS info, uptime, hostname |
 
-Concrete implementations live in `ZenMonitor.Core/Services/<Platform>/`.
+Concrete platform implementations live in the `ZenMonitor.Core` package (Linux only at this time).
 
-### Adding a New Hardware Metric or Platform
+### Project Structure
 
-1. **Implement the interface** — create a new class in `Core/Services/<Platform>/` that implements the relevant `IXxx` interface.
-2. **Register in DI** — add the service in `Program.cs` → `InitProgram` using the DI container.
-3. **Add a frontend view** — consume the data from a `Cli`, `Tui`, or `Gui` view.
+```
+ZenMonitor/                Entry point, DI wiring, CLI argument parsing
+ZenMonitor.Cli/            CLI frontend
+ZenMonitor.Tui/            Terminal.Gui-based TUI frontend
+ZenMonitor.Gui/            Planned GUI frontend (not yet implemented)
+```
+
+| Project | Description |
+|---------|-------------|
+| `ZenMonitor` | Entry point (`Program.cs`), DI wiring, logging setup via Serilog, privilege check, and mode dispatch (`cli`/`tui`/`gui`). |
+| `ZenMonitor.Cli` | CLI frontend. Injects all hardware interfaces, runs a background data loop and prints raw telemetry values to stdout. |
+| `ZenMonitor.Tui` | TUI frontend using **Terminal.Gui**. Injects all hardware interfaces, runs a background data loop, and updates views via `app.Invoke(window.RefreshData)`. |
+| `ZenMonitor.Gui` | Planned GUI frontend (not implemented). |
+
+### TUI Views (`ZenMonitor.Tui/Views/`)
+
+- `HeaderView` — system info header
+- `CpuSection`, `GpuSection`, `MemoryDiskSection`, `NetworkSection` — per-component panels
+- `PlaceholderSection` — reserved slot
+- `SectionVisibility` — toggle-state model for key-based section switching (1–5)
+- `Window` — main window with dynamic grid layout, section visibility toggling, and `RefreshData` dispatch
 
 ---
 
@@ -96,7 +112,7 @@ dotnet run --project ZenMonitor -- -r cli -n      # Skip root check
 dotnet run --project ZenMonitor -- -r cli -n -f   # Force launch no matter what
 ```
 
-<!-- YES fucking EM-Dashes oil me with them up -->
+<!-- YES fucking EM-dashes oil me with them up -->
 
 Options:
 - `-r|--run <cli|tui|gui>` — required, selects frontend mode
@@ -110,63 +126,10 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 ---
 
-## Running Tests
-
-The project uses **xUnit** with platform-filtered test categories that match the CI workflow ([`.github/workflows/tests.yml`](https://github.com/Akeoott/ZenMonitor/blob/main/.github/workflows/tests.yml)).
-
-```bash
-# Run all tests
-dotnet test
-
-# Platform-specific runs
-dotnet test --filter "Platform=Linux"
-dotnet test --filter "Platform=Windows"
-
-# With code coverage (local)
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
-```
-
-- Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings) at the repo root.
-- Linux service tests use `System.IO.Abstractions.MockFileSystem` to parse `/proc` and `/sys` files without real hardware.
-- Test data fixtures live in `ZenMonitor.Tests/Services/Linux/TestData/`.
-
----
-
-## Project Structure
-
-- **ZenMonitor/**
-  - `./Program.cs`: Entry point.<br>
-    Contains `InitProgram` (Spectre.Console.Cli `AsyncCommand<ProgramSettings>`), DI wiring, logging setup via Serilog, privilege check (Linux root / Windows admin), and mode dispatch (`cli`/`tui`/`gui`).
-  - `./ProgramSettings.cs`: CLI argument definitions with Spectre.Console validation.
-  - `./ProgramHelper.cs`: Shared helpers (logging setup, service provider building, runtime safety checks).
-- **ZenMonitor.Core/**
-  - `./Interfaces/`: Hardware abstraction interfaces. Each has a `void Update()` method plus typed getters.
-  - `./Models/`: Immutable C# `record` types used as data snapshots.
-  - `./Services/Linux/`: Concrete Linux implementations of all interfaces.
-  - `./Services/Windows/`: Concrete **future** Windows implementations of all interfaces.
-- **ZenMonitor.Cli/**
-  - `./Monitor.cs`: CLI frontend. Injects all hardware interfaces, runs a background data loop and prints raw telemetry values to stdout.
-- **ZenMonitor.Tui/**
-  - `./Monitor.cs`: TUI frontend using **Terminal.Gui**. Injects all hardware interfaces, runs a background data loop, and updates views via `app.Invoke(window.RefreshData)`.
-  - `./Views/`: TUI view components:
-    - `HeaderView` — system info header
-    - `CpuSection`, `GpuSection`, `MemoryDiskSection`, `NetworkSection` — per-component panels
-    - `PlaceholderSection` — reserved slot
-    - `SectionVisibility` — toggle-state model for key-based section switching (1–5)
-    - `Window` — main window with dynamic grid layout, section visibility toggling, and `RefreshData` dispatch
-- **ZenMonitor.Gui/**
-  - `./`: Planned GUI frontend (not implemented).
-- **ZenMonitor.Tests/**
-  - `./Services/Linux/`: xUnit test suite.<br>
-    Uses `System.IO.Abstractions.MockFileSystem` to test Linux service parsing logic without real hardware.
-
----
-
 ## Technical Details
 
-- **Stack**: C# 100%, .NET 10.0.203
-- **Key dependencies**: `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Microsoft.Extensions.DependencyInjection`, `System.IO.Abstractions` (testability)
-- **Test framework**: xUnit + `coverlet` (coverage config in `coverlet.runsettings`)
+- **Stack**: C# 100%, .NET 10.0.300
+- **Key dependencies**: `ZenMonitor.Core` (hardware abstraction), `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Terminal.Gui` (TUI), `Microsoft.Extensions.DependencyInjection`
 - **Platform**: Linux only (Windows support planned)
 - **License**: LGPL-3.0
 

@@ -27,7 +27,7 @@ Please follow it in all your interactions with the project.
 
 ### Prerequisites
 
-- [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json))
+- [.NET SDK 10.0.300](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json))
 - **Linux** (primary development target). Windows works for the host but hardware services are Linux-only at this time.
 - A terminal and your editor of choice (VS Code, Rider, etc.)
 
@@ -49,11 +49,8 @@ Please follow it in all your interactions with the project.
 ```bash
 dotnet restore
 dotnet build
-dotnet test
+dotnet format --verify-no-changes
 ```
-
-Some tests WILL fail due to platform compatibility and differences.<br>
-Read [Unit Tests & CI](#unit-tests--ci) more more details.
 
 ### Run the CLI Frontend
 
@@ -82,11 +79,9 @@ A quick orientation, the [`README.md`](https://github.com/Akeoott/ZenMonitor/blo
 | Directory | Purpose |
 |-----------|---------|
 | `ZenMonitor/` | Entry point, DI wiring, CLI argument parsing |
-| `ZenMonitor.Core/` | Hardware abstraction interfaces, models, platform services |
 | `ZenMonitor.Cli/` | CLI frontend |
 | `ZenMonitor.Tui/` | Terminal.Gui-based TUI frontend |
 | `ZenMonitor.Gui/` | Planned GUI frontend (not yet implemented) |
-| `ZenMonitor.Tests/` | xUnit test suite |
 
 </details>
 
@@ -121,7 +116,7 @@ namespace ZenMonitor.Core.Interfaces;
 ### Code Quality
 
 - No warnings on build. Run `dotnet build` before pushing.
-- Keep interfaces focused, each interface in `ZenMonitor.Core/Interfaces/` has a single responsibility.
+- Keep interfaces focused — each hardware interface has a single responsibility.
 - Use the `Update()` pattern: each hardware service exposes a `void Update()` method that refreshes its internal snapshot.
 
 </details>
@@ -131,75 +126,25 @@ namespace ZenMonitor.Core.Interfaces;
 ## Unit Tests & CI
 
 <details>
-<summary>Test framework, platform filters, coverage, and CI workflow</summary>
+<summary>CI workflow, testing approach, and code coverage</summary>
 
-### Test Framework
+### Testing
 
-The project uses **xUnit**. Tests are organized under `ZenMonitor.Tests/`.
+Unit tests for the hardware abstraction layer live in the [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) repository
+alongside the platform service implementations. Platform-filtered tests there are annotated with `[Trait("Platform", "Linux")]` or `[Trait("Platform", "Windows")]`.
 
-### Platform-Filtered Tests
-
-Tests are annotated with `[Trait("Platform", "Linux")]` or `[Trait("Platform", "Windows")]` to enable platform-specific runs:
-
-```csharp
-[Trait("Platform", "Linux")]
-public class CpuServiceTests
-{
-    // ...
-}
-```
-
-### Running Tests Locally
-
-```bash
-# All tests
-dotnet test
-
-# Linux-only tests
-dotnet test --filter "Platform=Linux"
-
-# Windows-only tests
-dotnet test --filter "Platform=Windows"
-
-# With code coverage
-dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
-```
-
-Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings). Output is written to `./coverage/`.
+This repository does not currently contain a test project.
 
 ### CI Workflow
 
 The CI workflow (`.github/workflows/tests.yml`) runs on every push and pull request to `main`:
 
-1. **Setup .NET** — installs SDK 10.0.203
+1. **Setup .NET** — installs SDK 10.0.300
 2. **Restore** — `dotnet restore`
 3. **Build** — `dotnet build --no-restore`
-4. **Test** — platform-filtered via `--filter "Platform=Linux"` / `--filter "Platform=Windows"`
-5. **Coverage** — uploads results to [Codecov](https://codecov.io/gh/Akeoott/ZenMonitor)
+4. **Format check** — `dotnet format --verify-no-changes`
 
-Patch coverage is set to `informational: true` (see `.github/codecov.yml`), so a coverage drop won't block a PR — but aim to cover new code. Maintainers might tell you to add more Unit Tests.
-
-> [!NOTE]
-> When creating a pull request to main,<br>
-> Codecov will automatically run Unit Tests and determine coverage
-
-### Writing Tests with MockFileSystem
-
-Linux service tests use `System.IO.Abstractions.MockFileSystem` to simulate `/proc` and `/sys` files without real hardware. Test data fixtures are in `ZenMonitor.Tests/Services/Linux/TestData/`.
-
-Example:
-
-```csharp
-var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-{
-    { "/proc/stat", new MockFileData("cpu  100 200 300 400 500") }
-});
-
-var service = new CpuService(fileSystem);
-service.Update();
-```
-
-We want deterministic data, checking for exact values instead for simple null checks etc.
+Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings).
 
 </details>
 

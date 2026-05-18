@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
-using ZenMonitor.Core.Interfaces;
+using ZenMonitor.Core.Hosting;
 
 namespace ZenMonitor;
 
@@ -26,57 +26,10 @@ internal class ProgramHelper
             builder.AddSerilog(dispose: true);
         });
 
-        services.AddSingleton<System.IO.Abstractions.IFileSystem, System.IO.Abstractions.FileSystem>();
+        // All ZenMonitor platform services (Linux/Win detection, GPU auto-detect)
+        services.AddZenMonitor(out gpuNotSupported);
 
-        gpuNotSupported = false;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            services.AddSingleton<IHelper, Core.Services.Linux.Helper>();
-            services.AddSingleton<ICpu, Core.Services.Linux.Cpu>();
-            services.AddSingleton<IDrive, Core.Services.Linux.Drive>();
-
-            if (Directory.Exists("/proc/driver/nvidia"))
-            {
-                services.AddSingleton<IGpu, Core.Services.Linux.GpuNvidia>();
-            }
-            else if (Directory.Exists("/sys/class/drm/card0/device/hwmon"))
-            {
-                services.AddSingleton<IGpu, Core.Services.Linux.GpuAmd>();
-            }
-            else
-            {
-                gpuNotSupported = true;
-                services.AddSingleton<IGpu, Core.Services.Null.Gpu>();
-            }
-
-            services.AddSingleton<IMemory, Core.Services.Linux.Memory>();
-            services.AddSingleton<INetwork, Core.Services.Linux.Network>();
-            services.AddSingleton<ISystem, Core.Services.Linux.System>();
-        }
-        /*
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-
-        }
-        */
-        else
-        {
-            if (settings.ForceRun)
-            {
-                services.AddSingleton<ICpu, Core.Services.Null.Cpu>();
-                services.AddSingleton<IDrive, Core.Services.Null.Drive>();
-                services.AddSingleton<IGpu, Core.Services.Null.Gpu>();
-                services.AddSingleton<IMemory, Core.Services.Null.Memory>();
-                services.AddSingleton<INetwork, Core.Services.Null.Network>();
-                services.AddSingleton<ISystem, Core.Services.Null.System>();
-            }
-            else
-            {
-                throw new PlatformNotSupportedException(
-                    "ZenMonitor only supports Linux at the moment.");
-            }
-        }
-
+        // Mode-specific UI monitors
         switch (settings.Mode)
         {
             case "cli":

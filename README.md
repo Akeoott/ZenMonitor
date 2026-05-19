@@ -26,7 +26,7 @@
 
 ## Quick Start
 
-**Prerequisites:** [.NET SDK 10.0.300](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
+**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
 **Platform:** Depends on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) (see [Architecture](#architecture) below).
 
 ```bash
@@ -128,7 +128,7 @@ Logs are written to `logs/ZenMonitor.log` (cleared on each run).
 
 ## Technical Details
 
-- **Stack**: C# 100%, .NET 10.0.300
+- **Stack**: C# 100%, .NET 10.0.203
 - **Key dependencies**: `ZenMonitor.Core` (hardware abstraction), `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Terminal.Gui` (TUI), `Microsoft.Extensions.DependencyInjection`
 - **Platform**: Linux only (Windows support planned)
 - **License**: LGPL-3.0

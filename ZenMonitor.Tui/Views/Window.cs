@@ -51,23 +51,18 @@ public sealed class Window : Runnable<bool>
     #region Constructor
 
     public Window(
-        ICpu cpu,
-        IDrive drive,
-        IGpu gpu,
-        IMemory memory,
-        INetwork network,
-        ISystem system)
+        IHardwareMonitor monitor)
     {
         Title = "ZenMonitor";
         BorderStyle = LineStyle.Rounded;
 
-        _header = new HeaderView(system);
+        _header = new HeaderView(monitor.System);
         Add(_header);
 
-        _cpuSection = new CpuSection(cpu);
-        _gpuSection = new GpuSection(gpu);
-        _memDiskSection = new MemoryDiskSection(memory, drive);
-        _networkSection = new NetworkSection(network);
+        _cpuSection = new CpuSection(monitor.Cpu);
+        _gpuSection = new GpuSection(monitor.Gpu);
+        _memDiskSection = new MemoryDiskSection(monitor.Memory, monitor.Drive);
+        _networkSection = new NetworkSection(monitor.Network);
         _placeholderSection = new PlaceholderSection();
 
         // Zone A - CPU | GPU (top row)

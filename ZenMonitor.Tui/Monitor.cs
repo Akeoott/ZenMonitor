@@ -15,20 +15,10 @@ namespace ZenMonitor.Tui;
 
 public class Monitor(
     ILogger<Monitor> logger,
-    ICpu cpuInfo,
-    IGpu gpuInfo,
-    IMemory memoryInfo,
-    INetwork networkInfo,
-    IDrive driveInfo,
-    ISystem systemInfo)
+    IHardwareMonitor monitor)
 {
     private readonly ILogger<Monitor> _logger = logger;
-    private readonly ICpu _cpuInfo = cpuInfo;
-    private readonly IDrive _driveInfo = driveInfo;
-    private readonly IGpu _gpuInfo = gpuInfo;
-    private readonly IMemory _memoryInfo = memoryInfo;
-    private readonly INetwork _networkInfo = networkInfo;
-    private readonly ISystem _systemInfo = systemInfo;
+    private readonly IHardwareMonitor _monitor = monitor;
 
     #endregion
 
@@ -44,8 +34,7 @@ public class Monitor(
         IApplication app = Application.Create().Init();
         try
         {
-            var window = new Window(
-                _cpuInfo, _driveInfo, _gpuInfo, _memoryInfo, _networkInfo, _systemInfo);
+            var window = new Window(_monitor);
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var backgroundTask = Task.Run(() =>
@@ -72,12 +61,12 @@ public class Monitor(
     {
         while (!token.IsCancellationRequested)
         {
-            _cpuInfo.Update();
-            _driveInfo.Update();
-            _gpuInfo.Update();
-            _memoryInfo.Update();
-            _networkInfo.Update();
-            _systemInfo.Update();
+            _monitor.Cpu.Update();
+            _monitor.Drive.Update();
+            _monitor.Gpu.Update();
+            _monitor.Memory.Update();
+            _monitor.Network.Update();
+            _monitor.System.Update();
 
             app.Invoke(window.RefreshData);
 

@@ -23,65 +23,29 @@ Please follow it in all your interactions with the project.
 ## Getting Started with Development
 
 <details>
-<summary>Prerequisites, build instructions, and first run</summary>
+<summary>Prerequisites and build instructions</summary>
+
+> [!NOTE]
+> Activity from my end is limited as I'm focusing on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core)
 
 ### Prerequisites
 
 - [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json))
-- **Linux** (primary development target). Windows works for the host but hardware services are Linux-only at this time.
 - A terminal and your editor of choice (VS Code, Rider, etc.)
-
-### Fork & Clone
-
-1. Fork the repository on GitHub.
-2. Clone your fork:
-   ```bash
-   git clone https://github.com/<your-username>/ZenMonitor
-   cd ZenMonitor
-   ```
-3. Add the upstream remote to stay in sync:
-   ```bash
-   git remote add upstream https://github.com/Akeoott/ZenMonitor
-   ```
 
 ### Build & Verify
 
 ```bash
 dotnet restore
 dotnet build
-dotnet format --verify-no-changes
+
+# Open the debug interface which provides you with all live values,
+# gathered from your computer.
+dotnet run --project ZenMonitor/ -- [options]
+# read the readme or use `--help` to get the list of commands.
 ```
 
-### Run the CLI Frontend
-
-```bash
-dotnet run --project ZenMonitor -- -r cli
-```
-
-### Run the TUI Frontend
-
-```bash
-dotnet run --project ZenMonitor -- -r tui
-```
-
-### Debug Logging
-
-```bash
-dotnet run --project ZenMonitor -- -r cli -l d
-```
-
-Logs are written to `logs/ZenMonitor.log` (cleared on each run).
-
-### Project Layout
-
-A quick orientation, the [`README.md`](https://github.com/Akeoott/ZenMonitor/blob/main/README.md) has the full breakdown, but here are the key directories:
-
-| Directory | Purpose |
-|-----------|---------|
-| `ZenMonitor/` | Entry point, DI wiring, CLI argument parsing |
-| `ZenMonitor.Cli/` | CLI frontend |
-| `ZenMonitor.Tui/` | Terminal.Gui-based TUI frontend |
-| `ZenMonitor.Gui/` | Planned GUI frontend (not yet implemented) |
+Most structural details are in the [README.md](https://github.com/Akeoott/ZenMonitor?tab=readme-ov-file) at the moment.
 
 </details>
 
@@ -110,14 +74,16 @@ An [`.editorconfig`](https://github.com/Akeoott/ZenMonitor/blob/main/.editorconf
 Use file-scoped namespaces (no braces):
 
 ```csharp
-namespace ZenMonitor.Core.Interfaces;
+namespace ZenMonitor.Tui;
 ```
 
 ### Code Quality
 
 - No warnings on build. Run `dotnet build` before pushing.
-- Keep interfaces focused — each hardware interface has a single responsibility.
-- Use the `Update()` pattern: each hardware service exposes a `void Update()` method that refreshes its internal snapshot.
+- Keep interfaces focused — each interface should have a single responsibility.
+- Use the `Update()` pattern: each service exposes a `void Update()` method that refreshes its internal snapshot.
+- Pay attention to the static code analysis from [CodeFactor](https://www.codefactor.io/repository/github/akeoott/ZenMonitor).
+- Keep an eye on unit test coverage from [CodeCov](https://app.codecov.io/gh/Akeoott/ZenMonitor) and make sure it does not drop significantly.
 
 </details>
 
@@ -126,14 +92,26 @@ namespace ZenMonitor.Core.Interfaces;
 ## Unit Tests & CI
 
 <details>
-<summary>CI workflow, testing approach, and code coverage</summary>
+<summary>Test framework, platform filters, coverage, and CI workflow</summary>
 
-### Testing
+> [!NOTE]
+> There are no unit tests in this repo at the moment.<br>
+> You may ignore this section.
 
-Unit tests for the hardware abstraction layer live in the [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) repository
-alongside the platform service implementations. Platform-filtered tests there are annotated with `[Trait("Platform", "Linux")]` or `[Trait("Platform", "Windows")]`.
+### Test Framework
 
-This repository does not currently contain a test project.
+The project uses **xUnit**. Tests are organized under `ZenMonitor.Tests/`.
+
+### Running Tests Locally
+
+```bash
+dotnet test # All tests
+```
+
+Platform specific tests may fail,
+depending on what platform you're on.
+
+Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings). Output is written to `./coverage/`.
 
 ### CI Workflow
 
@@ -142,9 +120,14 @@ The CI workflow (`.github/workflows/tests.yml`) runs on every push and pull requ
 1. **Setup .NET** — installs SDK 10.0.203
 2. **Restore** — `dotnet restore`
 3. **Build** — `dotnet build --no-restore`
-4. **Format check** — `dotnet format --verify-no-changes`
+4. **Test** — runs tests with coverage
+5. **Coverage** — uploads results to [Codecov](https://codecov.io/gh/Akeoott/ZenMonitor)
 
-Coverage configuration is in [`coverlet.runsettings`](https://github.com/Akeoott/ZenMonitor/blob/main/coverlet.runsettings).
+Patch coverage is set to `informational: true` (see `.github/codecov.yml`), so a coverage drop won't block a PR — but aim to cover new code. Maintainers might tell you to add more Unit Tests.
+
+> [!NOTE]
+> When writing tests, please also include non "happy path" tests.
+> This means testing edge cases and not just intended flow.
 
 </details>
 
@@ -181,25 +164,23 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for all c
 
 ### Scopes
 
-Scopes indicate which part of the project or concept the commit touches.
-Here are some example scopes:
+Scopes indicate which part of the project the commit touches. Be as specific as makes sense:
 
 | Scope | When to use |
 |-------|-------------|
 | `project` | Global changes (e.g. `style(project): apply editorconfig across all files`) |
-| `core` | Core parts of the project like `ZenMonitor.Core/` |
-| `tui(window)` | Specific view within the TUI |
-| `api` | Something revolving around API's |
+| `interfaces` | Hardware abstraction interfaces |
+| `services` | Platform service implementations |
+| `models` | Data models and records |
+| `api` | Public API surface |
 
 #### Examples
 
 ```
-fix(tui, window): correct section visibility not updating on key press
+feat(interfaces): add ICpu interface with temperature and frequency getters
 
-The SectionVisibility model was not being invalidated when
-toggling sections 1-5 via keyboard input.
-
-fix(tests): update ICpu test expectations for arm64 parsing
+chore(project): add launch configs
+- add `.vscode/launch.json` with debug profiles for gui, debug, and trace modes
 ```
 
 ### Signed Commits
@@ -215,7 +196,10 @@ If you haven't configured Git for signing yet:
 git config --global user.name "Your Name"
 git config --global user.email "your-email@example.com"
 
-# Tell Git which signing key to use (get the key ID from gpg --list-secret-keys)
+# Get your secret key id
+gpg --list-secret-keys
+
+# Tell Git which signing key to use
 git config --global user.signingkey <key-id>
 
 # Enable signing for all commits
@@ -271,7 +255,7 @@ If your report could disclose a vulnerability or sensitive information, **do not
 
 ### Before You Open
 
-- [ ] All tests pass based on your platform (`dotnet test`)
+- [ ] All tests pass (`dotnet test`)
 - [ ] Build completes without warnings (`dotnet build`)
 - [ ] New code includes tests (if applicable)
 - [ ] Commits are signed
@@ -283,8 +267,8 @@ If your report could disclose a vulnerability or sensitive information, **do not
 Use a prefix that matches the type of change, followed by a short descriptor:
 
 ```
-feature/windows-cpu
-fix/tui-window-crash
+feature/add-cpu-interface
+fix/service-null-ref
 docs/improve-contributing-guide
 chore/update-dependencies
 ```
@@ -293,11 +277,19 @@ Prefixes: `feature/`, `fix/`, `docs/`, `chore/`, `refactor/`, `test/`
 
 ### Pull Request Process
 
-1. Ensure your branch is up to date with the upstream `main`:
-   ```bash
-   git fetch upstream
-   git rebase upstream/main
-   ```
+1. Ensure your branch is up to date with the `origin/main`:
+    ```bash
+    # 1. Update your local main branch
+    git checkout main
+    git pull origin main
+
+    # 2. Switch back to your feature branch
+    git checkout your-feature-branch
+
+    # 3. Merge or rebase main into your feature branch
+    git merge main # Use when others are on your branch.
+    git rebase main # Use when your the only one on your branch.
+    ```
 2. Open the PR against the `main` branch.
 3. Fill out the [pull request template](https://github.com/Akeoott/ZenMonitor/blob/main/.github/pull_request_template.md).
 4. Ensure all CI checks pass.
@@ -319,4 +311,4 @@ Exceptions for squash merges are when there are changes that go beyond the scope
 
 ---
 
-*Thank you for contributing to ZenMonitor!*
+***Thank you for contributing to ZenMonitor!***

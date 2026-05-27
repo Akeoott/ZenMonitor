@@ -56,7 +56,7 @@ public class InitProgram : AsyncCommand<ProgramSettings>
             var logLevel = ProgramHelper.ParseSerilogLevel(settings.LogLevel);
             const string logFilePath = "logs/ZenMonitor.log";
 
-            ProgramHelper.ConfigureLogging(logLevel, logFilePath, settings.CliLogging);
+            ProgramHelper.ConfigureLogging(logLevel, logFilePath);
 
             using var serviceProvider = ProgramHelper.BuildServiceProvider(settings, out var gpuNotSupported);
             var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
@@ -87,12 +87,6 @@ public class InitProgram : AsyncCommand<ProgramSettings>
     {
         switch (settings.Mode)
         {
-            case "cli":
-                {
-                    var engine = serviceProvider.GetRequiredService<Cli.Monitor>();
-                    await engine.InitMonitor(settings.LoopDelay, cancellationToken);
-                    break;
-                }
             case "tui":
                 {
                     var engine = serviceProvider.GetRequiredService<Tui.Monitor>();

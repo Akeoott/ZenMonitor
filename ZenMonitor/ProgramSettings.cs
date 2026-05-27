@@ -2,6 +2,8 @@
 // See the LICENSE file in the repository root for full license text.
 
 using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -44,6 +46,13 @@ public class ProgramSettings : CommandSettings
     #endregion
 
     #region Cli Validation
+    [DllImport("libc")]
+    private static extern uint geteuid();
+
+    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
+    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+
     public override ValidationResult Validate()
     {
         Mode = Mode?.ToLowerInvariant() ?? string.Empty;
@@ -56,10 +65,21 @@ public class ProgramSettings : CommandSettings
 
         if (LoopDelay < 100 || LoopDelay > 10000)
         {
-            return ValidationResult.Error(
-                "--delay must be between 100 and 10000 milliseconds.");
+            return ValidationResult.Error("Loop delay must be between 100 and 10000 milliseconds.");
         }
 
+        if (NoSudo)
+        {
+            return ValidationResult.Success();
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
+        {
+            return ValidationResult.Error("ZenMonitor requires root privileges. Please run with [yellow]sudo[/].");
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
+        {
+            return ValidationResult.Error("ZenMonitor requires admin privileges. Please run as [yellow]Administrator[/].");
+        }
         return ValidationResult.Success();
     }
     #endregion

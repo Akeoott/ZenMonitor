@@ -1,4 +1,4 @@
-name: Build & Format Check
+name: Tests & Coverage
 
 on:
   push:
@@ -14,15 +14,18 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: build-${{ matrix.os }}
+  test:
     strategy:
       matrix:
         include:
           - os: linux
             runner: ubuntu-latest
+            filter: Platform=Linux
           - os: windows
             runner: windows-latest
+            filter: Platform=Windows
+
+    name: test-${{ matrix.os }}
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -49,3 +52,15 @@ jobs:
 
       - name: Check code style
         run: dotnet format --verify-no-changes --no-restore
+
+      - name: Run ${{ matrix.os }} tests with coverage
+        run: >
+          dotnet test --no-build --collect:"XPlat Code Coverage"
+          --results-directory ./coverage --settings coverlet.runsettings
+          --filter "${{ matrix.filter }}"
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          directory: ./coverage
+          fail_ci_if_error: false

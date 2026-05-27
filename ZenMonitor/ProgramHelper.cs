@@ -32,9 +32,6 @@ internal class ProgramHelper
         // Mode-specific UI monitors
         switch (settings.Mode)
         {
-            case "cli":
-                services.AddTransient<Cli.Monitor>();
-                break;
             case "tui":
                 services.AddTransient<Tui.Monitor>();
                 break;
@@ -48,7 +45,7 @@ internal class ProgramHelper
     #endregion
 
     #region Logging Config
-    internal static void ConfigureLogging(LogEventLevel logLevel, string logFilePath, bool cliLogging)
+    internal static void ConfigureLogging(LogEventLevel logLevel, string logFilePath)
     {
         Directory.CreateDirectory("logs");
         File.WriteAllText(logFilePath, string.Empty);
@@ -56,12 +53,6 @@ internal class ProgramHelper
         var loggerConfig = new LoggerConfiguration()
             .MinimumLevel.Is(logLevel)
             .Enrich.WithProperty("RunId", Guid.NewGuid());
-
-        if (cliLogging)
-        {
-            loggerConfig.WriteTo.Console(
-                outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}");
-        }
 
         loggerConfig.WriteTo.File(
             logFilePath,

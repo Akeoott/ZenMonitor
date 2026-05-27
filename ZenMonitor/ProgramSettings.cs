@@ -11,10 +11,9 @@ namespace ZenMonitor;
 public class ProgramSettings : CommandSettings
 {
     #region Cli Options
-    [CommandOption("-r|--run <cli|tui|gui>")]
+    [CommandOption("-r|--run <tui|gui>")]
     [Description(
         "Available modes:\n" +
-        "\tcli (Command Line Interface Providing Raw Values)\n" +
         "\ttui (Terminal User Interface)\n" +
         "\tgui (Graphical User Interface)\n")]
     public required string Mode { get; set; }
@@ -36,11 +35,6 @@ public class ProgramSettings : CommandSettings
     [DefaultValue("false")]
     public bool ForceRun { get; set; } = false;
 
-    [CommandOption("-c|--cli-log <bool>")]
-    [Description("Enable console logging. Use `--cli-log true` to enable. (Mode has to be set to cli)")]
-    [DefaultValue("false")]
-    public bool CliLogging { get; set; } = false;
-
     [CommandOption("-l|--log-level <level>")]
     [Description(
         "Set logging verbosity: `t|trace`, `d|debug`, `i|info`, `w|warning`, `e|error`, `c|critical`.\n" +
@@ -54,16 +48,10 @@ public class ProgramSettings : CommandSettings
     {
         Mode = Mode?.ToLowerInvariant() ?? string.Empty;
 
-        if (Mode != "cli" && Mode != "gui" && Mode != "tui")
+        if (Mode != "gui" && Mode != "tui")
         {
             return ValidationResult.Error(
-                "Require mode arguments (`--run <cli|tui|gui>`). Use `--help` for more information.");
-        }
-
-        if (CliLogging && Mode != "cli")
-        {
-            return ValidationResult.Error(
-                "When --cli-log is enabled, mode must be `cli`.");
+                "\tRequire mode arguments (`--run <tui|gui>`).\n\tUse `--help` for more information.");
         }
 
         if (LoopDelay < 100 || LoopDelay > 10000)

@@ -1,7 +1,5 @@
 # ZenMonitor
 
-### A light and fast system monitor
-
 ![Last Commit](https://img.shields.io/github/last-commit/Akeoott/ZenMonitor?style=for-the-badge&logoSize=auto&labelColor=%23201a19&color=%23ffb4a2)
 ![Stars](https://img.shields.io/github/stars/Akeoott/ZenMonitor?style=for-the-badge&labelColor=%231d1b16&color=%23e6c419)
 ![Repo Size](https://img.shields.io/github/repo-size/Akeoott/ZenMonitor?style=for-the-badge&labelColor=%231a1b1f&color=%23a8c7ff)<br>
@@ -9,30 +7,40 @@
 [![Code Coverage](https://img.shields.io/codecov/c/github/Akeoott/ZenMonitor?style=for-the-badge&logoSize=auto&labelColor=%231d1b16)](https://codecov.io/gh/Akeoott/ZenMonitor)
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Akeoott/ZenMonitor?style=for-the-badge&logoSize=auto&labelColor=%231a1b1f)](https://www.codefactor.io/repository/github/akeoott/zenmonitor)
 
-### A light and fast system monitor designed to show you exactly what your computer is doing.
+### A light and fast system monitor
 
-<div>
-    <a href="https://deepwiki.com/Akeoott/ZenMonitor">
-        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki (use with caution)">
-    </a>
-</div>
-<br>
+[![Nuget Version](https://img.shields.io/nuget/vpre/ZenMonitor.Core?style=for-the-badge&logo=nuget&label=ZenMonitor.Core&labelColor=%231a1b1f&color=%23a8c7ff)](https://www.nuget.org/packages/ZenMonitor.Core/)
 
 > [!WARNING]
-> WIP, limited functionality.<br>
-> Backend functional with limitations.<br>
-> Tui available with limitations (WIP)<br>
-> No Gui available at the moment.
+> This project is work in progress. Limited functionality available.<br>
+> The backend is functional with some limitations.<br>
+> A TUI frontend is available but still under development.<br>
+> No GUI frontend exists at this time.
 
 > [!NOTE]
-> I'm currently focusing on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core),<br>
-> the backend of ZenMonitor.Core which I originally made in this repository.<br>
-> For this reason is activity from my end limited in this repository.
+> Development focus is currently on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core), the backend library extracted from this repository.
+> Activity on this frontend repository is therefore limited.
+
+---
+
+## Overview
+
+ZenMonitor is a modern system monitor (with planned task manager capabilities) built on .NET 10.0 using C#. It follows a modular, interface-driven architecture for system telemetry and decouples data collection from rendering using a Producer-Consumer pattern.
+
+**Features:**
+- Real-time CPU, memory, disk, network, GPU, and system information
+- Modular backend via [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) – hardware abstraction with platform-specific implementations
+- Producer-Consumer pattern: data collection runs independently of the UI
+- Currently Linux-only with a Terminal User Interface (TUI)
+- GUI frontend planned (not yet started)
+
+The backend is fully functional on Linux. Windows support is planned but not yet implemented in the Core library.
+
+---
 
 ## Quick Start
 
-**Prerequisites:** [.NET SDK 10.0.203](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (the exact version is pinned in [`global.json`](https://github.com/Akeoott/ZenMonitor/blob/main/global.json)).<br>
-**Platform:** Depends on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) (see [Architecture](#architecture) below).
+### Running the program
 
 ```bash
 git clone https://github.com/Akeoott/ZenMonitor
@@ -42,24 +50,42 @@ dotnet restore
 dotnet build
 
 # Run the TUI frontend
-# (requires sudo/admin privileges, to bypass add `-n` after `-r tui`)
+# (requires sudo/admin privileges. Use -n to bypass)
 dotnet run --project ZenMonitor -- -r tui
 ```
 
-> See [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for the full contribution workflow and our [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).
+> [!IMPORTANT]
+> See [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for the contribution workflow and our [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).
+
+### Technical Details
+
+- **Stack**: C# 100%, .NET 10.0.203
+- **Key dependencies**:
+  - [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) – hardware telemetry backend
+  - `Spectre.Console` – console rendering
+  - `Serilog` – structured logging
+  - `Terminal.Gui` – TUI framework
+  - `Microsoft.Extensions.DependencyInjection` – DI container
+- **Platform**: Linux (support depends on `ZenMonitor.Core`)
+- **License**: [LGPL-3.0](LICENSE)
 
 ---
 
-## Project Summary
+## Architecture
 
-ZenMonitor is a modern system monitor (planned task manager) built on .NET 10.0 (C# only). It uses a modular, interface-driven backend for system telemetry and a Producer-Consumer pattern to decouple data collection from rendering.
+ZenMonitor is split into two main parts:
 
-Currently Linux-only; GUI frontend is planned but not yet implemented.<br>
-See [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) for more information about the backend.
+1. **Backend** – [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) provides hardware abstraction interfaces (`ICpu`, `IMemory`, `IDrive`, `IGpu`, `INetwork`, `ISystem`) and platform-specific implementations (Linux currently, Windows WIP). Data collection is triggered by a timer that calls `Update()` on all monitors, producing snapshots.
+
+2. **Frontend** – This repository contains the user-facing application. It subscribes to the backend's data stream (Producer-Consumer pattern) and renders the information. Currently a TUI is implemented; a GUI is planned.
+
+The Producer-Consumer pattern ensures that UI rendering never blocks data collection. The frontend consumes the latest snapshot at its own refresh rate, independent of the collection interval.
 
 ---
 
-## CLI Usage (building from terminal)
+## CLI Usage
+
+Run the TUI frontend with various options:
 
 ```bash
 dotnet run --project ZenMonitor -- -r tui         # Run TUI mode
@@ -69,30 +95,28 @@ dotnet run --project ZenMonitor -- -r tui -n      # Skip root check
 dotnet run --project ZenMonitor -- -r tui -n -f   # Force launch no matter what
 ```
 
-<!-- YES fucking EM-dashes oil me with them up -->
+### Options
 
-Options:
-- `-r|--run <tui|gui>` — required, selects frontend mode
-- `-d|--delay <ms>` — update interval, 100–10000ms, default 1000
-- `-n|--no-sudo <bool>` — bypass privilege check
-- `-f|--force-run <bool>` — run regardless of unsupported OS (may break)
-- `-l|--log-level <level>` — `t|trace`, `d|debug`, `i|info`, `w|warning`, `e|error`, `c|critical`
+| Option | Description |
+|--------|-------------|
+| `-r, --run <tui/gui>` | Required. Selects frontend mode. Only `tui` is available now. |
+| `-d, --delay <ms>` | Update interval in milliseconds. Allowed 100–10000. Default 1000. |
+| `-n, --no-sudo` | Bypass privilege (root) check. Use if you have proper permissions. |
+| `-f, --force-run` | Run even on unsupported OS. May break functionality. |
+| `-l, --log-level <level>` | Logging verbosity: `t` (trace), `d` (debug), `i` (info), `w` (warning), `e` (error), `c` (critical). |
 
-Logs are written to `logs/ZenMonitor.log` (cleared on each run).
-
----
-
-## Technical Details
-
-- **Stack**: C# 100%, .NET 10.0.203
-- **Key dependencies**: `ZenMonitor.Core` (hardware abstraction), `Spectre.Console.Cli` (CLI parsing), `Serilog` (logging), `Terminal.Gui` (TUI), `Microsoft.Extensions.DependencyInjection`
-- **Platform**: Linux only (Windows support planned)
-- **License**: LGPL-3.0
+Logs are written to `logs/ZenMonitor.log`. The log file is cleared on each run.
 
 ---
 
-> [!NOTE]
-> Documentation if you need more help: [DeepWiki/Akeoott/ZenMonitor](https://deepwiki.com/Akeoott/ZenMonitor)<br>
-> I wanna mention that it provides a broad overview.<br>
-> YOU CAN NOT 100% rely on it. You know how AI is, its not a permanent solution. Just a temporary fix.<br>
-> In case of questions, open a [discussion](https://github.com/Akeoott/ZenMonitor/discussions/categories/q-a) on github.
+## Current Status
+
+- **Backend**: Functional on Linux. Windows support is work in progress in the Core library.
+- **TUI Frontend**: Basic functionality works – displays system metrics. Missing some planned features (process list, interactive task management). Updates are ongoing.
+- **GUI Frontend**: Not started. Planned for future after backend and TUI stabilize.
+
+---
+
+## Contributing
+
+Please read [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for guidelines on code style, commit conventions, and pull requests.

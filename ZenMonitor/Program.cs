@@ -2,7 +2,6 @@
 // See the LICENSE file in the repository root for full license text.
 
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,55 +24,40 @@ internal class Program
 public class InitProgram : AsyncCommand<ProgramSettings>
 {
     #region InitProgram
-    [DllImport("libc")]
-    private static extern uint geteuid();
-
-    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
-    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-
     protected override async Task<int> ExecuteAsync(
         CommandContext context,
         ProgramSettings settings,
         CancellationToken cancellationToken)
     {
-        if (!settings.NoSudo)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
-            {
-                Console.Error.WriteLine("ZenMonitor requires root privileges. Please run with sudo.");
-                return 1;
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
-            {
-                Console.Error.WriteLine("ZenMonitor requires admin privileges. Please run as admin.");
-                return 1;
-            }
-        }
+        var logLevel = ProgramHelper.ParseSerilogLevel(settings.LogLevel);
+        const string logFilePath = "logs/ZenMonitor.log";
+
+        ProgramHelper.ConfigureLogging(logLevel, logFilePath);
+
+        using var serviceProvider = ProgramHelper.BuildServiceProvider(settings, out var gpuNotSupported);
+        var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
+
+        // Debug messages for us, dev's.
+        logger.LogWarning("ZenMonitor initialized.");
+        logger.LogInformation("Running on {OSDescription}", RuntimeInformation.OSDescription);
+        logger.LogInformation("OutputMode: {OutputMode}", settings.Mode);
+        if (settings.NoSudo)
+            logger.LogWarning("Bypassing sudo/admin requirements!");
+        if (settings.ForceRun)
+            logger.LogWarning("Force running! No data will be returned if your OS is not supported.");
+        if (gpuNotSupported)
+            logger.LogError("Unsupported GPU. Falling back to `Null.Gpu`, no graphics information will be returned.");
 
         try
         {
-            var logLevel = ProgramHelper.ParseSerilogLevel(settings.LogLevel);
-            const string logFilePath = "logs/ZenMonitor.log";
-
-            ProgramHelper.ConfigureLogging(logLevel, logFilePath);
-
-            using var serviceProvider = ProgramHelper.BuildServiceProvider(settings, out var gpuNotSupported);
-            var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
-
-            ProgramHelper.ApplyRuntimeSafetyChecks(settings, logger, gpuNotSupported);
-
             await RunApplicationAsync(serviceProvider, settings, cancellationToken);
             logger.LogInformation("Application finished, bye bye!");
-
             return 0;
         }
-        catch (PlatformNotSupportedException ex)
+        catch (OperationCanceledException)
         {
-            Console.Error.WriteLine(ex.Message);
-            Console.Write("Press any key to exit... ");
-            Console.ReadKey();
-            return 1;
+            logger.LogWarning("\nOperation cancelled. Shutting down, bye-bye");
+            return 0;
         }
         finally
         {
@@ -95,7 +79,7 @@ public class InitProgram : AsyncCommand<ProgramSettings>
                 }
             case "gui":
                 {
-                    Console.WriteLine("gui is not implemented, come back later! (try cli)");
+                    Console.WriteLine("gui is not implemented, come back later! (try tui)");
                     break;
                 }
             default:

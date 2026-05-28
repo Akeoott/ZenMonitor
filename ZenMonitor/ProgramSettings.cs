@@ -74,11 +74,11 @@ public class ProgramSettings : CommandSettings
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
         {
-            return ValidationResult.Error("ZenMonitor requires root privileges. Please run with [yellow]sudo[/].");
+            return ValidationResult.Error("ZenMonitor requires root privileges. Please run with sudo.");
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
         {
-            return ValidationResult.Error("ZenMonitor requires admin privileges. Please run as [yellow]Administrator[/].");
+            return ValidationResult.Error("ZenMonitor requires admin privileges. Please run as Administrator.");
         }
         return ValidationResult.Success();
     }

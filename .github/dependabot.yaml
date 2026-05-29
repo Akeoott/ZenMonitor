@@ -1,8 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directories:
-      - "/ZenMonitor*"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "friday"

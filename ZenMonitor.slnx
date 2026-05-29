@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Solution>
   <Project Path="ZenMonitor\ZenMonitor.csproj" />
   <Project Path="ZenMonitor.Tui\ZenMonitor.Tui.csproj" />

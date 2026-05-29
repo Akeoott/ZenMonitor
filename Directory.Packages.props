@@ -15,6 +15,6 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="ZenMonitor.Core" Version="1.1.2-alpha" />
     <PackageVersion Include="ZenMonitor.Core.Hosting" Version="1.1.2-alpha" />
-    <PackageVersion Include="Terminal.Gui" Version="2.1.0" />
+    <PackageVersion Include="Terminal.Gui" Version="2.2.2" />
   </ItemGroup>
 </Project>

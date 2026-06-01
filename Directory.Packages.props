@@ -13,7 +13,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Spectre.Console" Version="0.55.2" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
-    <PackageVersion Include="Terminal.Gui" Version="2.2.2" />
+    <PackageVersion Include="Terminal.Gui" Version="2.4.1" />
     <PackageVersion Include="ZenMonitor.Core" Version="1.1.2-alpha" />
     <PackageVersion Include="ZenMonitor.Core.Hosting" Version="1.1.2-alpha" />
   </ItemGroup>

@@ -14,7 +14,7 @@
         "--watch"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/ZenMonitor.Gui"
+        "cwd": "${workspaceFolder}/src/ZenMonitor"
       },
       "isBackground": true,
       "problemMatcher": {

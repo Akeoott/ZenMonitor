@@ -2,45 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET DevConfig (GUI)",
+      "name": ".NET Run ZenMonitor",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "Tailwind CSS Watch",
       "program": "dotnet",
       "args": [
         "watch",
+        "--project",
+        "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
         "run",
-        "debug",
-        "--launch-profile",
-        "http"
+        "--",
+        "-n"
       ],
-      "cwd": "${workspaceFolder}/ZenMonitor.Gui",
+      "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    {
-      "name": ".NET (GUI)",
-      "type": "coreclr",
-      "request": "launch",
-      "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-      "args": [
-        "-r",
-        "gui"
-      ],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "name": ".NET (TUI)",
-      "type": "coreclr",
-      "request": "launch",
-      "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-      "args": [
-        "-r",
-        "tui"
-      ],
-      "cwd": "${workspaceFolder}"
     }
   ]
 }

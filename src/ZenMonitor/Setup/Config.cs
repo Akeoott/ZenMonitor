@@ -5,21 +5,16 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
+using Serilog;
+using Serilog.Events;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace ZenMonitor;
+namespace ZenMonitor.Setup;
 
-public class ProgramSettings : CommandSettings
+public class Config : CommandSettings
 {
-    #region Cli Options
-    [CommandOption("-r|--run <tui|gui>")]
-    [Description(
-        "Available modes:\n" +
-        "\ttui (Terminal User Interface)\n" +
-        "\tgui (Graphical User Interface)\n")]
-    public required string Mode { get; set; }
-
     [CommandOption("-d|--delay <ms>")]
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
     [DefaultValue(1000)]
@@ -43,9 +38,7 @@ public class ProgramSettings : CommandSettings
         "Logs are written to `logs/ZenMonitor.log` (cleared on each run)")]
     [DefaultValue("info")]
     public string LogLevel { get; set; } = "info";
-    #endregion
 
-    #region Cli Validation
     [DllImport("libc")]
     private static extern uint geteuid();
 
@@ -55,14 +48,6 @@ public class ProgramSettings : CommandSettings
 
     public override ValidationResult Validate()
     {
-        Mode = Mode?.ToLowerInvariant() ?? string.Empty;
-
-        if (Mode != "gui" && Mode != "tui")
-        {
-            return ValidationResult.Error(
-                "\tRequire mode arguments (`--run <tui|gui>`).\n\tUse `--help` for more information.");
-        }
-
         if (LoopDelay < 100 || LoopDelay > 10000)
         {
             return ValidationResult.Error("Loop delay must be between 100 and 10000 milliseconds.");
@@ -82,5 +67,34 @@ public class ProgramSettings : CommandSettings
         }
         return ValidationResult.Success();
     }
-    #endregion
+
+    internal static void Logging(LogEventLevel logLevel, string logFilePath)
+    {
+        Directory.CreateDirectory("logs");
+        File.WriteAllText(logFilePath, string.Empty);
+
+        var loggerConfig = new LoggerConfiguration()
+            .MinimumLevel.Is(logLevel)
+            .Enrich.WithProperty("RunId", Guid.NewGuid());
+
+        loggerConfig.WriteTo.File(
+            logFilePath,
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
+
+        Log.Logger = loggerConfig.CreateLogger();
+    }
+
+    internal static LogEventLevel ParseSerilogLevel(string level)
+    {
+        return level?.ToLowerInvariant() switch
+        {
+            "t" or "trace" => LogEventLevel.Verbose,
+            "d" or "debug" => LogEventLevel.Debug,
+            "i" or "info" => LogEventLevel.Information,
+            "w" or "warning" => LogEventLevel.Warning,
+            "e" or "error" => LogEventLevel.Error,
+            "c" or "critical" => LogEventLevel.Fatal,
+            _ => LogEventLevel.Information
+        };
+    }
 }

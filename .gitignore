@@ -2,6 +2,9 @@
 # Web
 # =========================
 
+# Build artifacts from tailwind
+ZenMonitor.Gui/wwwroot/tailwind.css
+
 # Logs
 logs
 *.log

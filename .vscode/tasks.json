@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Tailwind CSS Watch",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "@tailwindcss/cli",
+        "-i",
+        "./css/input.css",
+        "-o",
+        "./wwwroot/tailwind.css",
+        "--watch"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/ZenMonitor.Gui"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "."
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "tailwind"
+      }
+    }
+  ]
+}

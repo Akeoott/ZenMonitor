@@ -2,18 +2,36 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Run ZenMonitor",
+      "name": ".NET Run",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "Tailwind CSS Watch",
       "program": "dotnet",
       "args": [
-        "watch",
+        "run",
         "--project",
         "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
-        "run",
         "--",
         "-n"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": ".NET Run (debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
+        "--",
+        "-n",
+        "-l",
+        "d"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",

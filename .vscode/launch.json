@@ -11,7 +11,7 @@
         "--project",
         "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
         "--",
-        "-n"
+        "-f"
       ],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
@@ -29,8 +29,8 @@
         "--project",
         "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
         "--",
-        "-n",
-        "-l",
+        "-f",
+        "-v",
         "d"
       ],
       "cwd": "${workspaceFolder}",

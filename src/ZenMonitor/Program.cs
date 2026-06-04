@@ -3,6 +3,8 @@
 
 using System.Runtime.InteropServices;
 
+using Avalonia;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,6 +23,22 @@ internal class Program
         var app = new CommandApp<InitProgram>();
         return await app.RunAsync(args);
     }
+
+    public static void InitAvalonia()
+    {
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
+    }
+
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+#if DEBUG
+            .WithDeveloperTools()
+#endif
+            .WithInterFont()
+            .LogToTrace();
+    }
 }
 
 public class InitProgram : AsyncCommand<Config>
@@ -30,10 +48,10 @@ public class InitProgram : AsyncCommand<Config>
         Config settings,
         CancellationToken cancellationToken)
     {
-        var logLevel = Config.ParseSerilogLevel(settings.LogLevel);
+        var logLevel = Config.ParseSerilogLevel(settings.Verbosity);
         const string logFilePath = "logs/ZenMonitor.log";
 
-        Config.ConfigureLogging(logLevel, logFilePath);
+        Config.ConfigureLogging(settings.Quiet, logLevel, logFilePath);
 
         using var serviceProvider = DependencyInjection.BuildServiceProvider(out var gpuNotSupported);
         var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
@@ -41,16 +59,14 @@ public class InitProgram : AsyncCommand<Config>
         // Debug messages for us, dev's.
         logger.LogWarning("ZenMonitor initialized.");
         logger.LogInformation("Running on {OSDescription}", RuntimeInformation.OSDescription);
-        if (settings.NoSudo)
+        if (settings.Force)
             logger.LogWarning("Bypassing sudo/admin requirements!");
-        if (settings.ForceRun)
-            logger.LogWarning("Force running! No data will be returned if your OS is not supported.");
         if (gpuNotSupported)
             logger.LogError("Unsupported GPU. Falling back to `Null.Gpu`, no graphics information will be returned.");
 
         try
         {
-            Init.Monitor.InitAvalonia();
+            Program.InitAvalonia();
             logger.LogInformation("Application finished, bye bye!");
             return 0;
         }

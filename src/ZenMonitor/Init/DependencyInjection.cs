@@ -23,7 +23,6 @@ internal class DependencyInjection
         });
 
         services.AddZenMonitor(out gpuNotSupported);
-        services.AddTransient<Monitor>();
         return services.BuildServiceProvider();
     }
 }

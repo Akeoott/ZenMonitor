@@ -1,18 +1,21 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ZenMonitor.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="ZenMonitor.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="ZenMonitor">
+<sukiUi:SukiWindow xmlns="https://github.com/avaloniaui"
+                   xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:vm="using:ZenMonitor.ViewModels"
+                   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                   x:DataType="vm:MainWindowViewModel"
+                   x:Class="ZenMonitor.Views.MainWindow"
+                   Icon="/Assets/avalonia-logo.ico"
+                   Title="ZenMonitor"
+                   Background="{DynamicResource SukiBackground}"
+                   BackgroundAnimationEnabled="true">
 
-  <Design.DataContext>
-    <vm:MainWindowViewModel/>
-  </Design.DataContext>
+  <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+    <StackPanel Spacing="10" Margin="20">
+      <TextBlock Text="Welcome to ZenMonitor! Come back later :D" FontSize="24"/>
+    </StackPanel>
+  </Grid>
 
-  <TextBlock Text="HELdasadsLOOOO" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-</Window>
+</sukiUi:SukiWindow>

@@ -29,6 +29,7 @@
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="SukiUI" />
     <PackageReference Include="ZenMonitor.Core" />
     <PackageReference Include="ZenMonitor.Core.Hosting" />
   </ItemGroup>

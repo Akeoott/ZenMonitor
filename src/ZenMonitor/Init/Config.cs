@@ -13,12 +13,12 @@ using Spectre.Console.Cli;
 
 namespace ZenMonitor.Init;
 
-public class Config : CommandSettings
+public abstract partial class Config : CommandSettings
 {
     [CommandOption("-d|--delay <ms>")]
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
     [DefaultValue(1000)]
-    public int Delay { get; set; } = 1000;
+    private int Delay { get; } = 1000;
 
     [CommandOption("-f|--force <bool>")]
     [Description("Run ZenMonitor without sudo/admin privileges (some things might not work!)")]
@@ -37,32 +37,31 @@ public class Config : CommandSettings
     [DefaultValue("false")]
     public bool Quiet { get; set; } = false;
 
-    [DllImport("libc")]
-    private static extern uint geteuid();
+    [LibraryImport("libc")]
+    private static partial uint geteuid();
 
-    private static bool IsRoot() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
-    private static bool IsAdmin() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-        new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+    private static bool IsRoot()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
+    }
+
+    private static bool IsAdmin()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+               new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+    }
 
     public override ValidationResult Validate()
     {
-        if (Delay is < 100 or > 10000)
-        {
-            return ErrorResult("Loop delay must be between 100 and 10000 milliseconds.");
-        }
+        if (Delay is < 100 or > 10000) return ErrorResult("Loop delay must be between 100 and 10000 milliseconds.");
 
-        if (!Force)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
-            {
-                return ErrorResult("ZenMonitor requires root privileges. Please run with sudo.");
-            }
+        if (Force) return ValidationResult.Success();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
-            {
-                return ErrorResult("ZenMonitor requires admin privileges. Please run as Administrator.");
-            }
-        }
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
+            return ErrorResult("ZenMonitor requires root privileges. Please run with sudo.");
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
+            return ErrorResult("ZenMonitor requires admin privileges. Please run as Administrator.");
         return ValidationResult.Success();
 
         static ValidationResult ErrorResult(string message)
@@ -81,22 +80,21 @@ public class Config : CommandSettings
             .MinimumLevel.Is(logLevel)
             .Enrich.WithProperty("RunId", Guid.NewGuid());
 
-        const string OutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}";
+        const string outputTemplate =
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}";
 
         loggerConfig.WriteTo.File(
             logFilePath,
-            outputTemplate: OutputTemplate);
+            outputTemplate: outputTemplate);
 
         if (!isQuiet)
-        {
             loggerConfig.WriteTo.Console(
-                outputTemplate: OutputTemplate);
-        }
+                outputTemplate: outputTemplate);
 
         Log.Logger = loggerConfig.CreateLogger();
     }
 
-    internal static LogEventLevel ParseSerilogLevel(string level)
+    internal static LogEventLevel ParseSerilogLevel(string? level)
     {
         return level?.ToLowerInvariant() switch
         {

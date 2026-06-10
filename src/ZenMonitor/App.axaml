@@ -1,11 +1,10 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sukiUi="clr-namespace:SukiUI;assembly=SukiUI"
-             xmlns:local="using:ZenMonitor"
              x:Class="ZenMonitor.App"
              RequestedThemeVariant="Default">
 
   <Application.Styles>
-    <sukiUi:SukiTheme ThemeColor="Blue"/>
+    <sukiUi:SukiTheme ThemeColor="Blue" />
   </Application.Styles>
 </Application>

@@ -10,7 +10,7 @@ using ZenMonitor.Core.Hosting;
 
 namespace ZenMonitor.Init;
 
-internal class DependencyInjection
+internal abstract class DependencyInjection
 {
     internal static ServiceProvider BuildServiceProvider(out bool gpuNotSupported)
     {

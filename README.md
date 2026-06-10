@@ -29,7 +29,7 @@ ZenMonitor is a modern system monitor (with planned task manager capabilities) b
 - Real-time CPU, memory, disk, network, GPU, and system information
 - Modular backend via [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) – hardware abstraction with platform-specific implementations
 - Producer-Consumer pattern: data collection runs independently of the UI
-- Currently Linux-only with a Terminal User Interface (TUI)
+- Currently, Linux-only with a Terminal User Interface (TUI)
 - GUI frontend planned (not yet started)
 
 The backend is fully functional on Linux. Windows support is planned but not yet implemented in the Core library.
@@ -75,7 +75,7 @@ ZenMonitor is split into two main parts:
 
 1. **Backend** – [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) provides hardware abstraction interfaces (`ICpu`, `IMemory`, `IDrive`, `IGpu`, `INetwork`, `ISystem`) and platform-specific implementations (Linux currently, Windows WIP). Data collection is triggered by a timer that calls `Update()` on all monitors, producing snapshots.
 
-2. **Frontend** – This repository contains the user-facing application. It subscribes to the backend's data stream (Producer-Consumer pattern) and renders the information. Currently a TUI is implemented; a GUI is planned.
+2. **Frontend** – This repository contains the user-facing application. It subscribes to the backend's data stream (Producer-Consumer pattern) and renders the information. Currently, a TUI is implemented; a GUI is planned.
 
 The Producer-Consumer pattern ensures that UI rendering never blocks data collection. The frontend consumes the latest snapshot at its own refresh rate, independent of the collection interval.
 

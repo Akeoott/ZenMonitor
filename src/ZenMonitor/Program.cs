@@ -167,7 +167,6 @@ internal partial class Config : CommandSettings
         }
     }
 
-    #endregion
 
     #region Runtime Checks
 
@@ -225,3 +224,5 @@ internal partial class Config : CommandSettings
 
     #endregion
 }
+
+#endregion

@@ -62,7 +62,7 @@ internal class InitProgram : AsyncCommand<Config>
 
             Config.ConfigureLogging(settings.Quiet, logLevel, logFilePath);
 
-            using var serviceProvider = DependencyInjection.BuildServiceProvider(out var gpuNotSupported);
+            using var serviceProvider = DependencyInjection.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
 
             // Debug messages for us, dev's.
@@ -70,9 +70,6 @@ internal class InitProgram : AsyncCommand<Config>
             logger.LogInformation("Running on {OSDescription}", RuntimeInformation.OSDescription);
             if (settings.Force)
                 logger.LogWarning("Bypassing sudo/admin requirements!");
-            if (gpuNotSupported)
-                logger.LogError(
-                    "Unsupported GPU. Falling back to `Null.Gpu`, no graphics information will be returned.");
 
             try
             {
@@ -103,7 +100,7 @@ internal class InitProgram : AsyncCommand<Config>
 
 internal static class DependencyInjection
 {
-    internal static ServiceProvider BuildServiceProvider(out bool gpuNotSupported)
+    internal static ServiceProvider BuildServiceProvider()
     {
         var services = new ServiceCollection();
 
@@ -113,7 +110,7 @@ internal static class DependencyInjection
             builder.AddSerilog(dispose: true);
         });
 
-        services.AddZenMonitor(out gpuNotSupported);
+        services.AddZenMonitor();
         return services.BuildServiceProvider();
     }
 }

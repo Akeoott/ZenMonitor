@@ -16,7 +16,7 @@
     <PackageVersion Include="Spectre.Console" Version="0.55.2" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="SukiUI" Version="7.0.1" />
-    <PackageVersion Include="ZenMonitor.Core" Version="1.1.2-alpha" />
-    <PackageVersion Include="ZenMonitor.Core.Hosting" Version="1.1.2-alpha" />
+    <PackageVersion Include="ZenMonitor.Core" Version="2.0.0-alpha.2" />
+    <PackageVersion Include="ZenMonitor.Core.Hosting" Version="2.0.0-alpha.2" />
   </ItemGroup>
 </Project>

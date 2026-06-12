@@ -18,6 +18,10 @@ using Spectre.Console.Cli;
 
 using ZenMonitor.Core.Hosting;
 
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable ReplaceAutoPropertyWithComputedProperty
+
 namespace ZenMonitor;
 
 #region Application Init
@@ -47,7 +51,6 @@ internal static class Program
     }
 }
 
-// ReSharper disable once ClassNeverInstantiated.Global
 internal class InitProgram : AsyncCommand<Config>
 {
     protected override Task<int> ExecuteAsync(
@@ -119,7 +122,6 @@ internal static class DependencyInjection
 
 #region SpectreConfig
 
-// ReSharper disable once ClassNeverInstantiated.Global
 internal partial class Config : CommandSettings
 {
     [CommandOption("-d|--delay <ms>")]
@@ -163,7 +165,6 @@ internal partial class Config : CommandSettings
             return ValidationResult.Error(message);
         }
     }
-
 
     #region Runtime Checks
 

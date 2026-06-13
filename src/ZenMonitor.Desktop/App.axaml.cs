@@ -5,8 +5,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
+using Microsoft.Extensions.DependencyInjection;
 using ZenMonitor.Desktop.ViewModels;
-using ZenMonitor.Desktop.Views;
 
 namespace ZenMonitor.Desktop;
 
@@ -20,7 +20,14 @@ public class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            desktop.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
+        {
+            var mainWindowModel = AppBootstrap.ServiceProvider!.GetRequiredService<MainWindowModel>();
+            var mainWindow = new Views.MainWindow
+            {
+                DataContext = mainWindowModel
+            };
+            desktop.MainWindow = mainWindow;
+        }
 
         base.OnFrameworkInitializationCompleted();
     }

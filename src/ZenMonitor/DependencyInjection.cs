@@ -23,6 +23,9 @@ internal static class DependencyInjection
         });
 
         services.AddZenMonitor();
+
+        AppBootstrap.ConfigureServices?.Invoke(services);
+
         return services.BuildServiceProvider();
     }
 }

@@ -1,21 +1,46 @@
 <sukiUi:SukiWindow xmlns="https://github.com/avaloniaui"
-                   xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                   xmlns:vm="using:ZenMonitor.Desktop.ViewModels"
-                   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                   x:DataType="vm:MainWindowViewModel"
+                   xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                   xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
+                   MinWidth="800" MinHeight="450"
+                   CanResize="True"
+                   WindowState="Normal"
+                   x:DataType="vm:MainWindowModel"
                    x:Class="ZenMonitor.Desktop.Views.MainWindow"
                    Icon="/Assets/avalonia-logo.ico"
                    Title="ZenMonitor"
                    Background="{DynamicResource SukiBackground}"
+                   BackgroundTransitionsEnabled="True"
                    BackgroundAnimationEnabled="true">
 
-  <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-    <StackPanel Spacing="10" Margin="20">
-      <TextBlock Text="Welcome to ZenMonitor! Come back later :D" FontSize="24"/>
-    </StackPanel>
-  </Grid>
+  <DockPanel>
+    <Border DockPanel.Dock="Left" Width="220">
+      <StackPanel Margin="12" Spacing="4">
+        <Button Command="{Binding NavigateHomeCommand}"
+                Background="{Binding HomeButtonBackground}"
+                BorderThickness="1"
+                HorizontalContentAlignment="Left"
+                Height="40"
+                Margin="0">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="&#x1F3E0;" FontSize="16" VerticalAlignment="Center" />
+            <TextBlock Text="Home" FontSize="14" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Command="{Binding NavigateSettingsCommand}"
+                Background="{Binding SettingsButtonBackground}"
+                BorderThickness="1"
+                HorizontalContentAlignment="Left"
+                Height="40">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="&#x2699;" FontSize="16" VerticalAlignment="Center" />
+            <TextBlock Text="Settings" FontSize="14" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <ContentControl Content="{Binding CurrentViewModel}" Margin="16" />
+  </DockPanel>
 
 </sukiUi:SukiWindow>

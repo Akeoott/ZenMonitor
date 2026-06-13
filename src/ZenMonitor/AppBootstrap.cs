@@ -1,6 +1,11 @@
 // Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
+using System;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Spectre.Console.Cli;
 
 namespace ZenMonitor;
@@ -16,6 +21,18 @@ public static class AppBootstrap
     /// Delegate invoked by the shared CLI command to start the platform-specific UI.
     /// </summary>
     public static Action? PlatformStartup { get; set; }
+
+    /// <summary>
+    /// Callback for platform-specific code to register its own services
+    /// before the DI container is built. Set before calling <see cref="RunAsync"/>.
+    /// </summary>
+    public static Action<IServiceCollection>? ConfigureServices { get; set; }
+
+    /// <summary>
+    /// Service provider for dependency injection, set after the container is built.
+    /// Platform-specific code can resolve services from this provider.
+    /// </summary>
+    public static ServiceProvider? ServiceProvider { get; set; }
 
     /// <summary>
     /// Runs the shared CLI, which handles logging configuration, DI setup,

@@ -5,129 +5,24 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
-using Avalonia;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
 using Serilog;
 using Serilog.Events;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-using ZenMonitor.Core.Hosting;
-
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable ReplaceAutoPropertyWithComputedProperty
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace ZenMonitor;
-
-#region Application Init
-
-internal static class Program
-{
-    internal static async Task<int> Main(string[] args)
-    {
-        var app = new CommandApp<InitProgram>();
-        return await app.RunAsync(args);
-    }
-
-    public static void InitAvalonia()
-    {
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime([]);
-    }
-
-    private static AppBuilder BuildAvaloniaApp()
-    {
-        return AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-#if DEBUG
-            .WithDeveloperTools()
-#endif
-            .WithInterFont()
-            .LogToTrace();
-    }
-}
-
-internal class InitProgram : AsyncCommand<Config>
-{
-    protected override Task<int> ExecuteAsync(
-        CommandContext context,
-        Config settings,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var logLevel = Config.ParseSerilogLevel(settings.Verbosity);
-            const string logFilePath = "logs/ZenMonitor.log";
-
-            Config.ConfigureLogging(settings.Quiet, logLevel, logFilePath);
-
-            using var serviceProvider = DependencyInjection.BuildServiceProvider();
-            var logger = serviceProvider.GetRequiredService<ILogger<InitProgram>>();
-
-            // Debug messages for us, dev's.
-            logger.LogWarning("ZenMonitor initialized.");
-            logger.LogInformation("Running on {OSDescription}", RuntimeInformation.OSDescription);
-            if (settings.Force)
-                logger.LogWarning("Bypassing sudo/admin requirements!");
-
-            try
-            {
-                Program.InitAvalonia();
-                logger.LogInformation("Application finished, bye bye!");
-                return Task.FromResult(0);
-            }
-            catch (OperationCanceledException)
-            {
-                logger.LogWarning("\nOperation cancelled. Shutting down, bye-bye");
-                return Task.FromResult(0);
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-        }
-        catch (Exception exception)
-        {
-            return Task.FromException<int>(exception);
-        }
-    }
-}
-
-#endregion
-
-#region DI
-
-internal static class DependencyInjection
-{
-    internal static ServiceProvider BuildServiceProvider()
-    {
-        var services = new ServiceCollection();
-
-        services.AddLogging(builder =>
-        {
-            builder.ClearProviders();
-            builder.AddSerilog(dispose: true);
-        });
-
-        services.AddZenMonitor();
-        return services.BuildServiceProvider();
-    }
-}
-
-#endregion
-
-#region SpectreConfig
 
 internal partial class Config : CommandSettings
 {
     [CommandOption("-d|--delay <ms>")]
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
     [DefaultValue(1000)]
-    private int Delay { get; } = 1000;
+    public int Delay { get; set; } = 1000;
 
     [CommandOption("-f|--force <bool>")]
     [Description("Run ZenMonitor without sudo/admin privileges (some things might not work!)")]
@@ -165,8 +60,6 @@ internal partial class Config : CommandSettings
             return ValidationResult.Error(message);
         }
     }
-
-    #region Runtime Checks
 
     [LibraryImport("libc")]
     private static partial uint geteuid();
@@ -220,7 +113,4 @@ internal partial class Config : CommandSettings
         };
     }
 
-    #endregion
 }
-
-#endregion

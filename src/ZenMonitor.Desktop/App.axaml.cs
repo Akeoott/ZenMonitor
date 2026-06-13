@@ -5,10 +5,10 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-using ZenMonitor.ViewModels;
-using ZenMonitor.Views;
+using ZenMonitor.Desktop.ViewModels;
+using ZenMonitor.Desktop.Views;
 
-namespace ZenMonitor;
+namespace ZenMonitor.Desktop;
 
 public class App : Application
 {

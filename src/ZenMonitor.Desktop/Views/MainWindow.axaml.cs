@@ -3,7 +3,7 @@
 
 using SukiUI.Controls;
 
-namespace ZenMonitor.Views;
+namespace ZenMonitor.Desktop.Views;
 
 public partial class MainWindow : SukiWindow
 {

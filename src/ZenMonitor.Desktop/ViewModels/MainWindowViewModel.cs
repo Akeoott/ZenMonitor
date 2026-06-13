@@ -4,7 +4,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace ZenMonitor.ViewModels;
+namespace ZenMonitor.Desktop.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {

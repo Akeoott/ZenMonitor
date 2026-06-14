@@ -16,8 +16,6 @@ internal static class Program
         AppBootstrap.ConfigureServices = services =>
         {
             services.AddTransient<MainWindowModel>();
-            services.AddTransient<HomeViewModel>();
-            services.AddTransient<SettingsViewModel>();
         };
 
         AppBootstrap.PlatformStartup = () =>
@@ -26,16 +24,16 @@ internal static class Program
         };
 
         return await AppBootstrap.RunAsync(args);
+    }
 
-        static AppBuilder BuildAvaloniaApp()
-        {
-            return AppBuilder.Configure<App>()
-                .UsePlatformDetect()
+    private static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure<App>()
+            .UsePlatformDetect()
 #if DEBUG
-                .WithDeveloperTools()
+            .WithDeveloperTools()
 #endif
-                .WithInterFont()
-                .LogToTrace();
-        }
+            .WithInterFont()
+            .LogToTrace();
     }
 }

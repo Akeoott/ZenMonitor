@@ -14,17 +14,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" />
-    <PackageReference Include="Avalonia.Desktop" />
-    <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Avalonia.Fonts.Inter" />
-    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
-    <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="SukiUI" />
+    <PackageReference Include="Avalonia"/>
+    <PackageReference Include="Avalonia.Desktop"/>
+    <PackageReference Include="Avalonia.Themes.Fluent"/>
+    <PackageReference Include="Avalonia.Fonts.Inter"/>
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport"/>
+    <PackageReference Include="CommunityToolkit.Mvvm"/>
+    <PackageReference Include="Material.Icons.Avalonia"/>
+    <PackageReference Include="SukiUI"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZenMonitor\ZenMonitor.csproj" />
+    <ProjectReference Include="..\ZenMonitor\ZenMonitor.csproj"/>
   </ItemGroup>
 
 </Project>

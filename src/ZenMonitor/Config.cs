@@ -84,16 +84,14 @@ internal partial class Config : CommandSettings
             .MinimumLevel.Is(logLevel)
             .Enrich.WithProperty("RunId", Guid.NewGuid());
 
-        const string outputTemplate =
-            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{RunId}] [{SourceContext}] {Message:lj}{NewLine}{Exception}";
-
         loggerConfig.WriteTo.File(
             logFilePath,
-            outputTemplate: outputTemplate);
+            outputTemplate:
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{RunId}] [{SourceContext}] [{Level:u3}] {Message:lj}{NewLine}{Exception}");
 
         if (!isQuiet)
             loggerConfig.WriteTo.Console(
-                outputTemplate: outputTemplate);
+                outputTemplate: "[{SourceContext}] [{Level:u3}] {Message:lj}{NewLine}{Exception}");
 
         Log.Logger = loggerConfig.CreateLogger();
     }
@@ -112,5 +110,4 @@ internal partial class Config : CommandSettings
             _ => LogEventLevel.Information
         };
     }
-
 }

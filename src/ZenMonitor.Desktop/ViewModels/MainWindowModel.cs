@@ -13,8 +13,17 @@ using SukiUI.Enums;
 
 namespace ZenMonitor.Desktop.ViewModels;
 
-public class MainWindowModel : ViewModelBase
+public class MainWindowModel(
+    ProcessesViewModel processesViewModel,
+    PerformanceViewModel performanceViewModel,
+    ControllerViewModel controllerViewModel,
+    SettingsViewModel settingsViewModel) : ViewModelBase
 {
+    public ProcessesViewModel ProcessesViewModel { get; } = processesViewModel;
+    public PerformanceViewModel PerformanceViewModel { get; } = performanceViewModel;
+    public ControllerViewModel ControllerViewModel { get; } = controllerViewModel;
+    public SettingsViewModel SettingsViewModel { get; } = settingsViewModel;
+
     public RelayCommand<string?> OpenUrlCommand { get; } = new(OpenUrl);
 
     public RelayCommand ToggleThemeCommand { get; } = new(() => SukiTheme.GetInstance().SwitchBaseTheme());

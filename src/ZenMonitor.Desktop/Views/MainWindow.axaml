@@ -57,7 +57,7 @@
                                       Foreground="{DynamicResource SukiText}" />
         </sukiUi:SukiSideMenuItem.Icon>
         <sukiUi:SukiSideMenuItem.PageContent>
-          <TextBlock Text="Processes View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <ContentControl Content="{Binding ProcessesViewModel}" />
         </sukiUi:SukiSideMenuItem.PageContent>
       </sukiUi:SukiSideMenuItem>
 
@@ -67,7 +67,7 @@
                                       Foreground="{DynamicResource SukiText}" />
         </sukiUi:SukiSideMenuItem.Icon>
         <sukiUi:SukiSideMenuItem.PageContent>
-          <TextBlock Text="Performance View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <ContentControl Content="{Binding PerformanceViewModel}" />
         </sukiUi:SukiSideMenuItem.PageContent>
       </sukiUi:SukiSideMenuItem>
 
@@ -77,7 +77,7 @@
                                       Foreground="{DynamicResource SukiText}" />
         </sukiUi:SukiSideMenuItem.Icon>
         <sukiUi:SukiSideMenuItem.PageContent>
-          <TextBlock Text="Controller View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <ContentControl Content="{Binding ControllerViewModel}" />
         </sukiUi:SukiSideMenuItem.PageContent>
       </sukiUi:SukiSideMenuItem>
 
@@ -87,7 +87,7 @@
                                       Foreground="{DynamicResource SukiText}" />
         </sukiUi:SukiSideMenuItem.Icon>
         <sukiUi:SukiSideMenuItem.PageContent>
-          <TextBlock Text="Settings View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <ContentControl Content="{Binding SettingsViewModel}" />
         </sukiUi:SukiSideMenuItem.PageContent>
       </sukiUi:SukiSideMenuItem>
 

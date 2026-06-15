@@ -15,6 +15,10 @@ internal static class Program
     {
         AppBootstrap.ConfigureServices = services =>
         {
+            services.AddTransient<ProcessesViewModel>();
+            services.AddTransient<PerformanceViewModel>();
+            services.AddTransient<ControllerViewModel>();
+            services.AddTransient<SettingsViewModel>();
             services.AddTransient<MainWindowModel>();
         };
 

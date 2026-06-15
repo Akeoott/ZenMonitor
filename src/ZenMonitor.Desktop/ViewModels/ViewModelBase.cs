@@ -7,5 +7,4 @@ namespace ZenMonitor.Desktop.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {
-
 }

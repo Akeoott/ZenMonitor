@@ -3,7 +3,9 @@
                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+                   xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                    xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
+                   xmlns:local="clr-namespace:SukiUI.Enums;assembly=SukiUI"
                    x:DataType="vm:MainWindowModel"
                    x:Class="ZenMonitor.Desktop.Views.MainWindow"
                    Icon="/Assets/avalonia-logo.ico"
@@ -23,25 +25,103 @@
 
   <sukiUi:SukiWindow.MenuItems>
     <MenuItem Header="Options">
-      <MenuItem Command="{Binding}"
-                CommandParameter="{x:True}"
-                Header="Toggle Dark/Bright">
+      <MenuItem Command="{Binding ToggleThemeCommand}" Header="Toggle Dark/Bright">
+
         <MenuItem.Icon>
-          <PathIcon />
+          <materialIcons:MaterialIcon Kind="Brightness4" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
         </MenuItem.Icon>
+
       </MenuItem>
     </MenuItem>
 
     <MenuItem Header="Theme">
-      <MenuItem Command="{Binding}" Header="Blue" />
-      <MenuItem Command="{Binding}" Header="Red" />
-      <MenuItem Command="{Binding}" Header="Green" />
-      <MenuItem Command="{Binding}" Header="Orange" />
+      <MenuItem Command="{Binding ChangeThemeColorCommand}"
+                CommandParameter="{x:Static local:SukiColor.Blue}" Header="Blue" />
+      <MenuItem Command="{Binding ChangeThemeColorCommand}"
+                CommandParameter="{x:Static local:SukiColor.Red}" Header="Red" />
+      <MenuItem Command="{Binding ChangeThemeColorCommand}"
+                CommandParameter="{x:Static local:SukiColor.Green}" Header="Green" />
+      <MenuItem Command="{Binding ChangeThemeColorCommand}"
+                CommandParameter="{x:Static local:SukiColor.Orange}" Header="Orange" />
     </MenuItem>
   </sukiUi:SukiWindow.MenuItems>
 
-  <sukiUi:SukiWindow.Hosts>
+  <sukiUi:SukiSideMenu IsMenuExpanded="False">
 
-  </sukiUi:SukiWindow.Hosts>
+    <sukiUi:SukiSideMenu.Items>
+
+      <sukiUi:SukiSideMenuItem Header="Processes" Classes="Compact">
+        <sukiUi:SukiSideMenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="BorderAll" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </sukiUi:SukiSideMenuItem.Icon>
+        <sukiUi:SukiSideMenuItem.PageContent>
+          <TextBlock Text="Processes View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </sukiUi:SukiSideMenuItem.PageContent>
+      </sukiUi:SukiSideMenuItem>
+
+      <sukiUi:SukiSideMenuItem Header="Performance" Classes="Compact">
+        <sukiUi:SukiSideMenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="ChartAreaspline" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </sukiUi:SukiSideMenuItem.Icon>
+        <sukiUi:SukiSideMenuItem.PageContent>
+          <TextBlock Text="Performance View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </sukiUi:SukiSideMenuItem.PageContent>
+      </sukiUi:SukiSideMenuItem>
+
+      <sukiUi:SukiSideMenuItem Header="Controller" Classes="Compact">
+        <sukiUi:SukiSideMenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="Console" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </sukiUi:SukiSideMenuItem.Icon>
+        <sukiUi:SukiSideMenuItem.PageContent>
+          <TextBlock Text="Controller View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </sukiUi:SukiSideMenuItem.PageContent>
+      </sukiUi:SukiSideMenuItem>
+
+      <sukiUi:SukiSideMenuItem Header="Settings" Classes="Compact">
+        <sukiUi:SukiSideMenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="GearOutline" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </sukiUi:SukiSideMenuItem.Icon>
+        <sukiUi:SukiSideMenuItem.PageContent>
+          <TextBlock Text="Settings View Content Goes Here" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </sukiUi:SukiSideMenuItem.PageContent>
+      </sukiUi:SukiSideMenuItem>
+
+    </sukiUi:SukiSideMenu.Items>
+
+    <sukiUi:SukiSideMenu.FooterContent>
+      <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+        <StackPanel.Styles>
+          <Style Selector="Button">
+            <Setter Property="Command" Value="{Binding OpenUrlCommand}" />
+          </Style>
+          <Style Selector="materialIcons|MaterialIcon">
+            <Setter Property="Width" Value="25" />
+            <Setter Property="Height" Value="25" />
+          </Style>
+        </StackPanel.Styles>
+        <Button Classes="Basic"
+                CommandParameter="https://github.com/Akeoott/ZenMonitor"
+                ToolTip.Tip="Open On GitHub.">
+          <materialIcons:MaterialIcon Kind="Github" />
+        </Button>
+        <Button Classes="Basic"
+                CommandParameter="https://www.nuget.org/packages/ZenMonitor.Core"
+                ToolTip.Tip="View On NuGet.">
+          <materialIcons:MaterialIcon Kind="Package" />
+        </Button>
+        <Button Classes="Basic"
+                CommandParameter="https://github.com/Akeoott"
+                ToolTip.Tip="Mee :>">
+          <materialIcons:MaterialIcon Kind="Cat" />
+        </Button>
+      </StackPanel>
+    </sukiUi:SukiSideMenu.FooterContent>
+
+  </sukiUi:SukiSideMenu>
 
 </sukiUi:SukiWindow>

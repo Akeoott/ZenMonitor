@@ -5,6 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ZenMonitor.Desktop.ViewModels;
 
-public class ViewModelBase : ObservableObject
+public class ViewModelBase : ObservableValidator
 {
 }

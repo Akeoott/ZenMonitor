@@ -21,6 +21,8 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        DataTemplates.Add(new ViewLocator());
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainWindowModel = AppBootstrap.ServiceProvider!.GetRequiredService<MainWindowModel>();

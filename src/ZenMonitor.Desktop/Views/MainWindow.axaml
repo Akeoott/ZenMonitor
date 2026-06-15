@@ -11,7 +11,7 @@
                    Icon="/Assets/avalonia-logo.ico"
                    Title="ZenMonitor"
                    Background="{DynamicResource SukiBackground}"
-                   BackgroundStyle="Flat"
+                   BackgroundStyle="{Binding CurrentBackgroundStyle}"
                    BackgroundTransitionsEnabled="True"
                    BackgroundAnimationEnabled="True"
                    CanResize="True"
@@ -24,26 +24,46 @@
                    mc:Ignorable="d">
 
   <sukiUi:SukiWindow.MenuItems>
-    <MenuItem Header="Options">
+    <MenuItem Header="Themes">
       <MenuItem Command="{Binding ToggleThemeCommand}" Header="Toggle Dark/Bright">
 
         <MenuItem.Icon>
           <materialIcons:MaterialIcon Kind="Brightness4" Width="20" Height="20"
                                       Foreground="{DynamicResource SukiText}" />
         </MenuItem.Icon>
-
       </MenuItem>
-    </MenuItem>
 
-    <MenuItem Header="Theme">
-      <MenuItem Command="{Binding ChangeThemeColorCommand}"
-                CommandParameter="{x:Static local:SukiColor.Blue}" Header="Blue" />
-      <MenuItem Command="{Binding ChangeThemeColorCommand}"
-                CommandParameter="{x:Static local:SukiColor.Red}" Header="Red" />
-      <MenuItem Command="{Binding ChangeThemeColorCommand}"
-                CommandParameter="{x:Static local:SukiColor.Green}" Header="Green" />
-      <MenuItem Command="{Binding ChangeThemeColorCommand}"
-                CommandParameter="{x:Static local:SukiColor.Orange}" Header="Orange" />
+      <MenuItem Header="Color Theme">
+        <MenuItem Command="{Binding ChangeColorThemeCommand}"
+                  CommandParameter="{x:Static local:SukiColor.Blue}" Header="Blue" />
+        <MenuItem Command="{Binding ChangeColorThemeCommand}"
+                  CommandParameter="{x:Static local:SukiColor.Red}" Header="Red" />
+        <MenuItem Command="{Binding ChangeColorThemeCommand}"
+                  CommandParameter="{x:Static local:SukiColor.Green}" Header="Green" />
+        <MenuItem Command="{Binding ChangeColorThemeCommand}"
+                  CommandParameter="{x:Static local:SukiColor.Orange}" Header="Orange" />
+        <MenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="Color" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </MenuItem.Icon>
+      </MenuItem>
+
+      <MenuItem Header="Background Theme">
+        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
+                  CommandParameter="{x:Static local:SukiBackgroundStyle.Flat}" Header="Flat" />
+        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
+                  CommandParameter="{x:Static local:SukiBackgroundStyle.Bubble}" Header="Bubble" />
+        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
+                  CommandParameter="{x:Static local:SukiBackgroundStyle.Gradient}" Header="Gradient" />
+        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
+                  CommandParameter="{x:Static local:SukiBackgroundStyle.GradientDarker}" Header="Gradient Darker" />
+        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
+                  CommandParameter="{x:Static local:SukiBackgroundStyle.GradientSoft}" Header="Gradient Soft" />
+        <MenuItem.Icon>
+          <materialIcons:MaterialIcon Kind="Theme" Width="20" Height="20"
+                                      Foreground="{DynamicResource SukiText}" />
+        </MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
   </sukiUi:SukiWindow.MenuItems>
 

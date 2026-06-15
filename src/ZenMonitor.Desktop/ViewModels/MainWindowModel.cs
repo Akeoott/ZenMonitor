@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Styling;
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using SukiUI;
@@ -13,7 +14,7 @@ using SukiUI.Enums;
 
 namespace ZenMonitor.Desktop.ViewModels;
 
-public class MainWindowModel(
+public partial class MainWindowModel(
     ProcessesViewModel processesViewModel,
     PerformanceViewModel performanceViewModel,
     ControllerViewModel controllerViewModel,
@@ -24,11 +25,25 @@ public class MainWindowModel(
     public ControllerViewModel ControllerViewModel { get; } = controllerViewModel;
     public SettingsViewModel SettingsViewModel { get; } = settingsViewModel;
 
-    public RelayCommand<string?> OpenUrlCommand { get; } = new(OpenUrl);
+    [ObservableProperty]
+    public partial SukiBackgroundStyle CurrentBackgroundStyle { get; set; } = SukiBackgroundStyle.Flat;
 
+    public RelayCommand<string?> OpenUrlCommand { get; } = new(OpenUrl);
     public RelayCommand ToggleThemeCommand { get; } = new(() => SukiTheme.GetInstance().SwitchBaseTheme());
 
-    public RelayCommand<SukiColor?> ChangeThemeColorCommand { get; } = new(color =>
+    public RelayCommand<SukiBackgroundStyle?> ChangeBackgroundThemeCommand =>
+        field ??= new RelayCommand<SukiBackgroundStyle?>(style =>
+        {
+            if (style is not null)
+                CurrentBackgroundStyle = style.Value;
+
+            var app = Application.Current;
+            if (app == null) return;
+
+            ForceThemeUpdate(app);
+        });
+
+    public RelayCommand<SukiColor?> ChangeColorThemeCommand { get; } = new(color =>
     {
         if (color is null) return;
 
@@ -37,16 +52,20 @@ public class MainWindowModel(
         var app = Application.Current;
         if (app == null) return;
 
+        ForceThemeUpdate(app);
+    });
+
+    private static void ForceThemeUpdate(Application app)
+    {
         var currentVariant = app.RequestedThemeVariant;
 
         // Briefly swap it to force tree-wide resource invalidation
         app.RequestedThemeVariant = currentVariant == ThemeVariant.Dark
             ? ThemeVariant.Light
             : ThemeVariant.Dark;
-
         // Immediately restore the original base theme variant
         app.RequestedThemeVariant = currentVariant;
-    });
+    }
 
     private static void OpenUrl(string? url)
     {

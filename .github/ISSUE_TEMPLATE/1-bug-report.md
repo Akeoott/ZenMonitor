@@ -8,54 +8,30 @@ labels: "Type: Bug"
 
 <!--
 Hi there!
-
 To expedite issue processing, please search open and closed issues before submitting a new one.
 -->
 
-# **Bug Report**
-
-## **Describe the bug**
-<!-- A clear and concise description of what the bug is. -->
-
-[replace with description]
+## **Description**
+<!-- A clear and concise description of what the bug/issue is. -->
 
 ---
 
-### **Is this a regression?**
-<!-- Did this behaviour used to work in the previous version? -->
-
-- [ ] No, this is a new issue
-- [ ] Yes, it worked in version: [replace with last known working version]
+## **Is this a regression?**
+<!-- Did this behavior used to work in the previous version? -->
 
 ---
 
-### **Which component?**
-<!-- Select the component(s) affected by this bug. -->
-
-- [ ] **ZenMonitor** — entry point, DI wiring, CLI argument parsing
-- [ ] **CLI** — CLI frontend
-- [ ] **TUI** — Terminal.Gui frontend
-- [ ] **GUI** — planned graphical frontend
-- [ ] **Other** — build, CI, documentation
-
----
-
-### **Expected behaviour**
+## **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
-[replace with expected behaviour]
-
 ---
 
-### **Actual behaviour**
+## **Actual behavior**
 <!-- A clear and concise description of what is actually happening. -->
 
-[replace with actual behaviour]
-
 ---
 
-### **Steps to reproduce**
-
+## **Steps to reproduce**
 <!-- List the steps to reproduce the error (add or remove as many steps as needed). -->
 
 1.
@@ -65,22 +41,19 @@ To expedite issue processing, please search open and closed issues before submit
 
 ---
 
-### **Screenshots / Logs**
+## **Screenshots / Logs**
 <!-- If applicable, add logs, screenshots or videos to help explain your problem. -->
 
 ---
 
-### **Your environment**
-
+## **Your environment**
 <!-- Fill in the relevant fields. Remove any that are not applicable. -->
 
 * **OS:** <!-- e.g. Ubuntu 24.04 x86_64 / Windows 11 23H2 -->
-* **Application version:** <!-- e.g. v1.0.3, commit hash, or `main` -->
-* **.NET version:** <!-- output of `dotnet --version` -->
+* **Application version:** <!-- e.g. v1.1.0, commit hash, or `main` -->
+<!-- other details -->
 
 ---
 
-### **Additional context**
+## **Additional context**
 <!-- Add any other context about the problem here. -->
-
-[replace with additional context]

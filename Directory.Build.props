@@ -1,0 +1,28 @@
+<Project>
+
+  <PropertyGroup>
+    <Version Condition=" '$(Version)' == '' ">1.0.0-local</Version>
+    <Authors>Akeoott</Authors>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Akeoott/ZenMonitor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Akeoott/ZenMonitor.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="System.Runtime.Versioning" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+</Project>

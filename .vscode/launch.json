@@ -1,51 +1,43 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": ".NET (TUI)",
-            "type": "coreclr",
-            "request": "launch",
-            "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-            "args": [
-                "-r", "tui"
-            ],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": ".NET (GUI)",
-            "type": "coreclr",
-            "request": "launch",
-            "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-            "args": [
-                "-r", "gui"
-            ],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": ".NET (CLI, Debug)",
-            "type": "coreclr",
-            "request": "launch",
-            "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-            "args": [
-                "-r", "cli",
-                "-n", "true",
-                "-l", "d",
-                "-c"
-            ],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "name": ".NET (CLI, Trace)",
-            "type": "coreclr",
-            "request": "launch",
-            "program": "${workspaceFolder}/ZenMonitor/bin/Debug/net10.0/ZenMonitor.dll",
-            "args": [
-                "-r", "cli",
-                "-n", "true",
-                "-l", "t",
-                "-c"
-            ],
-            "cwd": "${workspaceFolder}"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Run",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
+        "--",
+        "-f"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": ".NET Run (debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/ZenMonitor/ZenMonitor.csproj",
+        "--",
+        "-f",
+        "-v",
+        "d"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  ]
 }

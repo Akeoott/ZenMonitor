@@ -3,69 +3,36 @@
 
 using System.Diagnostics;
 
-using Avalonia;
-using Avalonia.Styling;
-
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
-using SukiUI;
-using SukiUI.Enums;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace ZenMonitor.Desktop.ViewModels;
 
-public partial class MainWindowModel(
-    ProcessesViewModel processesViewModel,
-    PerformanceViewModel performanceViewModel,
-    ControllerViewModel controllerViewModel,
-    SettingsViewModel settingsViewModel) : ViewModelBase
+public class MainWindowModel : ViewModelBase
 {
-    public ProcessesViewModel ProcessesViewModel { get; } = processesViewModel;
-    public PerformanceViewModel PerformanceViewModel { get; } = performanceViewModel;
-    public ControllerViewModel ControllerViewModel { get; } = controllerViewModel;
-    public SettingsViewModel SettingsViewModel { get; } = settingsViewModel;
+    public MainWindowModel(
+        ProcessesViewModel processesViewModel,
+        PerformanceViewModel performanceViewModel,
+        ControllerViewModel controllerViewModel,
+        SettingsViewModel settingsViewModel)
+    {
+        ProcessesViewModel = processesViewModel;
+        PerformanceViewModel = performanceViewModel;
+        ControllerViewModel = controllerViewModel;
+        SettingsViewModel = settingsViewModel;
 
-    [ObservableProperty]
-    public partial SukiBackgroundStyle CurrentBackgroundStyle { get; set; } = SukiBackgroundStyle.Flat;
+        WeakReferenceMessenger.Default.Register<BackgroundStyleChangedMessage>(this, (_, message) =>
+        {
+            CurrentBackgroundStyle = message.Style;
+        });
+    }
+
+    public ProcessesViewModel ProcessesViewModel { get; }
+    public PerformanceViewModel PerformanceViewModel { get; }
+    public ControllerViewModel ControllerViewModel { get; }
+    public SettingsViewModel SettingsViewModel { get; }
 
     public RelayCommand<string?> OpenUrlCommand { get; } = new(OpenUrl);
-    public RelayCommand ToggleThemeCommand { get; } = new(() => SukiTheme.GetInstance().SwitchBaseTheme());
-
-    public RelayCommand<SukiBackgroundStyle?> ChangeBackgroundThemeCommand =>
-        field ??= new RelayCommand<SukiBackgroundStyle?>(style =>
-        {
-            if (style is not null)
-                CurrentBackgroundStyle = style.Value;
-
-            var app = Application.Current;
-            if (app == null) return;
-
-            ForceThemeUpdate(app);
-        });
-
-    public RelayCommand<SukiColor?> ChangeColorThemeCommand { get; } = new(color =>
-    {
-        if (color is null) return;
-
-        SukiTheme.GetInstance().ChangeColorTheme((SukiColor)color);
-
-        var app = Application.Current;
-        if (app == null) return;
-
-        ForceThemeUpdate(app);
-    });
-
-    private static void ForceThemeUpdate(Application app)
-    {
-        var currentVariant = app.RequestedThemeVariant;
-
-        // Briefly swap it to force tree-wide resource invalidation
-        app.RequestedThemeVariant = currentVariant == ThemeVariant.Dark
-            ? ThemeVariant.Light
-            : ThemeVariant.Dark;
-        // Immediately restore the original base theme variant
-        app.RequestedThemeVariant = currentVariant;
-    }
 
     private static void OpenUrl(string? url)
     {

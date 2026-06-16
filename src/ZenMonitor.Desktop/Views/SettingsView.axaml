@@ -2,15 +2,108 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
+             xmlns:local="clr-namespace:SukiUI.Enums;assembly=SukiUI"
+             xmlns:helper="clr-namespace:ZenMonitor.Desktop.Helper"
              x:Class="ZenMonitor.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
 
-  <TextBlock Text="{Binding Title}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             FontSize="24" />
+  <UserControl.Resources>
+    <helper:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+  </UserControl.Resources>
 
+  <UserControl.Styles>
+    <Style Selector="WrapPanel > ToggleButton">
+      <Setter Property="Height" Value="35" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="Margin" Value="0,0,10,10" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="IsHitTestVisible" Value="{Binding !IsChecked, RelativeSource={RelativeSource Self}}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <sukiUi:GlassCard Margin="20" MaxWidth="1000" HorizontalAlignment="Center" VerticalAlignment="Top">
+
+      <sukiUi:GroupBox Header="Theme Customization">
+        <StackPanel Spacing="25" Margin="10">
+
+          <StackPanel Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <materialIcons:MaterialIcon Kind="Brightness4" Width="20" Height="20"
+                                          Foreground="{DynamicResource SukiText}" />
+              <TextBlock Text="Appearance Mode" FontSize="15" FontWeight="DemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Switch between light and dark interface styles." Classes="Secondary" FontSize="12"
+                       Margin="32,0,0,5" />
+            <Button Command="{Binding ToggleThemeCommand}" Content="Toggle Dark / Light" Classes="Primary"
+                    Margin="32,0,0,0" HorizontalAlignment="Left" />
+          </StackPanel>
+
+          <Separator Background="{DynamicResource SukiBorderBrush}" Opacity="0.4" Height="1" />
+
+          <StackPanel Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <materialIcons:MaterialIcon Kind="Color" Width="20" Height="20" Foreground="{DynamicResource SukiText}" />
+              <TextBlock Text="Accent Color" FontSize="15" FontWeight="DemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Select a primary accent tone for highlights and active controls." Classes="Secondary"
+                       FontSize="12" Margin="32,0,0,5" />
+
+            <WrapPanel Margin="32,0,0,0" HorizontalAlignment="Left">
+              <ToggleButton Command="{Binding ChangeColorThemeCommand}"
+                            CommandParameter="{x:Static local:SukiColor.Blue}" Content="Blue"
+                            IsChecked="{Binding ActiveColor, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiColor.Blue}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeColorThemeCommand}"
+                            CommandParameter="{x:Static local:SukiColor.Red}" Content="Red"
+                            IsChecked="{Binding ActiveColor, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiColor.Red}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeColorThemeCommand}"
+                            CommandParameter="{x:Static local:SukiColor.Green}" Content="Green"
+                            IsChecked="{Binding ActiveColor, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiColor.Green}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeColorThemeCommand}"
+                            CommandParameter="{x:Static local:SukiColor.Orange}" Content="Orange"
+                            IsChecked="{Binding ActiveColor, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiColor.Orange}, Mode=OneWay}" />
+            </WrapPanel>
+          </StackPanel>
+
+          <Separator Background="{DynamicResource SukiBorderBrush}" Opacity="0.4" Height="1" />
+
+          <StackPanel Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+              <materialIcons:MaterialIcon Kind="Theme" Width="20" Height="20" Foreground="{DynamicResource SukiText}" />
+              <TextBlock Text="Background Effects" FontSize="15" FontWeight="DemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Choose the rendering style and gradient effects for the window canvas."
+                       Classes="Secondary" FontSize="12" Margin="32,0,0,5" />
+
+            <WrapPanel Margin="32,0,0,0" HorizontalAlignment="Left">
+              <ToggleButton Command="{Binding ChangeBackgroundThemeCommand}"
+                            CommandParameter="{x:Static local:SukiBackgroundStyle.Flat}" Content="Flat"
+                            IsChecked="{Binding CurrentBackgroundStyle, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiBackgroundStyle.Flat}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeBackgroundThemeCommand}"
+                            CommandParameter="{x:Static local:SukiBackgroundStyle.Gradient}" Content="Gradient"
+                            IsChecked="{Binding CurrentBackgroundStyle, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiBackgroundStyle.Gradient}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeBackgroundThemeCommand}"
+                            CommandParameter="{x:Static local:SukiBackgroundStyle.GradientDarker}"
+                            Content="Gradient Darker"
+                            IsChecked="{Binding CurrentBackgroundStyle, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiBackgroundStyle.GradientDarker}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeBackgroundThemeCommand}"
+                            CommandParameter="{x:Static local:SukiBackgroundStyle.GradientSoft}"
+                            Content="Gradient Soft"
+                            IsChecked="{Binding CurrentBackgroundStyle, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiBackgroundStyle.GradientSoft}, Mode=OneWay}" />
+              <ToggleButton Command="{Binding ChangeBackgroundThemeCommand}"
+                            CommandParameter="{x:Static local:SukiBackgroundStyle.Bubble}" Content="Bubble"
+                            IsChecked="{Binding CurrentBackgroundStyle, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static local:SukiBackgroundStyle.Bubble}, Mode=OneWay}" />
+            </WrapPanel>
+          </StackPanel>
+
+        </StackPanel>
+      </sukiUi:GroupBox>
+
+    </sukiUi:GlassCard>
+  </ScrollViewer>
 </UserControl>

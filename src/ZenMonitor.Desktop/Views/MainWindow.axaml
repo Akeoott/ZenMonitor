@@ -5,7 +5,6 @@
                    xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
                    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                    xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
-                   xmlns:local="clr-namespace:SukiUI.Enums;assembly=SukiUI"
                    x:DataType="vm:MainWindowModel"
                    x:Class="ZenMonitor.Desktop.Views.MainWindow"
                    Icon="/Assets/avalonia-logo.ico"
@@ -16,58 +15,14 @@
                    BackgroundAnimationEnabled="True"
                    CanResize="True"
                    CanPin="True"
-                   IsMenuVisible="True"
+                   IsMenuVisible="False"
                    IsTitleBarVisible="True"
                    WindowState="Normal"
                    MinHeight="450" MinWidth="800"
                    d:DesignHeight="450" d:DesignWidth="800"
                    mc:Ignorable="d">
 
-  <sukiUi:SukiWindow.MenuItems>
-    <MenuItem Header="Themes">
-      <MenuItem Command="{Binding ToggleThemeCommand}" Header="Toggle Dark/Bright">
-
-        <MenuItem.Icon>
-          <materialIcons:MaterialIcon Kind="Brightness4" Width="20" Height="20"
-                                      Foreground="{DynamicResource SukiText}" />
-        </MenuItem.Icon>
-      </MenuItem>
-
-      <MenuItem Header="Color Theme">
-        <MenuItem Command="{Binding ChangeColorThemeCommand}"
-                  CommandParameter="{x:Static local:SukiColor.Blue}" Header="Blue" />
-        <MenuItem Command="{Binding ChangeColorThemeCommand}"
-                  CommandParameter="{x:Static local:SukiColor.Red}" Header="Red" />
-        <MenuItem Command="{Binding ChangeColorThemeCommand}"
-                  CommandParameter="{x:Static local:SukiColor.Green}" Header="Green" />
-        <MenuItem Command="{Binding ChangeColorThemeCommand}"
-                  CommandParameter="{x:Static local:SukiColor.Orange}" Header="Orange" />
-        <MenuItem.Icon>
-          <materialIcons:MaterialIcon Kind="Color" Width="20" Height="20"
-                                      Foreground="{DynamicResource SukiText}" />
-        </MenuItem.Icon>
-      </MenuItem>
-
-      <MenuItem Header="Background Theme">
-        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
-                  CommandParameter="{x:Static local:SukiBackgroundStyle.Flat}" Header="Flat" />
-        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
-                  CommandParameter="{x:Static local:SukiBackgroundStyle.Bubble}" Header="Bubble" />
-        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
-                  CommandParameter="{x:Static local:SukiBackgroundStyle.Gradient}" Header="Gradient" />
-        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
-                  CommandParameter="{x:Static local:SukiBackgroundStyle.GradientDarker}" Header="Gradient Darker" />
-        <MenuItem Command="{Binding ChangeBackgroundThemeCommand}"
-                  CommandParameter="{x:Static local:SukiBackgroundStyle.GradientSoft}" Header="Gradient Soft" />
-        <MenuItem.Icon>
-          <materialIcons:MaterialIcon Kind="Theme" Width="20" Height="20"
-                                      Foreground="{DynamicResource SukiText}" />
-        </MenuItem.Icon>
-      </MenuItem>
-    </MenuItem>
-  </sukiUi:SukiWindow.MenuItems>
-
-  <sukiUi:SukiSideMenu IsMenuExpanded="False">
+  <sukiUi:SukiSideMenu IsMenuExpanded="True">
 
     <sukiUi:SukiSideMenu.Items>
 
@@ -125,18 +80,15 @@
           </Style>
         </StackPanel.Styles>
         <Button Classes="Basic"
-                CommandParameter="https://github.com/Akeoott/ZenMonitor"
-                ToolTip.Tip="Open On GitHub.">
+                CommandParameter="https://github.com/Akeoott/ZenMonitor">
           <materialIcons:MaterialIcon Kind="Github" />
         </Button>
         <Button Classes="Basic"
-                CommandParameter="https://www.nuget.org/packages/ZenMonitor.Core"
-                ToolTip.Tip="View On NuGet.">
+                CommandParameter="https://www.nuget.org/packages/ZenMonitor.Core">
           <materialIcons:MaterialIcon Kind="Package" />
         </Button>
         <Button Classes="Basic"
-                CommandParameter="https://github.com/Akeoott"
-                ToolTip.Tip="Mee :>">
+                CommandParameter="https://github.com/Akeoott">
           <materialIcons:MaterialIcon Kind="Cat" />
         </Button>
       </StackPanel>

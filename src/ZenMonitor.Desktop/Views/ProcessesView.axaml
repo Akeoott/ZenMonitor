@@ -1,16 +1,34 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
-             x:Class="ZenMonitor.Desktop.Views.ProcessesView"
-             x:DataType="vm:ProcessesViewModel"
-             mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+<UserControl
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d"
+  x:Class="ZenMonitor.Desktop.Views.ProcessesView"
+  x:DataType="vm:ProcessesViewModel"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:suki="https://github.com/kikipoulet/SukiUI"
+  xmlns:vm="clr-namespace:ZenMonitor.Desktop.ViewModels"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <TextBlock Text="{Binding Title}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             FontSize="24" />
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+
+    <StackPanel>
+
+      <suki:GlassCard
+        HorizontalAlignment="Stretch"
+        Margin="20,20,20,0"
+        MaxWidth="1000"
+        VerticalAlignment="Top">
+
+        <suki:GroupBox Header="Processes">
+          <StackPanel Margin="10" Spacing="25" />
+        </suki:GroupBox>
+
+      </suki:GlassCard>
+
+    </StackPanel>
+
+  </ScrollViewer>
 
 </UserControl>

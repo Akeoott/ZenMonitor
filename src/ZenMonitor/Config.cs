@@ -3,7 +3,6 @@
 
 using System.ComponentModel;
 using System.IO;
-using System.Security.Principal;
 
 using Serilog;
 using Serilog.Events;
@@ -17,7 +16,7 @@ using Spectre.Console.Cli;
 
 namespace ZenMonitor;
 
-internal partial class Config : CommandSettings
+internal class Config : CommandSettings
 {
     [CommandOption("-d|--delay <ms>")]
     [Description("Change the delay before updating, min to max is 100ms to 10000ms")]
@@ -47,32 +46,15 @@ internal partial class Config : CommandSettings
 
         if (Force) return ValidationResult.Success();
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !IsRoot())
-            return ErrorResult("ZenMonitor requires root privileges. Please run with sudo.");
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsAdmin())
-            return ErrorResult("ZenMonitor requires admin privileges. Please run as Administrator.");
-        return ValidationResult.Success();
+        return !Environment.IsPrivilegedProcess
+            ? ErrorResult($"ZenMonitor requires elevated privileges. Please run as {(OperatingSystem.IsWindows() ? "administrator" : "root")}")
+            : ValidationResult.Success();
 
         static ValidationResult ErrorResult(string message)
         {
             AnsiConsole.MarkupLine("[Yellow3_1]Use `--help` for more options.[/]");
             return ValidationResult.Error(message);
         }
-    }
-
-    [LibraryImport("libc")]
-    private static partial uint geteuid();
-
-    private static bool IsRoot()
-    {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && geteuid() == 0;
-    }
-
-    private static bool IsAdmin()
-    {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-               new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
     }
 
     internal static void ConfigureLogging(bool isQuiet, LogEventLevel logLevel, string logFilePath)

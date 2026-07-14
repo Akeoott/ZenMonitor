@@ -9,9 +9,8 @@
 ### A light and fast system monitor
 
 > [!WARNING]
-> This project is work in progress. Limited functionality available.<br>
-> The backend is functional with some limitations.<br>
-> GUI is work in progress.
+> FRONTEND IS ON HOLD! Developement is halted till I find a fitting, light, cross platform frontend solution.
+> Avalonia is just not really working for me. I would use `Tauri`, but it does not natively support C# at the moment.
 
 > [!NOTE]
 > Development focus is currently on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core), the backend library

@@ -6,16 +6,12 @@
 [![Code Coverage](https://img.shields.io/codecov/c/github/Akeoott/ZenMonitor?style=for-the-badge&logoSize=auto&labelColor=%231d1b16)](https://codecov.io/gh/Akeoott/ZenMonitor)
 [![Nuget Version](https://img.shields.io/nuget/vpre/ZenMonitor.Core?style=for-the-badge&logo=nuget&label=ZenMonitor.Core&labelColor=%231a1b1f&color=%23a8c7ff)](https://www.nuget.org/packages/ZenMonitor.Core/)
 
-### A light and fast system monitor
-
-> [!WARNING]
-> FRONTEND IS ON HOLD! Developement is halted till I find a fitting, light, cross platform frontend solution.
-> Avalonia is just not really working for me. I would use `Tauri`, but it does not natively support C# at the moment.
+### A system monitor built on C# and luv
 
 > [!NOTE]
-> Development focus is currently on [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core), the backend library
-> extracted from this repository.
-> Activity on this frontend repository is therefore limited.
+> After a few weeks of testing and trying to find a good solution for a desktop app.
+> I finally gave up. We are going to use ElectronNET.Core, dispite it being larger and memory hungrier than other solutions.
+> Hoping it will just work now.
 
 ---
 
@@ -31,7 +27,8 @@ using a Producer-Consumer pattern.
 - Modular backend via [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) – hardware abstraction with
   platform-specific implementations
 - Producer-Consumer pattern: data collection runs independently of the UI
-- Currently, Linux-only with an Avalonia UI which is WIP
+- Currently, Linux-only with ElectronNET.Core as the frontend
+  (as there is nothing else optimal enough)
 
 The backend is fully functional on Linux.
 Windows support is planned but not yet implemented in the Core library.
@@ -49,9 +46,7 @@ cd ZenMonitor
 dotnet restore
 dotnet build
 
-# Run the project
-# (requires sudo/admin privileges. Use -f, --force to bypass)
-dotnet run --project src/ZenMonitor.Desktop/ -- -f
+# Then run the project
 ```
 
 > [!IMPORTANT]
@@ -64,10 +59,7 @@ dotnet run --project src/ZenMonitor.Desktop/ -- -f
 - **Stack**: C# 100%, .NET 10.0.203
 - **Key dependencies**:
     - [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) – hardware telemetry backend
-    - `Spectre.Console` – console rendering
-    - `Serilog` – structured logging
-    - `Avalonia` – creating a cross-platform desktop app
-    - `SukiUI` – styling Avalonia
+    - `ElectronNET.Core` – desktop frontend
     - `Microsoft.Extensions.DependencyInjection` – DI container
 - **Platform**: Linux (support depends on `ZenMonitor.Core`)
 - **License**: [LGPL-3.0](LICENSE)
@@ -90,35 +82,10 @@ snapshot at its own refresh rate, independent of the collection interval.
 
 ---
 
-## CLI Usage
-
-Run the GUI frontend with various options:
-
-```bash
-dotnet run --project src/ZenMonitor.Desktop/           # Run Avalonia App
-dotnet run --project src/ZenMonitor.Desktop/ -- -v d   # Debug logging
-dotnet run --project src/ZenMonitor.Desktop/ -- -d 500 # 500ms update interval
-dotnet run --project src/ZenMonitor.Desktop/ -- -f     # Skip root check
-dotnet run --project src/ZenMonitor.Desktop/ -- -q     # Suppress console logging
-```
-
-### Options
-
-| Option                    | Description                                                                                  |
-|---------------------------|----------------------------------------------------------------------------------------------|
-| `-d, --delay <ms>`        | Change the delay before updating, min to max is 100ms to 10000ms                             |
-| `-f, --force <bool>`      | Run ZenMonitor without sudo/admin privileges (some things might not work!)                   |
-| `-v, --verbosity <level>` | Set logging verbosity: `t/trace`, `d/debug`, `i/info`, `w/warning`, `e/error`, `c/critical`. |
-| `-q, --quiet <bool>`      | Suppress console log output.                                                                 |
-
-Logs are written to `logs/ZenMonitor.log`. The log file is cleared on each run.
-
----
-
 ## Current Status
 
 - **Backend**: Functional on Linux. Windows support is work in progress in the Core library.
-- **GUI Frontend**: Currently WIP. Fundamentals are there.
+- **GUI Frontend**: Currently WIP. Being rebuilt.
 
 ---
 

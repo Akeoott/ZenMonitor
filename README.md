@@ -6,19 +6,20 @@
 [![Code Coverage](https://img.shields.io/codecov/c/github/Akeoott/ZenMonitor?style=for-the-badge&logoSize=auto&labelColor=%231d1b16)](https://codecov.io/gh/Akeoott/ZenMonitor)
 [![Nuget Version](https://img.shields.io/nuget/vpre/ZenMonitor.Core?style=for-the-badge&logo=nuget&label=ZenMonitor.Core&labelColor=%231a1b1f&color=%23a8c7ff)](https://www.nuget.org/packages/ZenMonitor.Core/)
 
-### A system monitor built on C# and luv
+### A system monitor built using C#, Rust (Tauri) and Vue
 
 > [!NOTE]
-> After a few weeks of testing and trying to find a good solution for a desktop app.
-> I finally gave up. We are going to use ElectronNET.Core, dispite it being larger and memory hungrier than other solutions.
-> Hoping it will just work now.
+> After a lot of time of testing things, struggling and just being burnt out,
+> I have FINALLY found a solution.
+> Tauri + Vue interacting with a C# API on a different process.
+> Not special I know but it works and thats what counts.
 
 ---
 
 ## Overview
 
-ZenMonitor is a modern system monitor (with planned task manager capabilities) built on .NET 10.0 using C#.
-It follows a modular, interface-driven architecture for system telemetry and decouples data collection from rendering
+ZenMonitor is a modern system monitor (with planned task manager capabilities) built using C# and Tauri + Vue.
+The backend follows a modular, interface-driven architecture for system telemetry and decouples data collection from rendering
 using a Producer-Consumer pattern.
 
 **Features:**
@@ -27,26 +28,29 @@ using a Producer-Consumer pattern.
 - Modular backend via [ZenMonitor.Core](https://github.com/Akeoott/ZenMonitor.Core) – hardware abstraction with
   platform-specific implementations
 - Producer-Consumer pattern: data collection runs independently of the UI
-- Currently, Linux-only with ElectronNET.Core as the frontend
-  (as there is nothing else optimal enough)
 
 The backend is fully functional on Linux.
 Windows support is planned but not yet implemented in the Core library.
+
+Tauri, aka the app itself runs on Linux and Windows alike.
 
 ---
 
 ## Quick Start
 
-### Running the program
+### Running the project
 
 ```bash
 git clone https://github.com/Akeoott/ZenMonitor
 cd ZenMonitor
 
+# Build the API
 dotnet restore
 dotnet build
 
-# Then run the project
+# Then run Tauri
+cd src/ZenMonitor.App/
+npm run tauri dev
 ```
 
 > [!IMPORTANT]
@@ -56,29 +60,13 @@ dotnet build
 
 ### Technical Details
 
-- **Stack**: C# 100%, .NET 10.0.203
+- **Stack**: C# (API), Rust (Tauri), Vue + TypeScript (Frontend)
 - **Key dependencies**:
-    - [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) – hardware telemetry backend
-    - `ElectronNET.Core` – desktop frontend
-    - `Microsoft.Extensions.DependencyInjection` – DI container
+    - [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) – Backend Library
+    - `Tauri` – Desktop Application
+    - `Vue + TypeScript + Tailwind` – App styling and behavior
 - **Platform**: Linux (support depends on `ZenMonitor.Core`)
 - **License**: [LGPL-3.0](LICENSE)
-
----
-
-## Architecture
-
-ZenMonitor is split into two main parts:
-
-1. **Backend** – [`ZenMonitor.Core`](https://github.com/Akeoott/ZenMonitor.Core) provides hardware abstraction
-   interfaces and platform-specific implementations (Linux currently, Windows WIP).
-   Data collection is triggered by a timer that calls `Update()` on all monitors, producing snapshots.
-
-2. **Frontend** – This repository contains the user-facing application. It subscribes to the backend's data stream
-   (Producer-Consumer pattern) and renders the information. The GUI is currently work in progress.
-
-The Producer-Consumer pattern ensures that UI rendering never blocks data collection. The frontend consumes the latest
-snapshot at its own refresh rate, independent of the collection interval.
 
 ---
 

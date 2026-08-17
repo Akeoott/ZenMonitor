@@ -12,7 +12,7 @@
 > After a lot of time of testing things, struggling and just being burnt out,
 > I have FINALLY found a solution.
 > Tauri + Vue interacting with a C# API on a different process.
-> Not special I know but it works and thats what counts.
+> Not special I know, but it works and that's what counts.
 
 ---
 
@@ -41,16 +41,20 @@ Tauri, aka the app itself runs on Linux and Windows alike.
 ### Running the project
 
 ```bash
+# Clone and enter the repository
 git clone https://github.com/Akeoott/ZenMonitor
 cd ZenMonitor
 
-# Build the API
+# Build the API (requires dotnet)
 dotnet restore
 dotnet build
 
-# Then run Tauri
+# Run ZenMonitor.App
 cd src/ZenMonitor.App/
-npm run tauri dev
+
+npm run dev # Run it on localhost (doesnt require rust)
+# or
+npm run tauri dev # Run it with tauri (requires rust)
 ```
 
 > [!IMPORTANT]

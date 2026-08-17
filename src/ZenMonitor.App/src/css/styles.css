@@ -1,0 +1,37 @@
+﻿@import "tailwindcss";
+@import "./theme.css";
+@import "./components.css";
+
+@layer base {
+  /* Base styles */
+  body {
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lenis styles */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
+  }
+}

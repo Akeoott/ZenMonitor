@@ -7,7 +7,7 @@
     <PackageProjectUrl>https://github.com/Akeoott/ZenMonitor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Akeoott/ZenMonitor.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>

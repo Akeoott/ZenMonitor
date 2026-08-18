@@ -4,14 +4,13 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>dotnet-backend</AssemblyName>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    
+
     <PublishAot>true</PublishAot>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    
+
     <OptimizationPreference>Speed</OptimizationPreference>
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
@@ -30,14 +29,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
     <TauriTargetTriple>x86_64-unknown-linux-gnu</TauriTargetTriple>
+    <ExeExtension/>
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">
     <TauriTargetTriple>aarch64-apple-darwin</TauriTargetTriple>
+    <ExeExtension/>
   </PropertyGroup>
 
   <Target Name="CopyToTauri" AfterTargets="Publish">
-    <Copy SourceFiles="$(PublishDir)$(AssemblyName).exe"
-          DestinationFiles="..\src-tauri\bin\$(AssemblyName)-$(TauriTargetTriple).exe" />
+    <Copy SourceFiles="$(PublishDir)$(AssemblyName)$(ExeExtension)"
+          DestinationFiles="..\src-tauri\bin\$(AssemblyName)-$(TauriTargetTriple)$(ExeExtension)" />
   </Target>
-  
+
 </Project>

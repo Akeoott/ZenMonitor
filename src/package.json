@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "vite && dotnet run --project ./src-dotnet/ZenMonitor.csproj",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri:win": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r win-x64 && tauri",
+    "tauri:linux": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r linux-x64 && tauri",
+    "tauri:mac": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r osx-arm64 && tauri"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -23,6 +23,7 @@
     "@tauri-apps/cli": "^2",
     "@types/node": "^26.2.0",
     "@vitejs/plugin-vue": "^6.0.8",
+    "shelljs": "^0.8.5",
     "typescript": "~5.6.2",
     "vite": "^8.2.1",
     "vue-tsc": "^2.1.10"

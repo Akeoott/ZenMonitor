@@ -49,8 +49,8 @@ cd ./ZenMonitor/src/
 
 
 - **Commands**:
-  - `dev` – runs frontend dev server
-  - `dev:backend` – runs the frontend dev server and backend at the same time
+  - `dev` – runs the frontend server
+  - `dotnet` – runs the dotnet server
   - `build` – builds the frontend for production
   - `tauri:[platform] dev` – runs Tauri in dev mode with sidecar
   - `tauri:[platform] build` – builds the final bundled application

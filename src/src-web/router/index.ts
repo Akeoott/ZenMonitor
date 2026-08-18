@@ -1,9 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '@/views/ViewHome.vue';
+import Processes from '@/views/ViewProcesses.vue';
+import Performance from '@/views/ViewPerformance.vue';
+import Settings from '@/views/ViewSettings.vue';
 
 const routes = [
-  { path: '/', component: Home },
-  { path: "/:pathMatch(.*)*", component: Home },
+  { path: '/', component: Processes },
+  { path: '/performance', component: Performance },
+  { path: '/settings', component: Settings },
+  { path: "/:pathMatch(.*)*", component: Processes },
 ]
 
 const router = createRouter({

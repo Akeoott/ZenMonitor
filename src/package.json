@@ -1,0 +1,35 @@
+{
+  "name": "zenmonitor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dotnet": "dotnet run --project ./src-dotnet/ZenMonitor.csproj",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri:win": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r win-x64 && tauri",
+    "tauri:linux": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r linux-x64 && tauri",
+    "tauri:mac": "dotnet publish ./src-dotnet/ZenMonitor.csproj -c Release -r osx-arm64 && tauri"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.13",
+    "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/node": "^26.2.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "typescript": "~5.6.2",
+    "vite": "^8.2.1",
+    "vite-plugin-vue-devtools": "^8.2.1",
+    "vue-tsc": "^2.1.10"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

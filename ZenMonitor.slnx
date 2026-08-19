@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Solution>
-  <Project Path="src\ZenMonitor\ZenMonitor.csproj" />
-  <Project Path="src\ZenMonitor.Desktop\ZenMonitor.Desktop.csproj" />
+  <Project Path="src/src-dotnet/ZenMonitor.csproj"/>
 </Solution>

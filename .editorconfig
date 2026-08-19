@@ -1,5 +1,3 @@
-# EditorConfig is awesome: http://editorconfig.org
-# Used some of the config from https://github.com/ppy/osu >.< luv u ppy
 root = true
 
 [*]
@@ -10,11 +8,9 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
+# C# Stuff
 [*.cs]
-# Styling
 insert_final_newline = true
-
-# File Header
 file_header_template = Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.\nSee the LICENSE file in the repository root for full license text.
 dotnet_diagnostic.IDE0073.severity = error
 
@@ -36,4 +32,8 @@ indent_size = 2
 
 [*.{yaml,yml}]
 insert_final_newline = true
+indent_size = 2
+
+# Web stuff
+[*.{js,ts,vue,css,scss}]
 indent_size = 2

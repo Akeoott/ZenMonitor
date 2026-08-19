@@ -31,6 +31,11 @@ The architecture is designed around a modular, interface-driven backend for syst
 - The Vue frontend is **under active rebuild** – it's minimal and serves as a placeholder for the eventual UI.
 - The **build pipeline** and **cross‑platform packaging** (Tauri + sidecar) are **fully functional** and production‑ready.
 
+**Frontend Status**
+- Currently just something thrown together for a base.
+- Does not provide any useful function at the moment.
+- Will most probably be completely rewritten from how it currently looks.
+
 The app is being developed primarily for Linux; Windows support will follow once the core library implements the required platform backends.
 
 ---

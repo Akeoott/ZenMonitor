@@ -1,4 +1,4 @@
-﻿// Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
+// Copyright (c) Ame (Akeoot/Akeoott) <akeoot@pm.me>. Licensed under the LGPL-3.0 Licence.
 // See the LICENSE file in the repository root for full license text.
 
 using System;
@@ -65,7 +65,6 @@ internal static class Program
                 fileSizeLimitBytes: 1_000_000)
             .WriteTo.Console(
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}");
-
 
         Log.Logger = loggerConfig.CreateLogger();
     }

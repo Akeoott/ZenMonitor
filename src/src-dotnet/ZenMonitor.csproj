@@ -19,6 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="ZenMonitor.Core" />
     <PackageReference Include="ZenMonitor.Core.Hosting" />
   </ItemGroup>
@@ -29,16 +33,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
     <TauriTargetTriple>x86_64-unknown-linux-gnu</TauriTargetTriple>
-    <ExeExtension/>
+    <ExeExtension />
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-arm64'">
     <TauriTargetTriple>aarch64-apple-darwin</TauriTargetTriple>
-    <ExeExtension/>
+    <ExeExtension />
   </PropertyGroup>
 
   <Target Name="CopyToTauri" AfterTargets="Publish">
-    <Copy SourceFiles="$(PublishDir)$(AssemblyName)$(ExeExtension)"
-          DestinationFiles="..\src-tauri\bin\$(AssemblyName)-$(TauriTargetTriple)$(ExeExtension)" />
+    <Copy SourceFiles="$(PublishDir)$(AssemblyName)$(ExeExtension)" DestinationFiles="..\src-tauri\bin\$(AssemblyName)-$(TauriTargetTriple)$(ExeExtension)" />
   </Target>
 
 </Project>

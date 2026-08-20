@@ -1,12 +1,16 @@
 <Project>
-
+  
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
+  
   <ItemGroup>
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="ZenMonitor.Core" Version="2.0.0-alpha.5" />
     <PackageVersion Include="ZenMonitor.Core.Hosting" Version="2.0.0-alpha.5" />
   </ItemGroup>
-
+  
 </Project>

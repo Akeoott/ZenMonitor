@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <Version Condition=" '$(Version)' == '' ">1.0.0-local</Version>
     <Authors>Akeoott</Authors>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Akeoott/ZenMonitor</PackageProjectUrl>

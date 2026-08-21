@@ -5,14 +5,15 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
 using Serilog.Events;
 
 using ZenMonitor.Core.Hosting;
+using ZenMonitor.Hubs;
 using ZenMonitor.UserConfig;
 
 namespace ZenMonitor;
@@ -41,14 +42,18 @@ internal static class Program
         var configService = new ConfigService(configFilePath, configLogger, initialConfig);
 
         // Build host
-        var builder = Host.CreateApplicationBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog();
 
+        builder.Services.AddSignalR();
         builder.Services.AddSingleton<IConfigService>(configService);
+
         builder.Services.AddZenMonitor();
 
         var app = builder.Build();
+        app.MapHub<ConfigHub>("api/config");
+        app.MapHub<DataHub>("api/data");
         await app.RunAsync();
     }
 

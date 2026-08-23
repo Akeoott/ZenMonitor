@@ -11,23 +11,9 @@ namespace ZenMonitor.Hubs;
 
 public class ConfigHub(IConfigService configService) : Hub
 {
-    public Task<ConfigModel> GetConfig() => Task.FromResult(configService.Current);
+    public void UpdateConfig(ConfigModel newConfig) => configService.UpdateConfig(newConfig);
+    public ConfigModel GetConfig() => configService.Current;
 
-    public async Task UpdateConfig(ConfigModel newConfig)
-    {
-        configService.UpdateConfig(newConfig);
-        await Task.CompletedTask;
-    }
-
-    public async Task LoadConfig()
-    {
-        await configService.LoadAsync();
-        await Task.CompletedTask;
-    }
-
-    public async Task SaveConfig()
-    {
-        await configService.SaveAsync();
-        await Task.CompletedTask;
-    }
+    public Task LoadConfig() => configService.LoadAsync();
+    public Task SaveConfig() => configService.SaveAsync();
 }

@@ -35,7 +35,7 @@ public class ApiHub(
         }
     }
 
-    public void UpdateConfig(ConfigModel newConfig, CancellationToken ct = default)
+    public ValueTask<ConfigModel> SyncConfig(ConfigModel newConfig, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(newConfig);
 
@@ -43,6 +43,8 @@ public class ApiHub(
         {
             configService.UpdateConfig(newConfig);
             logger.LogInformation("Config updated in memory.");
+
+            return ValueTask.FromResult(configService.Current);
         }
         catch (Exception ex)
         {
@@ -83,12 +85,13 @@ public class ApiHub(
 
     #region Telemetry
 
-    public void UpdateAll()
+    public Task UpdateAll()
     {
         try
         {
             telemetry.UpdateAll();
             logger.LogDebug("Telemetry updated.");
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {

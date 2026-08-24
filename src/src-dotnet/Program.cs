@@ -3,10 +3,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
@@ -43,18 +46,26 @@ internal static class Program
 
         // Build host
         var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog();
 
-        builder.Services.AddSignalR();
         builder.Services.AddSingleton<IConfigService>(configService);
+        builder.Services.AddSignalR();
 
         builder.Services.AddZenMonitor();
 
         var app = builder.Build();
-        app.MapHub<ConfigHub>("api/config");
-        app.MapHub<DataHub>("api/data");
-        await app.RunAsync();
+        app.MapHub<ApiHub>("/api");
+
+        await app.StartAsync();
+
+        var address = app.Urls.FirstOrDefault() ?? "http://127.0.0.1:5000";
+        var port = new Uri(address).Port;
+
+        Console.WriteLine($"API_PORT={port}");
+
+        await app.WaitForShutdownAsync();
     }
 
     private static void ConfigureLogging(LogEventLevel logLevel, string logFolder, string logFilePath)

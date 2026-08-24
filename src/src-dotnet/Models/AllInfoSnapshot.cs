@@ -3,7 +3,7 @@
 
 using ZenMonitor.Core.Models.Telemetry;
 
-namespace ZenMonitor.Hubs;
+namespace ZenMonitor.Models;
 
 public record AllInfoSnapshot(
     CpuInfoSnapshot CpuInfo,

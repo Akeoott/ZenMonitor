@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
 public class ConfigService(
@@ -17,7 +19,6 @@ public class ConfigService(
     ConfigModel? initialConfig = null) : IConfigService
 {
     private readonly Lock _lock = new();
-    public event EventHandler<ConfigModel>? ConfigChanged;
 
     private ConfigModel _current = initialConfig ?? new ConfigModel();
     public ConfigModel Current
@@ -39,7 +40,6 @@ public class ConfigService(
         ArgumentNullException.ThrowIfNull(newConfigModel);
         SetCurrent(newConfigModel);
         logger.LogInformation("ConfigModel updated in memory (not saved).");
-        ConfigChanged?.Invoke(this, newConfigModel);
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
@@ -50,7 +50,6 @@ public class ConfigService(
             var defaultConfig = new ConfigModel();
             SetCurrent(defaultConfig);
             await SaveAsync(cancellationToken);
-            ConfigChanged?.Invoke(this, defaultConfig);
             return;
         }
 
@@ -62,7 +61,6 @@ public class ConfigService(
             {
                 SetCurrent(loaded);
                 logger.LogInformation("ConfigModel loaded from {FilePath}.", configFilePath);
-                ConfigChanged?.Invoke(this, loaded);
             }
             else
             {
@@ -70,7 +68,6 @@ public class ConfigService(
                 var defaultConfig = new ConfigModel();
                 SetCurrent(defaultConfig);
                 await SaveAsync(cancellationToken);
-                ConfigChanged?.Invoke(this, defaultConfig);
             }
         }
         catch (JsonException ex)
@@ -79,7 +76,6 @@ public class ConfigService(
             var defaultConfig = new ConfigModel();
             SetCurrent(defaultConfig);
             await SaveAsync(cancellationToken);
-            ConfigChanged?.Invoke(this, defaultConfig);
         }
         catch (IOException ex)
         {

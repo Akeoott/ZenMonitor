@@ -3,6 +3,8 @@
 
 using System.Text.Json.Serialization;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
 [JsonSerializable(typeof(ConfigModel))]

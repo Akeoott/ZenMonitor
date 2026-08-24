@@ -4,6 +4,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
 public interface IConfigService

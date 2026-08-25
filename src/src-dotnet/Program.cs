@@ -46,14 +46,15 @@ internal static class Program
 
         // Build host
         var builder = WebApplication.CreateBuilder(args);
-        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.WebHost.UseUrls(builder.Environment.IsDevelopment()
+            ? "http://localhost:5000" : "http://127.0.0.1:0");
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog();
 
+        builder.Services.AddZenMonitor();
+
         builder.Services.AddSingleton<IConfigService>(configService);
         builder.Services.AddSignalR();
-
-        builder.Services.AddZenMonitor();
 
         var app = builder.Build();
         app.MapHub<ApiHub>("/api");

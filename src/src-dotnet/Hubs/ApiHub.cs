@@ -18,7 +18,7 @@ namespace ZenMonitor.Hubs;
 public class ApiHub(
     ILogger<ApiHub> logger,
     IConfigService configService,
-    ISystemTelemetry telemetry) : Hub
+    ITelemetryAggregate telemetry) : Hub
 {
     #region Config
 

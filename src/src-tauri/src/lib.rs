@@ -8,13 +8,18 @@ mod state;
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 use sidecar::spawn_sidecar;
-use state::SidecarState;
+use tokio::sync::OnceCell;
+use state::{SidecarState, SidecarInner};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
+            app.manage(SidecarState { inner: OnceCell::new() });
+
             let app_handle = app.handle().clone();
             let is_dev = cfg!(debug_assertions);
             initialize_sidecar(app_handle, is_dev);
@@ -25,15 +30,15 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// Starts the sidecar (or falls back to a fixed port in dev mode)
-/// and manages the state in the Tauri app.
 fn initialize_sidecar(app_handle: AppHandle, is_dev: bool) {
     tauri::async_runtime::spawn(async move {
-        let result = match spawn_sidecar().await {
+        let state = app_handle.state::<SidecarState>();
+
+        let inner_result = match spawn_sidecar(&app_handle).await {
             Ok((port, child, forward_handle)) => {
                 eprintln!("[rust] backend started on port {}", port);
-                Ok(SidecarState {
-                    process: Mutex::new(Some(child)),
+                Some(SidecarInner {
+                    _process: Mutex::new(Some(child)),
                     port,
                     _forward_task: Some(forward_handle),
                 })
@@ -42,19 +47,19 @@ fn initialize_sidecar(app_handle: AppHandle, is_dev: bool) {
                 eprintln!("[rust] failed to start backend: {}", e);
                 if is_dev {
                     eprintln!("[rust] dev mode: falling back to fixed port 5000");
-                    Ok(SidecarState {
-                        process: Mutex::new(None),
+                    Some(SidecarInner {
+                        _process: Mutex::new(None),
                         port: 5000,
                         _forward_task: None,
                     })
                 } else {
-                    Err(())
+                    None
                 }
             }
         };
 
-        if let Ok(state) = result {
-            app_handle.manage(state);
+        if let Some(inner_data) = inner_result {
+            let _ = state.inner.set(inner_data);
         }
     });
 }

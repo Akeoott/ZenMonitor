@@ -2,15 +2,16 @@
 // See the LICENSE file in the repository root for full license text.
 
 use std::sync::Mutex;
-use tokio::process::Child;
 use tokio::task::JoinHandle;
+use tokio::sync::OnceCell;
+use tauri_plugin_shell::process::CommandChild;
 
-/// Holds the state of the sidecar backend.
-pub struct SidecarState {
-    /// The child process, if still running.
-    pub process: Mutex<Option<Child>>,
-    /// The port on which the backend is (or should be) listening.
+pub struct SidecarInner {
+    pub _process: Mutex<Option<CommandChild>>,
     pub port: u16,
-    /// The task that forwards stdout to the parent process.
     pub _forward_task: Option<JoinHandle<()>>,
+}
+
+pub struct SidecarState {
+    pub inner: OnceCell<SidecarInner>,
 }

@@ -51,12 +51,28 @@ internal static class Program
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog();
 
-        builder.Services.AddZenMonitor();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("TauriCorsPolicy", policy =>
+            {
+                policy.WithOrigins(
+                        "http://localhost:1420",
+                        "tauri://localhost",
+                        "https://tauri.localhost",
+                        "http://tauri.localhost"
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
 
+        builder.Services.AddZenMonitor();
         builder.Services.AddSingleton<IConfigService>(configService);
         builder.Services.AddSignalR();
 
         var app = builder.Build();
+        app.UseCors("TauriCorsPolicy");
         app.MapHub<ApiHub>("/api");
 
         await app.StartAsync();

@@ -3,8 +3,10 @@
 
 using System.Text.Json.Serialization;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
-[JsonSerializable(typeof(Config))]
+[JsonSerializable(typeof(ConfigModel))]
 internal partial class ConfigContext : JsonSerializerContext;
 // The source generator will automatically implement this partial class at compile time

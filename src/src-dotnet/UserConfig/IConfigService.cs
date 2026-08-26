@@ -4,12 +4,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
 public interface IConfigService
 {
-    Config Current { get; }
-    void UpdateConfig(Config newConfig);
+    ConfigModel Current { get; }
+    void UpdateConfig(ConfigModel newConfigModel);
     Task LoadAsync(CancellationToken cancellationToken = default);
     Task SaveAsync(CancellationToken cancellationToken = default);
 }

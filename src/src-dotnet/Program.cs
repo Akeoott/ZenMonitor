@@ -3,8 +3,11 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,6 +16,7 @@ using Serilog;
 using Serilog.Events;
 
 using ZenMonitor.Core.Hosting;
+using ZenMonitor.Hubs;
 using ZenMonitor.UserConfig;
 
 namespace ZenMonitor;
@@ -41,15 +45,44 @@ internal static class Program
         var configService = new ConfigService(configFilePath, configLogger, initialConfig);
 
         // Build host
-        var builder = Host.CreateApplicationBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseUrls(builder.Environment.IsDevelopment()
+            ? "http://localhost:5000" : "http://127.0.0.1:0");
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog();
 
-        builder.Services.AddSingleton<IConfigService>(configService);
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("TauriCorsPolicy", policy =>
+            {
+                policy.WithOrigins(
+                        "http://localhost:1420",
+                        "tauri://localhost",
+                        "https://tauri.localhost",
+                        "http://tauri.localhost"
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
+        });
+
         builder.Services.AddZenMonitor();
+        builder.Services.AddSingleton<IConfigService>(configService);
+        builder.Services.AddSignalR();
 
         var app = builder.Build();
-        await app.RunAsync();
+        app.UseCors("TauriCorsPolicy");
+        app.MapHub<ApiHub>("/api");
+
+        await app.StartAsync();
+
+        var address = app.Urls.FirstOrDefault() ?? "http://127.0.0.1:5000";
+        var port = new Uri(address).Port;
+
+        Console.WriteLine($"API_PORT={port}");
+
+        await app.WaitForShutdownAsync();
     }
 
     private static void ConfigureLogging(LogEventLevel logLevel, string logFolder, string logFilePath)

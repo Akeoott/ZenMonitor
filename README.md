@@ -55,8 +55,8 @@ cd ./ZenMonitor/src/
 
 - **Commands**:
   - `dev` – runs the frontend server
-  - `dotnet` – runs the dotnet server
   - `build` – builds the frontend for production
+  - `dotnet` – runs the dotnet server
   - `tauri:[platform] dev` – runs Tauri in dev mode with sidecar
   - `tauri:[platform] build` – builds the final bundled application
 
@@ -71,10 +71,7 @@ cd ./ZenMonitor/src/
   - `npm run dev` - Run the web server alone
   - `npm run tauri:win dev` - Run the tauri app for windows in dev mode
   - `npm run tauri:linux build` - Build the tauri app for linux
-
-> [!IMPORTANT]
-> See [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for the contribution workflow
-> and our [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).
+  
 
 ### Technical Details
 
@@ -91,5 +88,5 @@ cd ./ZenMonitor/src/
 ## Contributing
 
 Please read [CONTRIBUTING.md](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CONTRIBUTING.md) for guidelines on
-code style, commit conventions, and pull requests.
-.
+code style, commit conventions, and pull requests. Then read 
+our [Code of Conduct](https://github.com/Akeoott/ZenMonitor/blob/main/.github/CODE_OF_CONDUCT.md).

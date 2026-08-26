@@ -5,10 +5,55 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ZenMonitor</title>
-    <style> html { background-color: #2a2a2a; }</style>
+    <!--suppress CssUnusedSymbol -->
+      <style>
+      html {
+          background-color: #2a2a2a;
+      }
+
+      #page-loader {
+          position: fixed;
+          inset: 0;
+          background: #121212;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          transition: opacity 0.5s ease;
+      }
+
+      #page-loader.hidden {
+          opacity: 0;
+          pointer-events: none;
+      }
+
+      .loader {
+          width: 3rem;
+          height: 3rem;
+          border-width: 6px;
+          border-style: solid;
+          border-color: rgb(255, 205, 225);
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+          from {
+              transform: rotate(0deg);
+          }
+
+          to {
+              transform: rotate(360deg);
+          }
+      }
+    </style>
   </head>
 
   <body>
+    <div id="page-loader">
+        <div class="loader"></div>
+    </div>
     <div id="app"></div>
     <script type="module" src="./src-web/main.ts"></script>
   </body>

@@ -9,17 +9,19 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using ZenMonitor.Models;
+
 namespace ZenMonitor.UserConfig;
 
 public class ConfigService(
     string configFilePath,
     ILogger<ConfigService> logger,
-    Config? initialConfig = null) : IConfigService
+    ConfigModel? initialConfig = null) : IConfigService
 {
     private readonly Lock _lock = new();
-    private Config _current = initialConfig ?? new Config();
 
-    public Config Current
+    private ConfigModel _current = initialConfig ?? new ConfigModel();
+    public ConfigModel Current
     {
         get
         {
@@ -27,22 +29,26 @@ public class ConfigService(
         }
     }
 
-    public void UpdateConfig(Config newConfig)
+    private void SetCurrent(ConfigModel newModel)
     {
-        ArgumentNullException.ThrowIfNull(newConfig);
-        lock (_lock)
-        {
-            _current = newConfig;
-            logger.LogInformation("Config updated in memory (not saved).");
-        }
+        ArgumentNullException.ThrowIfNull(newModel);
+        lock (_lock) _current = newModel;
+    }
+
+    public void UpdateConfig(ConfigModel newConfigModel)
+    {
+        ArgumentNullException.ThrowIfNull(newConfigModel);
+        SetCurrent(newConfigModel);
+        logger.LogInformation("ConfigModel updated in memory (not saved).");
     }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         if (!File.Exists(configFilePath))
         {
-            logger.LogWarning("Config file not found. Using default config and saving it.");
-            _current = new Config();
+            logger.LogWarning("ConfigModel file not found. Using default config and saving it.");
+            var defaultConfig = new ConfigModel();
+            SetCurrent(defaultConfig);
             await SaveAsync(cancellationToken);
             return;
         }
@@ -50,34 +56,36 @@ public class ConfigService(
         try
         {
             var json = await File.ReadAllTextAsync(configFilePath, cancellationToken);
-            var loaded = JsonSerializer.Deserialize(json, ConfigContext.Default.Config);
+            var loaded = JsonSerializer.Deserialize(json, ConfigContext.Default.ConfigModel);
             if (loaded != null)
             {
-                lock (_lock) _current = loaded;
-                logger.LogInformation("Config loaded from {FilePath}.", configFilePath);
+                SetCurrent(loaded);
+                logger.LogInformation("ConfigModel loaded from {FilePath}.", configFilePath);
             }
             else
             {
                 logger.LogWarning("Deserialized config is null. Using default.");
-                _current = new Config();
+                var defaultConfig = new ConfigModel();
+                SetCurrent(defaultConfig);
                 await SaveAsync(cancellationToken);
             }
         }
         catch (JsonException ex)
         {
             logger.LogError(ex, "Invalid JSON in config file. Resetting to default.");
-            _current = new Config();
+            var defaultConfig = new ConfigModel();
+            SetCurrent(defaultConfig);
             await SaveAsync(cancellationToken);
         }
         catch (IOException ex)
         {
             logger.LogError(ex, "I/O error reading config file. Using default config.");
-            _current = new Config();
+            SetCurrent(new ConfigModel());
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error loading config. Using default config.");
-            _current = new Config();
+            SetCurrent(new ConfigModel());
         }
     }
 
@@ -87,14 +95,14 @@ public class ConfigService(
         if (!string.IsNullOrEmpty(directory))
             Directory.CreateDirectory(directory);
 
-        Config configToSave;
-        lock (_lock) configToSave = _current;
+        ConfigModel configModelToSave;
+        lock (_lock) configModelToSave = _current;
 
         try
         {
-            var json = JsonSerializer.Serialize(configToSave, ConfigContext.Default.Config);
+            var json = JsonSerializer.Serialize(configModelToSave, ConfigContext.Default.ConfigModel);
             await File.WriteAllTextAsync(configFilePath, json, cancellationToken);
-            logger.LogInformation("Config saved to {FilePath}.", configFilePath);
+            logger.LogInformation("ConfigModel saved to {FilePath}.", configFilePath);
         }
         catch (IOException ex)
         {
@@ -108,15 +116,15 @@ public class ConfigService(
         }
     }
 
-    internal static Config InitConfig(string configFilePath)
+    internal static ConfigModel InitConfig(string configFilePath)
     {
         if (!File.Exists(configFilePath))
         {
-            var defaultConfig = new Config();
+            var defaultConfig = new ConfigModel();
             var directory = Path.GetDirectoryName(configFilePath);
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
-            var json = JsonSerializer.Serialize(defaultConfig, ConfigContext.Default.Config);
+            var json = JsonSerializer.Serialize(defaultConfig, ConfigContext.Default.ConfigModel);
             File.WriteAllText(configFilePath, json);
             return defaultConfig;
         }
@@ -124,13 +132,12 @@ public class ConfigService(
         try
         {
             var json = File.ReadAllText(configFilePath);
-            var config = JsonSerializer.Deserialize(json, ConfigContext.Default.Config);
-            return config ?? new Config();
+            var config = JsonSerializer.Deserialize(json, ConfigContext.Default.ConfigModel);
+            return config ?? new ConfigModel();
         }
         catch
         {
-            // On error, return default (don't overwrite the file – let the service handle that later)
-            return new Config();
+            return new ConfigModel();
         }
     }
 }

@@ -6,7 +6,7 @@ mod sidecar;
 mod state;
 
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, WindowEvent};
 use sidecar::spawn_sidecar;
 use tokio::sync::OnceCell;
 use state::{SidecarState, SidecarInner};
@@ -18,11 +18,35 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
-            app.manage(SidecarState { inner: OnceCell::new() });
-
             let app_handle = app.handle().clone();
             let is_dev = cfg!(debug_assertions);
-            initialize_sidecar(app_handle, is_dev);
+
+            app.manage(SidecarState { inner: OnceCell::new() });
+
+            initialize_sidecar(app_handle.clone(), is_dev);
+
+            let window = app.get_webview_window("main").expect("main window not found");
+            window.on_window_event(move |event| {
+                if let WindowEvent::CloseRequested { .. } = event {
+                    eprintln!("[rust] Window closing, cleaning up sidecar...");
+                    let state = app_handle.state::<SidecarState>();
+                    if let Some(inner) = state.inner.get() {
+                        if let Ok(mut guard) = inner._process.lock() {
+                            if let Some(child) = guard.take() {
+                                let _ = child.kill();
+                                eprintln!("[rust] Sidecar process killed");
+                            }
+                        }
+                        if let Some(task) = &inner._forward_task {
+                            task.abort();
+                            eprintln!("[rust] Forwarding task aborted");
+                        }
+                    } else {
+                        eprintln!("[rust] Sidecar not yet started, nothing to kill");
+                    }
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![commands::get_backend_url])

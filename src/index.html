@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ZenMonitor</title>
     <!--suppress CssUnusedSymbol -->
-      <style>
+    <style>
       html {
           background-color: #2a2a2a;
       }
@@ -51,8 +51,11 @@
   </head>
 
   <body>
-    <div id="page-loader">
+    <div class="flex flex-col" id="page-loader">
         <div class="loader"></div>
+        <p class="text-primary pt-5" id="page-loader-text">
+            Connecting...
+        </p>
     </div>
     <div id="app"></div>
     <script type="module" src="./src-web/main.ts"></script>

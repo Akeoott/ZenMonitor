@@ -18,3 +18,24 @@ export function withTimeout<T>(promise: Promise<T>, ms: number, errorMsg: string
       });
   });
 }
+
+export function setPageLoader(shouldShow: boolean, message: string = "") {
+  requestAnimationFrame(() => {
+    const loader = document.getElementById("page-loader");
+    const loaderText = document.getElementById("page-loader-text");
+
+    if (loader && loaderText) {
+      if (shouldShow) {
+        loader.classList.remove("hidden");
+        loaderText.textContent = message;
+      }
+      else {
+        loader.classList.add("hidden");
+      }
+    }
+    else {
+      console.error("Failed to load page loader");
+      return;
+    }
+  });
+}

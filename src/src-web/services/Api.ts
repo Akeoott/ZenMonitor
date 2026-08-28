@@ -1,7 +1,7 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { invoke } from '@tauri-apps/api/core'
 
-import { withTimeout, isRunningInTauri } from "../utils/Utils.ts";
+import {withTimeout, isRunningInTauri, setPageLoader} from "../utils/Utils.ts";
 
 async function getBackendUrl(): Promise<string> {
   const DEFAULT_PORT_URL = 'http://127.0.0.1:5000';
@@ -43,7 +43,7 @@ async function getBackendUrl(): Promise<string> {
  * Silently pings the backend host endpoint until it actively responds.
  * Prevents dirty console log errors from uninitialized HTTP stacks.
  */
-async function awaitServerAvailability(baseUrl: string, maxAttempts = 10, delayMs = 500): Promise<boolean> {
+async function awaitServerAvailability(baseUrl: string, maxAttempts = 10, delayMs = 1000): Promise<boolean> {
   console.log("[Api] Pinging Backend...");
 
   const workerCode = `
@@ -96,9 +96,9 @@ class SignalrService {
   private connection: HubConnection | null = null;
   private cachedUrl: string | null = null;
 
-  public async connect(): Promise<void> {
+  public async connect(): Promise<boolean> {
     if (this.connection && this.connection.state !== HubConnectionState.Disconnected) {
-      return;
+      return true;
     }
 
     if (!this.cachedUrl) {
@@ -106,8 +106,9 @@ class SignalrService {
     }
     const currentUrl = this.cachedUrl;
 
-    if (!await awaitServerAvailability(currentUrl)) {
-      return;
+    if (!await awaitServerAvailability(currentUrl, !isRunningInTauri ? 1000 : 10)) {
+      setPageLoader(true, "Backend unavailable...\nPlease restart the app.");
+      return false;
     }
 
     this.connection = new HubConnectionBuilder()
@@ -118,14 +119,17 @@ class SignalrService {
 
     this.connection.onreconnecting((error) => {
       console.warn(`[Api] Connection lost (${error}). Attempting reconnect...`);
+      setPageLoader(true, "Connection lost...");
     });
 
     this.connection.onreconnected((connectionId) => {
       console.log(`[Api] Connection restored. ID: ${connectionId}`);
+      setPageLoader(false);
     });
 
     this.connection.onclose((error) => {
       console.error(`[Api] Connection closed permanently: ${error}`);
+      setPageLoader(true, "Backend unavailable...\nPlease restart the app.");
     });
 
     try {
@@ -136,6 +140,8 @@ class SignalrService {
       console.error('[Api] Sudden error starting socket handler:', err);
       setTimeout(() => this.connect(), 5000);
     }
+
+    return true;
   }
 
   public on<T>(methodName: string, callback: (data: T) => void): void {

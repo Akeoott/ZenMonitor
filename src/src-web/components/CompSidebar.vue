@@ -26,8 +26,7 @@ const navigateTo = (path: string) => {
 </script>
 
 <template>
-  <aside
-    class="w-fit flex flex-col p-2 pt-1 h-full ">
+  <aside class="w-fit flex flex-col p-2 pt-1 h-full ">
     <nav class="flex flex-col flex-1 gap-1">
       <button @click="isExpanded = !isExpanded" class="nav-item text-gray-400">
         <span class="nav-icon">🟰</span>

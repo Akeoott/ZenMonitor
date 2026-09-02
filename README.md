@@ -45,6 +45,7 @@ The app is being developed primarily for Linux; Windows support will follow once
 ```bash
 git clone https://github.com/Akeoott/ZenMonitor
 cd ./ZenMonitor/src/
+npm install
 ```
 
 ### Running the project:
@@ -71,7 +72,13 @@ cd ./ZenMonitor/src/
   - `npm run dev` - Run the web server alone
   - `npm run tauri:win dev` - Run the tauri app for windows in dev mode
   - `npm run tauri:linux build` - Build the tauri app for linux
-  
+
+> [!WARNING]
+> Running and building on linux (mainly around tauri)
+> can be unstable and requires a lot of system installed dependencies.
+> For the time being, building tauri on linux will often not work out of the box.
+>
+> Tauri is especially unstable around Wayland and Nvidia graphics cards.
 
 ### Technical Details
 

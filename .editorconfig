@@ -35,5 +35,6 @@ insert_final_newline = true
 indent_size = 2
 
 # Web stuff
-[*.{js,ts,vue,css,scss}]
+[*.{js,jsx,mjs,cjs,ts,tsx,mts,cts,vue,css,scss,sass,less,styl}]
+insert_final_newline = true
 indent_size = 2

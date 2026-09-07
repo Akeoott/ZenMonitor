@@ -1,4 +1,4 @@
-﻿@layer components {
+@layer components {
   .custom-scroll {
     scrollbar-width: thin;
     scrollbar-color: #3a3a3a transparent;

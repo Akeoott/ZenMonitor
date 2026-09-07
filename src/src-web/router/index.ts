@@ -1,7 +1,7 @@
+import Performance from '@/views/PerformanceView.vue';
+import Processes from '@/views/ProcessesView.vue';
+import Settings from '@/views/SettingsView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
-import Processes from '@/views/ViewProcesses.vue';
-import Performance from '@/views/ViewPerformance.vue';
-import Settings from '@/views/ViewSettings.vue';
 
 const routes = [
   { path: '/', component: Processes },

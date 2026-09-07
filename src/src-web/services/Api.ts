@@ -1,7 +1,10 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
-import { invoke } from '@tauri-apps/api/core'
+import { invoke } from '@tauri-apps/api/core';
 
-import {withTimeout, isRunningInTauri, setPageLoader} from "../utils/Utils.ts";
+import { useLoader } from '@/composables/useLoader';
+import { isRunningInTauri, withTimeout } from "@/utils/Utils";
+
+const { setLoaderText, hideLoader, showLoader } = useLoader();
 
 async function getBackendUrl(): Promise<string> {
   const DEFAULT_PORT_URL = 'http://127.0.0.1:5000';
@@ -20,9 +23,9 @@ async function getBackendUrl(): Promise<string> {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
       const url = await withTimeout<string>(
-          invoke('get_backend_url'),
-          PER_ATTEMPT_TIMEOUT_MS,
-          `[Api] Sidecar did not announce port within ${PER_ATTEMPT_TIMEOUT_MS / 1000}s (attempt ${attempt + 1}/${MAX_ATTEMPTS})`
+        invoke('get_backend_url'),
+        PER_ATTEMPT_TIMEOUT_MS,
+        `[Api] Sidecar did not announce port within ${PER_ATTEMPT_TIMEOUT_MS / 1000}s (attempt ${attempt + 1}/${MAX_ATTEMPTS})`
       );
       console.log(`[Api] Url received: ${url}`);
       return url;
@@ -107,7 +110,8 @@ class SignalrService {
     const currentUrl = this.cachedUrl;
 
     if (!await awaitServerAvailability(currentUrl, !isRunningInTauri ? 1000 : 10)) {
-      setPageLoader(true, "Backend unavailable...\nPlease restart the app.");
+      setLoaderText("Backend unavailable...\nPlease restart the app.");
+      showLoader();
       return false;
     }
 
@@ -119,22 +123,25 @@ class SignalrService {
 
     this.connection.onreconnecting((error) => {
       console.warn(`[Api] Connection lost (${error}). Attempting reconnect...`);
-      setPageLoader(true, "Connection lost...");
+      setLoaderText("Connection lost...");
+      showLoader();
     });
 
     this.connection.onreconnected((connectionId) => {
       console.log(`[Api] Connection restored. ID: ${connectionId}`);
-      setPageLoader(false);
+      hideLoader();
     });
 
     this.connection.onclose((error) => {
       console.error(`[Api] Connection closed permanently: ${error}`);
-      setPageLoader(true, "Backend unavailable...\nPlease restart the app.");
+      setLoaderText("Backend unavailable...\nPlease restart the app.");
+      showLoader();
     });
 
     try {
       await this.connection.start();
       console.log(`[Api] Connected successfully to hub: ${currentUrl}/api`);
+      hideLoader();
     } catch (err) {
 
       console.error('[Api] Sudden error starting socket handler:', err);
@@ -156,14 +163,14 @@ class SignalrService {
     this.connection?.off(methodName);
   }
 
-  public async invoke<T = any>(methodName: string, ...args: any[]): Promise<T> {
+  public async invoke<T = unknown>(methodName: string, ...args: unknown[]): Promise<T> {
     if (this.connection?.state !== HubConnectionState.Connected) {
       throw new Error(`[Api] Cannot invoke method. Hub is currently: ${this.connection?.state}`);
     }
     return await this.connection.invoke<T>(methodName, ...args);
   }
 
-  public async send(methodName: string, ...args: any[]): Promise<void> {
+  public async send(methodName: string, ...args: unknown[]): Promise<void> {
     if (this.connection?.state !== HubConnectionState.Connected) {
       throw new Error(`[Api] Cannot send data. Hub is currently: ${this.connection?.state}`);
     }

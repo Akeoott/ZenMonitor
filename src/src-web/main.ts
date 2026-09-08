@@ -20,5 +20,3 @@ app.mount('#app');
 
 if ('scrollRestoration' in history)
   history.scrollRestoration = 'manual';
-
-document.documentElement.style.backgroundColor = '#2a2a2a';

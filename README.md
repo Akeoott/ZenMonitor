@@ -14,6 +14,10 @@
 > Tauri + Vue interacting with a C# API on a different process.
 > Not special I know, but it works and that's what counts.
 
+> [!CAUTION]
+> As of now, this repository has been archived. Why?
+> I'm using what I've learned to rebuild the ZenMonitor project better than before with a plan in mind.
+
 ---
 
 ## Overview
